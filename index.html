@@ -197,6 +197,20 @@
             font-size: 1.8rem;
             text-align: center;
         }
+
+        /* Weekly Brain-Rot Notice Banner */
+        .weekly-notice {
+            background: linear-gradient(135deg, #2c223b 100%, #1a1d24 0%);
+            border: 1px dashed #ffa502;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #ffa502;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
         .news-card {
             background-color: var(--card-bg);
             border: 1px solid #2f3542;
@@ -344,7 +358,6 @@
             margin-bottom: 10px;
             line-height: 1.4;
         }
-        /* Mock Media Embeds */
         .media-embed-box {
             width: 100%;
             height: 140px;
@@ -463,7 +476,7 @@
     <div id="weather-widget">📍 Calculating your exact level of regret...</div>
 
     <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('world-tab', this)">🌍 World Collapse</button>
+        <button class="tab-btn active" onclick="switchTab('world-tab', this)">🚨 Brain-Rot Bulletin</button>
         <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">🇨🇦 Local Nonsense</button>
         <button class="tab-btn" onclick="switchTab('dark-tab', this)">💀 Terminally Online</button>
         <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️ Serotonin Trap</button>
@@ -474,7 +487,10 @@
 
     <div id="world-tab" class="tab-pane active">
         <section>
-            <h2>🌍 World Collapse Feed</h2>
+            <h2>🚨 Global Brain-Rot Bulletin</h2>
+            <div class="weekly-notice">
+                🗓️ Updated fresh every Monday because humanity never stops cooking up absolute nonsense. Enjoy the 3 strangest stories earth produced this week!
+            </div>
             <div id="world-news">Rummaging through global dumpster fires...</div>
         </section>
     </div>
@@ -597,10 +613,21 @@
         const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);
         document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
 
-        const worldHeadlines = [
-            { title: "Global Wi-Fi Fluctuates by 4%", desc: "Scientists report a brief drop in collective attention span as everyone simultaneously refreshed their feeds." },
-            { title: "Experts Confused by Tuesday", desc: "For the third week in a row, Tuesday has failed to provide any coherent narrative structure." },
-            { title: "Coffee Bean Market Reaches Critical Mass", desc: "Local office workers report running entirely on spite and cold brew." }
+        // Exactly 3 of the world's weirdest weekly news reports
+        const weirdWorldHeadlines = [
+            { 
+                title: "Man Tries to Pay Court Fine with Hand-Drawn Pokémon Cards, Judge Rules Pikachu 'Non-Legal Tender'", 
+                desc: "A Florida man attempted to settle a minor traffic infraction using a meticulously glittered first-edition Charizard. The presiding judge stated while the artwork was 'solid,' it unfortunately doesn't cover municipal court fees." 
+            },
+            { 
+                title: "Town Elects Stray Cat as Mayor After Opposing Candidate Falls Asleep on Ballot Box", 
+                desc: "Local democracy reached its peak when a grumpy orange tabby named Barnaby accidentally secured a landslide victory by refusing to move off the official paperwork for 14 straight hours. Tax rates on catnip have already dropped." 
+            },
+            { 
+                title: "Scientists Confused After Deep-Sea Camera Captures Crab Apparently Flexing in Front of Hydrothermal Vent", 
+                ztitle: "Crab Caught Bodybuilding",
+                desc: "Marine biologists at the Pacific Ocean trench monitoring station reported footage of a hydrothermal crab pausing mid-scuttle to hit an impressive double-bicep pose directly into the lens. Experts admit they have no evolutionary explanation." 
+            }
         ];
 
         const localHeadlines = [
@@ -610,8 +637,8 @@
 
         function loadStaticFeeds() {
             let worldHtml = "";
-            worldHeadlines.forEach(item => {
-                worldHtml += `<div class="news-card"><span class="news-date">Today</span><h3>${item.title}</h3><p>${item.desc}</p></div>`;
+            weirdWorldHeadlines.forEach(item => {
+                worldHtml += `<div class="news-card"><span class="news-date">This Week's Fresh Madness (Refreshed Monday)</span><h3>${item.title}</h3><p>${item.desc}</p></div>`;
             });
             document.getElementById('world-news').innerHTML = worldHtml;
 
@@ -623,7 +650,6 @@
         }
         loadStaticFeeds();
 
-        // --- 10 Real Media Sources with Maximum Unhinged Filter ---
         const realSources = [
             { name: " TikTok", type: "video" },
             { name: " X (Twitter)", type: "text" },
@@ -662,13 +688,10 @@
             if (reset) {
                 displayedCount = 10;
                 currentFilteredResults = [];
-                // Generate a deep pool of random unhinged results
                 for (let i = 0; i < 40; i++) {
                     const sourceObj = realSources[Math.floor(Math.random() * realSources.length)];
                     const template = unhingedTemplates[Math.floor(Math.random() * unhingedTemplates.length)];
                     const handle = userHandles[Math.floor(Math.random() * userHandles.length)];
-                    const views = (Math.random * 800 + 1.2).toFixed(1) + "K";
-                    const likes = Math.floor(Math.random() * 90000 + 400);
 
                     currentFilteredResults.push({
                         source: sourceObj.name,
@@ -688,7 +711,7 @@
             activeMediaType = type;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
-            displayedCount = 10; // reset pagination on filter change
+            displayedCount = 10;
             renderMediaResults();
         }
 
@@ -722,7 +745,7 @@
                         </div>
                         <div class="media-stats">
                             <span>👁️ ${item.views} views</span>
-                            <span>❤️ ${item.likes} likes</span>
+                            <span>❤️️ ${item.likes} likes</span>
                         </div>
                     </div>`;
                 });
@@ -730,7 +753,6 @@
 
             document.getElementById('media-results').innerHTML = html;
 
-            // Hide/Show Load More button
             const loadMoreWrapper = document.getElementById('load-more-wrapper');
             if (displayedCount >= filtered.length) {
                 loadMoreWrapper.style.display = 'none';
@@ -744,7 +766,6 @@
             renderMediaResults();
         }
 
-        // Initialize default search on page load
         runUnhingedSearch(true);
 
         async function loadMemes() {
