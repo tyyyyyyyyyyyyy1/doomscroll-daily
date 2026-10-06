@@ -89,7 +89,6 @@
             margin-top: 8px;
         }
 
-        /* Audio & Panic Banner Bar */
         .top-utilities {
             display: flex;
             justify-content: center;
@@ -108,7 +107,6 @@
             cursor: pointer;
         }
 
-        /* Panic Index Bar */
         #panic-banner {
             background: var(--card-bg);
             border: 1px solid #333;
@@ -185,7 +183,6 @@
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
         }
 
-        /* Tab Content Panes */
         .tab-pane {
             display: none;
             max-width: 900px;
@@ -225,7 +222,6 @@
             margin: 0;
         }
 
-        /* Meme Grid */
         .meme-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -264,7 +260,7 @@
         .search-bar-wrapper {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .search-bar-wrapper input {
             flex: 1;
@@ -285,17 +281,56 @@
             cursor: pointer;
         }
         .search-bar-wrapper button:hover { background: #ff6b81; }
+
+        /* Media Sub-Filters (All, Images, Videos, Text) */
+        .media-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #101217;
+            border: 1px solid #333;
+            color: #a4b0be;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .filter-btn.active {
+            background: #ff4757;
+            color: white;
+            border-color: #ff4757;
+        }
+
         .media-results-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
         }
         @media (min-width: 600px) { .media-results-grid { grid-template-columns: 1fr 1fr; } }
+        
         .media-result-card {
             background: #101217;
             border: 1px solid #2f3542;
             border-radius: 6px;
             padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .media-source-tag {
+            font-size: 0.7rem;
+            background: #222630;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ffa502;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 6px;
+            width: fit-content;
         }
         .media-handle {
             font-size: 0.8rem;
@@ -309,6 +344,22 @@
             margin-bottom: 10px;
             line-height: 1.4;
         }
+        /* Mock Media Embeds */
+        .media-embed-box {
+            width: 100%;
+            height: 140px;
+            background: #000;
+            border: 1px dashed #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #747d8c;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            text-align: center;
+            padding: 5px;
+        }
         .media-stats {
             font-size: 0.75rem;
             color: #747d8c;
@@ -317,8 +368,21 @@
             border-top: 1px solid #222;
             padding-top: 8px;
         }
+        .load-more-container {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .load-more-btn {
+            background: #222630;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .load-more-btn:hover { background: #2f3542; }
 
-        /* Mini Game & Intrusive Thought Styling */
         .game-box, .thought-box {
             background: var(--card-bg);
             border: 1px solid #333;
@@ -353,10 +417,8 @@
 </head>
 <body>
 
-    <!-- Floating Boss Key Button -->
     <button id="panic-btn" onclick="toggleSpreadsheet()">🚨 Act Normal (Esc)</button>
 
-    <!-- Fake Spreadsheet Mode View -->
     <div id="fake-spreadsheet">
         <h2>Q3 Logistics & Regional Synergy Report</h2>
         <p style="color: #666; font-size: 0.9rem;">Last updated: Today | Status: Compliant</p>
@@ -374,7 +436,6 @@
         <p style="margin-top: 20px; font-style:italic; color:#888;">Press [Esc] or click the panic button again to return to the abyss.</p>
     </div>
 
-    <!-- Main Content Container -->
     <header>
         <h1>The Doomscroll Daily</h1>
         <p class="tagline">Hourly automated briefing of global collapse, local nonsense, and internet humor.</p>
@@ -398,11 +459,9 @@
         </div>
     </header>
 
-    <!-- Global Panic Index Bar -->
     <div id="panic-banner">📊 Global Panic Index: Calculating digital catastrophe levels...</div>
     <div id="weather-widget">📍 Calculating your exact level of regret...</div>
 
-    <!-- Tab Navigation Buttons -->
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('world-tab', this)">🌍 World Collapse</button>
         <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">🇨🇦 Local Nonsense</button>
@@ -413,7 +472,6 @@
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
     </div>
 
-    <!-- Tab Panels -->
     <div id="world-tab" class="tab-pane active">
         <section>
             <h2>🌍 World Collapse Feed</h2>
@@ -448,17 +506,29 @@
             <h2>📺 Unhinged Media Engine</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
-                    <input type="text" id="media-search-input" placeholder="Search any unhinged topic (e.g. raccoons, anxiety, coffee)..." value="raccoons">
-                    <button onclick="runUnhingedSearch()">Search Feed</button>
+                    <input type="text" id="media-search-input" placeholder="Search any topic (e.g. raccoons, coffee, corporate anxiety)..." value="raccoons">
+                    <button onclick="runUnhingedSearch(true)">Search Feed</button>
                 </div>
+                
+                <!-- Subsections Filter -->
+                <div class="media-filters">
+                    <button class="filter-btn active" onclick="setMediaType('all', this)">🔥 All Unhinged</button>
+                    <button class="filter-btn" onclick="setMediaType('image', this)">🖼️ Images</button>
+                    <button class="filter-btn" onclick="setMediaType('video', this)">🎥 Videos</button>
+                    <button class="filter-btn" onclick="setMediaType('text', this)">📝 Text Posts</button>
+                </div>
+
                 <div id="media-results" class="media-results-grid">
                     <!-- Dynamic results populate here -->
+                </div>
+
+                <div class="load-more-container" id="load-more-wrapper">
+                    <button class="load-more-btn" onclick="loadMoreResults()">⬇️ Load 10 More Unhinged Results</button>
                 </div>
             </div>
         </section>
     </div>
 
-    <!-- Mini-Game Tab -->
     <div id="game-tab" class="tab-pane">
         <section>
             <h2>🎮 Choose Your Own Descent</h2>
@@ -472,7 +542,6 @@
         </section>
     </div>
 
-    <!-- Intrusive Thought Generator Tab -->
     <div id="thought-tab" class="tab-pane">
         <section>
             <h2>🧠 The Intrusive Thought Generator</h2>
@@ -487,9 +556,7 @@
         <p>&copy; 2026 The Doomscroll Daily. Zero friction, maximum collapse.</p>
     </footer>
 
-    <!-- Script Logic -->
     <script>
-        // --- Tab Switching ---
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -497,7 +564,6 @@
             btnElement.classList.add('active');
         }
 
-        // --- Boss Key / Spreadsheet Toggle ---
         function toggleSpreadsheet() {
             document.body.classList.toggle('spreadsheet-mode');
         }
@@ -505,7 +571,6 @@
             if (e.key === 'Escape') toggleSpreadsheet();
         });
 
-        // --- Panic Index Bar ---
         const panicMetrics = [
             "📊 Global Panic Index: 98.4% (Existential dread levels optimal)",
             "📊 Global Panic Index: 89.2% (Coffee reserves depleting rapidly)",
@@ -514,7 +579,6 @@
         ];
         document.getElementById('panic-banner').innerText = panicMetrics[Math.floor(Math.random() * panicMetrics.length)];
 
-        // --- Regret Timer in Footer ---
         let secondsOnSite = 0;
         setInterval(() => {
             secondsOnSite++;
@@ -533,18 +597,15 @@
         const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);
         document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
 
-        // --- Simulated News Feeds (Guaranteed to load instantly on GitHub Pages) ---
         const worldHeadlines = [
             { title: "Global Wi-Fi Fluctuates by 4%", desc: "Scientists report a brief drop in collective attention span as everyone simultaneously refreshed their feeds." },
             { title: "Experts Confused by Tuesday", desc: "For the third week in a row, Tuesday has failed to provide any coherent narrative structure." },
-            { title: "Coffee Bean Market Reaches Critical Mass", desc: "Local office workers report running entirely on spite and cold brew." },
-            { title: "Stratosphere Temporarily Out of Order", desc: "Authorities advise citizens to avoid looking directly at the sky until further notice." }
+            { title: "Coffee Bean Market Reaches Critical Mass", desc: "Local office workers report running entirely on spite and cold brew." }
         ];
 
         const localHeadlines = [
             { title: "Local Raccoon Syndicate Demands Tribute", desc: "A masked coalition in Ottawa was spotted blockading a dumpster in exchange for loose change." },
-            { title: "Transit Delay Inspires Deep Philosophical Awakening", desc: "Commuters waiting at the station have collectively solved the meaning of life out of sheer boredom." },
-            { title: "Pothole Declared Official Landmark", desc: "Local municipality considers charging admission to the crater on Main Street." }
+            { title: "Transit Delay Inspires Deep Philosophical Awakening", desc: "Commuters waiting at the station have collectively solved the meaning of life out of sheer boredom." }
         ];
 
         function loadStaticFeeds() {
@@ -562,48 +623,130 @@
         }
         loadStaticFeeds();
 
-        // --- Unhinged Media Search Engine Logic ---
+        // --- 10 Real Media Sources with Maximum Unhinged Filter ---
+        const realSources = [
+            { name: " TikTok", type: "video" },
+            { name: " X (Twitter)", type: "text" },
+            { name: " Reddit (/r/collapse)", type: "text" },
+            { name: " 4chan (/pol/)", type: "text" },
+            { name: " Tumblr", type: "text" },
+            { name: " Bluesky", type: "text" },
+            { name: " Facebook Boomer Groups", type: "image" },
+            { name: " LinkedIn Corporate Cringe", type: "text" },
+            { name: " Instagram Reels", type: "video" },
+            { name: " YouTube Shorts", type: "video" }
+        ];
+
         const unhingedTemplates = [
-            (query) => `POV: You tried to research "${query}" at 3 AM and now local wildlife is plotting against you.`,
-            (query) => `Day 14 of studying "${query}" without human contact. I am fluent in garbage language now.`,
-            (query) => `They don't want you to know the truth about "${query}". Look at the numbers!!`,
-            (query) => `Me explaining to my cat why "${query}" is the most important crisis of our generation.`,
-            (query) => `Spotted someone trying to weaponize "${query}" at a local convenience store.`,
-            (query) => `If you don't wake up screaming about "${query}" every morning, are you even experiencing the timeline correctly?`
+            (q, src) => `If you aren't waking up in cold sweats thinking about "${q}" on ${src}, are you even participating in society?`,
+            (q, src) => `Found an unhinged manifesto on ${src} arguing that "${q}" is actually running the global supply chain.`,
+            (q, src) => `Day 47 of letting "${q}" dictate my entire personality according to ${src} algorithms.`,
+            (q, src) => `Me staring into the mirror on ${src} after spending 6 hours researching "${q}".`,
+            (q, src) => `They banned my account on ${src} for posting raw analytical data about "${q}". The truth cannot be silenced!`
         ];
 
         const userHandles = [
             "@void_crawler_99", "@doom_scroller_x", "@raccoon_syndicate", "@lost_in_the_sauce", 
-            "@caffeine_ghost", "@glitch_in_matrix", "@midnight_gremlin", "@timeline_survivor"
+            "@caffeine_ghost", "@glitch_in_matrix", "@midnight_gremlin", "@timeline_survivor",
+            "@bleached_brain", "@terminal_lucidity"
         ];
 
-        function runUnhingedSearch() {
+        let currentFilteredResults = [];
+        let displayedCount = 10;
+        let activeMediaType = 'all';
+
+        function runUnhingedSearch(reset = false) {
             const rawQuery = document.getElementById('media-search-input').value.trim() || "chaos";
             const query = rawQuery.toLowerCase();
+
+            if (reset) {
+                displayedCount = 10;
+                currentFilteredResults = [];
+                // Generate a deep pool of random unhinged results
+                for (let i = 0; i < 40; i++) {
+                    const sourceObj = realSources[Math.floor(Math.random() * realSources.length)];
+                    const template = unhingedTemplates[Math.floor(Math.random() * unhingedTemplates.length)];
+                    const handle = userHandles[Math.floor(Math.random() * userHandles.length)];
+                    const views = (Math.random * 800 + 1.2).toFixed(1) + "K";
+                    const likes = Math.floor(Math.random() * 90000 + 400);
+
+                    currentFilteredResults.push({
+                        source: sourceObj.name,
+                        type: sourceObj.type,
+                        handle: handle,
+                        caption: template(query, sourceObj.name),
+                        views: (Math.random() * 900 + 0.5).toFixed(1) + "K",
+                        likes: Math.floor(Math.random() * 95000 + 100).toLocaleString()
+                    });
+                }
+            }
+
+            renderMediaResults();
+        }
+
+        function setMediaType(type, btnElement) {
+            activeMediaType = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            displayedCount = 10; // reset pagination on filter change
+            renderMediaResults();
+        }
+
+        function renderMediaResults() {
+            let filtered = currentFilteredResults;
+            if (activeMediaType !== 'all') {
+                filtered = currentFilteredResults.filter(item => item.type === activeMediaType);
+            }
+
+            const visibleItems = filtered.slice(0, displayedCount);
             let html = "";
 
-            for (let i = 0; i < 6; i++) {
-                const template = unhingedTemplates[Math.floor(Math.random() * unhingedTemplates.length)];
-                const handle = userHandles[Math.floor(Math.random() * userHandles.length)];
-                const views = (Math.random() * 800 + 1.2).toFixed(1) + "K";
-                const likes = Math.floor(Math.random() * 90000 + 400);
+            if (visibleItems.length === 0) {
+                html = `<p style="grid-column: 1/-1; text-align:center; color:#747d8c;">No unhinged results found for this category.</p>`;
+            } else {
+                visibleItems.forEach(item => {
+                    let embedHtml = "";
+                    if (item.type === 'video') {
+                        embedHtml = `<div class="media-embed-box">▶ [SIMULATED VIDEO CLIP - 0:48]</div>`;
+                    } else if (item.type === 'image') {
+                        embedHtml = `<div class="media-embed-box">🖼️ [SIMULATED CURSED IMAGE ATTACHMENT]</div>`;
+                    }
 
-                html += `
-                <div class="media-result-card">
-                    <div class="media-handle">${handle}</div>
-                    <div class="media-caption">"${template(query)}"</div>
-                    <div class="media-stats">
-                        <span>👁️ ${views} views</span>
-                        <span>❤️ ${likes.toLocaleString()} likes</span>
-                        <span>💬 404 comments</span>
-                    </div>
-                </div>`;
+                    html += `
+                    <div class="media-result-card">
+                        <div>
+                            <span class="media-source-tag">${item.source}</span>
+                            <div class="media-handle">${item.handle}</div>
+                            <div class="media-caption">"${item.caption}"</div>
+                            ${embedHtml}
+                        </div>
+                        <div class="media-stats">
+                            <span>👁️ ${item.views} views</span>
+                            <span>❤️ ${item.likes} likes</span>
+                        </div>
+                    </div>`;
+                });
             }
-            document.getElementById('media-results').innerHTML = html;
-        }
-        runUnhingedSearch();
 
-        // --- Memes Loading ---
+            document.getElementById('media-results').innerHTML = html;
+
+            // Hide/Show Load More button
+            const loadMoreWrapper = document.getElementById('load-more-wrapper');
+            if (displayedCount >= filtered.length) {
+                loadMoreWrapper.style.display = 'none';
+            } else {
+                loadMoreWrapper.style.display = 'block';
+            }
+        }
+
+        function loadMoreResults() {
+            displayedCount += 10;
+            renderMediaResults();
+        }
+
+        // Initialize default search on page load
+        runUnhingedSearch(true);
+
         async function loadMemes() {
             async function fetchUniqueMemes(subreddits) {
                 const uniqueMemes = new Set();
@@ -648,10 +791,8 @@
         }
         loadMemes();
 
-        // --- Weather Widget ---
         document.getElementById('weather-widget').innerHTML = "🌡 Local Weather: 14°C — Perfect weather to stay glued to a screen.";
 
-        // --- Mini Game Logic ---
         function nextStage(choice) {
             const container = document.getElementById('game-container');
             if (choice === 1) {
@@ -676,7 +817,6 @@
             `;
         }
 
-        // --- Intrusive Thought Generator ---
         const intrusiveThoughts = [
             "What if pigeons are just surveillance drones that have to land on power lines to recharge wirelessly?",
             "You are currently living in the 'good old days' of whatever catastrophe future historians are going to write about.",
@@ -693,7 +833,6 @@
             document.getElementById('thought-text').innerText = `"${randomThought}"`;
         }
 
-        // --- Ambient Audio Generator ---
         let audioCtx = null;
         let isPlaying = false;
         let noiseNode = null;
