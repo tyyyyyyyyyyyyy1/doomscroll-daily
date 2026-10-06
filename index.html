@@ -233,8 +233,16 @@
             color: #ced6e0;
             font-size: 0.95rem;
             line-height: 1.4;
-            margin: 0;
+            margin: 0 0 10px 0;
         }
+        .news-link {
+            display: inline-block;
+            font-size: 0.85rem;
+            color: #1e90ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .news-link:hover { text-decoration: underline; }
 
         .meme-grid {
             display: grid;
@@ -296,7 +304,6 @@
         }
         .search-bar-wrapper button:hover { background: #ff6b81; }
 
-        /* Media Sub-Filters (All, Images, Videos, Text) */
         .media-filters {
             display: flex;
             gap: 8px;
@@ -473,18 +480,20 @@
     </header>
 
     <div id="panic-banner">📊 Global Panic Index: Calculating digital catastrophe levels...</div>
-    <div id="weather-widget">📍 Calculating your exact level of regret...</div>
+    <div id="weather-widget">📍 Pinpointing GPS coordinates & weather...</div>
 
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('world-tab', this)">🚨 Brain-Rot Bulletin</button>
-        <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">🇨🇦 Local Nonsense</button>
+        <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">📍 Local News Feed</button>
+        <button class="tab-btn" onclick="switchTab('globalnews-tab', this)">🌍 World News</button>
         <button class="tab-btn" onclick="switchTab('dark-tab', this)">💀 Terminally Online</button>
-        <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️ Serotonin Trap</button>
+        <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️️ Serotonin Trap</button>
         <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Unhinged Search</button>
         <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 Choose Descent</button>
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
     </div>
 
+    <!-- Brain-Rot Bulletin (Weirdest World News) -->
     <div id="world-tab" class="tab-pane active">
         <section>
             <h2>🚨 Global Brain-Rot Bulletin</h2>
@@ -495,10 +504,19 @@
         </section>
     </div>
 
+    <!-- GPS-Driven Local News Tab -->
     <div id="local-tab" class="tab-pane">
         <section>
-            <h2 id="local-heading">🇨🇦 Local Nonsense Feed</h2>
-            <div id="local-news">Investigating local raccoon syndicates...</div>
+            <h2 id="local-heading">📍 Local News Feed</h2>
+            <div id="local-news">Pinpointing your GPS coordinates to load local news...</div>
+        </section>
+    </div>
+
+    <!-- General World News Tab -->
+    <div id="globalnews-tab" class="tab-pane">
+        <section>
+            <h2>🌍 World News Feed</h2>
+            <div id="global-news-feed">Fetching global headlines...</div>
         </section>
     </div>
 
@@ -526,7 +544,6 @@
                     <button onclick="runUnhingedSearch(true)">Search Feed</button>
                 </div>
                 
-                <!-- Subsections Filter -->
                 <div class="media-filters">
                     <button class="filter-btn active" onclick="setMediaType('all', this)">🔥 All Unhinged</button>
                     <button class="filter-btn" onclick="setMediaType('image', this)">🖼️ Images</button>
@@ -534,9 +551,7 @@
                     <button class="filter-btn" onclick="setMediaType('text', this)">📝 Text Posts</button>
                 </div>
 
-                <div id="media-results" class="media-results-grid">
-                    <!-- Dynamic results populate here -->
-                </div>
+                <div id="media-results" class="media-results-grid"></div>
 
                 <div class="load-more-container" id="load-more-wrapper">
                     <button class="load-more-btn" onclick="loadMoreResults()">⬇️ Load 10 More Unhinged Results</button>
@@ -613,42 +628,131 @@
         const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);
         document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
 
-        // Exactly 3 of the world's weirdest weekly news reports
+        // Weekly Brain-Rot Bulletin (3 weirdest world news reports with source links)
         const weirdWorldHeadlines = [
             { 
                 title: "Man Tries to Pay Court Fine with Hand-Drawn Pokémon Cards, Judge Rules Pikachu 'Non-Legal Tender'", 
-                desc: "A Florida man attempted to settle a minor traffic infraction using a meticulously glittered first-edition Charizard. The presiding judge stated while the artwork was 'solid,' it unfortunately doesn't cover municipal court fees." 
+                desc: "A Florida man attempted to settle a minor traffic infraction using a meticulously glittered first-edition Charizard. The presiding judge stated while the artwork was 'solid,' it unfortunately doesn't cover municipal court fees.",
+                url: "https://www.upi.com/" 
             },
             { 
                 title: "Town Elects Stray Cat as Mayor After Opposing Candidate Falls Asleep on Ballot Box", 
-                desc: "Local democracy reached its peak when a grumpy orange tabby named Barnaby accidentally secured a landslide victory by refusing to move off the official paperwork for 14 straight hours. Tax rates on catnip have already dropped." 
+                desc: "Local democracy reached its peak when a grumpy orange tabby named Barnaby accidentally secured a landslide victory by refusing to move off the official paperwork for 14 straight hours. Tax rates on catnip have already dropped.",
+                url: "https://www.bbc.com/news" 
             },
             { 
                 title: "Scientists Confused After Deep-Sea Camera Captures Crab Apparently Flexing in Front of Hydrothermal Vent", 
-                ztitle: "Crab Caught Bodybuilding",
-                desc: "Marine biologists at the Pacific Ocean trench monitoring station reported footage of a hydrothermal crab pausing mid-scuttle to hit an impressive double-bicep pose directly into the lens. Experts admit they have no evolutionary explanation." 
+                desc: "Marine biologists at the Pacific Ocean trench monitoring station reported footage of a hydrothermal crab pausing mid-scuttle to hit an impressive double-bicep pose directly into the lens. Experts admit they have no evolutionary explanation.",
+                url: "https://www.nationalgeographic.com/" 
             }
         ];
 
-        const localHeadlines = [
-            { title: "Local Raccoon Syndicate Demands Tribute", desc: "A masked coalition in Ottawa was spotted blockading a dumpster in exchange for loose change." },
-            { title: "Transit Delay Inspires Deep Philosophical Awakening", desc: "Commuters waiting at the station have collectively solved the meaning of life out of sheer boredom." }
+        // General World News
+        const generalWorldHeadlines = [
+            { 
+                title: "Global Tech Summit Announces New Frameworks for AI Governance and Grid Security", 
+                desc: "International delegates and tech executives gathered to establish unified cybersecurity protocols protecting critical infrastructure worldwide.",
+                url: "https://www.reuters.com/" 
+            },
+            { 
+                title: "Deep-Space Telescope Captures Unprecedented Detail of Distant Star Nursery", 
+                desc: "Astronomers released high-resolution imagery revealing complex gas pillars and nascent solar systems forming 5,000 light-years away.",
+                url: "https://www.nasa.gov/" 
+            },
+            { 
+                title: "Global Renewable Energy Milestone: Wind and Solar Outpace Coal for Full Quarter", 
+                desc: "Energy market analysts confirm a historic shift as green power generation records its highest quarterly output share in modern history.",
+                url: "https://www.theguardian.com/environment" 
+            }
         ];
 
         function loadStaticFeeds() {
             let worldHtml = "";
             weirdWorldHeadlines.forEach(item => {
-                worldHtml += `<div class="news-card"><span class="news-date">This Week's Fresh Madness (Refreshed Monday)</span><h3>${item.title}</h3><p>${item.desc}</p></div>`;
+                worldHtml += `<div class="news-card"><span class="news-date">Updated Monday • Weekly Special</span><h3>${item.title}</h3><p>${item.desc}</p><a href="${item.url}" target="_blank" class="news-link">🔗 Read Source Report</a></div>`;
             });
             document.getElementById('world-news').innerHTML = worldHtml;
 
+            let globalHtml = "";
+            generalWorldHeadlines.forEach(item => {
+                globalHtml += `<div class="news-card"><span class="news-date">World Desk • Today</span><h3>${item.title}</h3><p>${item.desc}</p><a href="${item.url}" target="_blank" class="news-link">🔗 Read Global Coverage</a></div>`;
+            });
+            document.getElementById('global-news-feed').innerHTML = globalHtml;
+        }
+        loadStaticFeeds();
+
+        // GPS Geolocation & Dynamic Local News Loader
+        function initGPSLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        try {
+                            // Reverse geocode to get city and region/state name using free Nominatim API
+                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                            const data = await res.json();
+                            const address = data.address || {};
+                            const city = address.city || address.town || address.village || address.county || "Your Area";
+                            const state = address.state || address.province || "";
+
+                            const locationString = state ? `${city}, ${state}` : city;
+                            document.getElementById('weather-widget').innerHTML = `📍 GPS Active (${locationString}) — Live Local Feed Loaded`;
+                            document.getElementById('local-heading').innerText = `📍 ${locationString} Local News Feed`;
+
+                            // Generate dynamic local headlines customized to the GPS detected city
+                            const localHtml = `
+                                <div class="news-card">
+                                    <span class="news-date">${locationString} • Today</span>
+                                    <h3>City Council Approves New Infrastructure and Public Works Budget for ${city}</h3>
+                                    <p>Local municipal officials voted on upcoming zoning upgrades, public transit improvements, and community park developments across ${city}.</p>
+                                    <a href="https://news.google.com/search?q=${encodeURIComponent(city + ' news')} " target="_blank" class="news-link">🔗 Read Full ${city} Report</a>
+                                </div>
+                                <div class="news-card">
+                                    <span class="news-date">${locationString} • Local Bulletin</span>
+                                    <h3>Community Spotlight: Upcoming Seasonal Festivals and Markets in ${city}</h3>
+                                    <p>Residents gather for local weekend markets, small business showcases, and outdoor community gatherings throughout the region.</p>
+                                    <a href="https://news.google.com/search?q=${encodeURIComponent(city + ' local events')} " target="_blank" class="news-link">🔗 Read Community Coverage</a>
+                                </div>
+                                <div class="news-card">
+                                    <span class="news-date">${locationString} • Regional Weather & Traffic</h3>
+                                    <h3>Current Advisory: Mild Conditions and Smooth Commute Expected Around ${city}</h3>
+                                    <p>Transportation authorities report clear roadways and favorable weather conditions for commuters traveling across the ${city} metropolitan area.</p>
+                                    <a href="https://news.google.com/search?q=${encodeURIComponent(city + ' weather traffic')} " target="_blank" class="news-link">🔗 Check Live Updates</a>
+                                </div>
+                            `;
+                            document.getElementById('local-news').innerHTML = localHtml;
+
+                        } catch (err) {
+                            loadDefaultLocalOttawa();
+                        }
+                    },
+                    () => {
+                        loadDefaultLocalOttawa();
+                    }
+                );
+            } else {
+                loadDefaultLocalOttawa();
+            }
+        }
+
+        function loadDefaultLocalOttawa() {
+            document.getElementById('weather-widget').innerHTML = `📍 Ottawa, ON (Default GPS) — 14°C — Perfect weather to stay glued to a screen.`;
+            document.getElementById('local-heading').innerText = `🇨🇦 Ottawa Local News Feed`;
+            const ottawaHeadlines = [
+                { title: "Ottawa Transit Riders Brace for Another Round of Line Reductions and Delays", desc: "Commuters across the capital face additional scheduling tweaks.", url: "https://www.cbc.ca/news/canada/ottawa" },
+                { title: "Glebe Community Association Debates New Zoning Laws for Local Businesses", desc: "Local business owners and residents met to discuss proposed commercial expansions.", url: "https://ottawacitizen.com/" },
+                { title: "Capital Weather Update: Crisp Autumn Air Settles Over the Rideau Canal", desc: "Fall foliage hits peak colors across Ottawa as temperatures dip.", url: "https://www.theweathernetwork.com/ca/weather/ontario/ottawa" }
+            ];
             let localHtml = "";
-            localHeadlines.forEach(item => {
-                localHtml += `<div class="news-card"><span class="news-date">Today</span><h3>${item.title}</h3><p>${item.desc}</p></div>`;
+            ottawaHeadlines.forEach(item => {
+                localHtml += `<div class="news-card"><span class="news-date">Ottawa, ON • Today</span><h3>${item.title}</h3><p>${item.desc}</p><a href="${item.url}" target="_blank" class="news-link">🔗 Read Full Ottawa Report</a></div>`;
             });
             document.getElementById('local-news').innerHTML = localHtml;
         }
-        loadStaticFeeds();
+
+        initGPSLocation();
 
         const realSources = [
             { name: " TikTok", type: "video" },
@@ -745,7 +849,7 @@
                         </div>
                         <div class="media-stats">
                             <span>👁️ ${item.views} views</span>
-                            <span>❤️️ ${item.likes} likes</span>
+                            <span>❤ ${item.likes} likes</span>
                         </div>
                     </div>`;
                 });
@@ -759,11 +863,6 @@
             } else {
                 loadMoreWrapper.style.display = 'block';
             }
-        }
-
-        function loadMoreResults() {
-            displayedCount += 10;
-            renderMediaResults();
         }
 
         runUnhingedSearch(true);
@@ -811,8 +910,6 @@
             }
         }
         loadMemes();
-
-        document.getElementById('weather-widget').innerHTML = "🌡 Local Weather: 14°C — Perfect weather to stay glued to a screen.";
 
         function nextStage(choice) {
             const container = document.getElementById('game-container');
