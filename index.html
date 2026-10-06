@@ -198,7 +198,6 @@
             text-align: center;
         }
 
-        /* Weekly Brain-Rot Notice Banner */
         .weekly-notice {
             background: linear-gradient(135deg, #2c223b 100%, #1a1d24 0%);
             border: 1px dashed #ffa502;
@@ -270,7 +269,7 @@
             color: #d1d8e0;
         }
 
-        /* Unhinged Media Engine Styling */
+        /* Real-World Media Engine Styling */
         .media-engine-box {
             background: var(--card-bg);
             border: 1px solid #333;
@@ -304,35 +303,44 @@
         }
         .search-bar-wrapper button:hover { background: #ff6b81; }
 
-        .media-filters {
+        /* Subcategory Tab Bar */
+        .media-sub-nav {
             display: flex;
             gap: 8px;
             margin-bottom: 20px;
+            border-bottom: 1px solid #2f3542;
+            padding-bottom: 12px;
             flex-wrap: wrap;
         }
-        .filter-btn {
+        .sub-tab-btn {
             background: #101217;
             border: 1px solid #333;
             color: #a4b0be;
-            padding: 6px 14px;
-            border-radius: 4px;
+            padding: 8px 16px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: bold;
+            transition: all 0.2s;
         }
-        .filter-btn.active {
+        .sub-tab-btn.active {
             background: #ff4757;
             color: white;
             border-color: #ff4757;
         }
 
-        .media-results-grid {
+        .media-sub-pane {
+            display: none;
+        }
+        .media-sub-pane.active {
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
         }
-        @media (min-width: 600px) { .media-results-grid { grid-template-columns: 1fr 1fr; } }
-        
+        @media (min-width: 600px) { 
+            .media-sub-pane.active.grid-layout { grid-template-columns: 1fr 1fr; } 
+        }
+
         .media-result-card {
             background: #101217;
             border: 1px solid #2f3542;
@@ -353,32 +361,45 @@
             margin-bottom: 6px;
             width: fit-content;
         }
-        .media-handle {
-            font-size: 0.8rem;
+        .media-result-title {
+            font-size: 1.05rem;
             color: #ff6b81;
             font-weight: bold;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            text-decoration: none;
         }
+        .media-result-title:hover { text-decoration: underline; }
         .media-caption {
-            font-size: 0.95rem;
-            color: #e1e4e8;
-            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #ced6e0;
+            margin-bottom: 12px;
             line-height: 1.4;
         }
-        .media-embed-box {
+        .media-thumb {
             width: 100%;
-            height: 140px;
+            max-height: 220px;
+            object-fit: contain;
             background: #000;
-            border: 1px dashed #333;
             border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #747d8c;
-            font-size: 0.8rem;
             margin-bottom: 10px;
-            text-align: center;
-            padding: 5px;
+        }
+        .media-video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .media-video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
         }
         .media-stats {
             font-size: 0.75rem;
@@ -388,20 +409,6 @@
             border-top: 1px solid #222;
             padding-top: 8px;
         }
-        .load-more-container {
-            text-align: center;
-            margin-top: 25px;
-        }
-        .load-more-btn {
-            background: #222630;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .load-more-btn:hover { background: #2f3542; }
 
         .game-box, .thought-box {
             background: var(--card-bg);
@@ -487,13 +494,13 @@
         <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">📍 Local News Feed</button>
         <button class="tab-btn" onclick="switchTab('globalnews-tab', this)">🌍 World News</button>
         <button class="tab-btn" onclick="switchTab('dark-tab', this)">💀 Terminally Online</button>
-        <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️️ Serotonin Trap</button>
-        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Unhinged Search</button>
+        <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️ Serotonin Trap</button>
+        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Real-World Search</button>
         <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 Choose Descent</button>
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
     </div>
 
-    <!-- Brain-Rot Bulletin (Weirdest World News) -->
+    <!-- Brain-Rot Bulletin -->
     <div id="world-tab" class="tab-pane active">
         <section>
             <h2>🚨 Global Brain-Rot Bulletin</h2>
@@ -504,7 +511,7 @@
         </section>
     </div>
 
-    <!-- GPS-Driven Local News Tab -->
+    <!-- Local News Tab -->
     <div id="local-tab" class="tab-pane">
         <section>
             <h2 id="local-heading">📍 Local News Feed</h2>
@@ -512,7 +519,7 @@
         </section>
     </div>
 
-    <!-- General World News Tab -->
+    <!-- World News Tab -->
     <div id="globalnews-tab" class="tab-pane">
         <section>
             <h2>🌍 World News Feed</h2>
@@ -534,27 +541,42 @@
         </section>
     </div>
 
-    <!-- Unhinged Media Search Engine Tab -->
+    <!-- Real-World Multi-Format Search Engine Tab -->
     <div id="media-tab" class="tab-pane">
         <section>
-            <h2>📺 Unhinged Media Engine</h2>
+            <h2>📺 Real-World Search Engine</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
-                    <input type="text" id="media-search-input" placeholder="Search any topic (e.g. raccoons, coffee, corporate anxiety)..." value="raccoons">
-                    <button onclick="runUnhingedSearch(true)">Search Feed</button>
-                </div>
-                
-                <div class="media-filters">
-                    <button class="filter-btn active" onclick="setMediaType('all', this)">🔥 All Unhinged</button>
-                    <button class="filter-btn" onclick="setMediaType('image', this)">🖼️ Images</button>
-                    <button class="filter-btn" onclick="setMediaType('video', this)">🎥 Videos</button>
-                    <button class="filter-btn" onclick="setMediaType('text', this)">📝 Text Posts</button>
+                    <input type="text" id="media-search-input" placeholder="Search real-world topics (e.g., raccoons, gaming, tech, space)..." value="raccoons">
+                    <button onclick="runRealWorldSearch()">Search Live Feed</button>
                 </div>
 
-                <div id="media-results" class="media-results-grid"></div>
+                <!-- Subcategory Navigation -->
+                <div class="media-sub-nav">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('unhinged-pane', this)">⚡ All Unhinged</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('pics-pane', this)">🖼️ Pictures</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('vids-pane', this)">🎥 Videos</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('texts-pane', this)">📝 Text Posts</button>
+                </div>
 
-                <div class="load-more-container" id="load-more-wrapper">
-                    <button class="load-more-btn" onclick="loadMoreResults()">⬇️ Load 10 More Unhinged Results</button>
+                <!-- All Unhinged Pane -->
+                <div id="unhinged-pane" class="media-sub-pane active">
+                    <p style="color:#747d8c; text-align:center;">Enter a search term above to fetch live firehose results.</p>
+                </div>
+
+                <!-- Pictures Pane -->
+                <div id="pics-pane" class="media-sub-pane grid-layout">
+                    <p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Enter a search term above to fetch live pictures.</p>
+                </div>
+
+                <!-- Videos Pane -->
+                <div id="vids-pane" class="media-sub-pane grid-layout">
+                    <p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Enter a search term above to fetch live videos.</p>
+                </div>
+
+                <!-- Text Posts Pane -->
+                <div id="texts-pane" class="media-sub-pane">
+                    <p style="color:#747d8c; text-align:center;">Enter a search term above to fetch live text posts & discussions.</p>
                 </div>
             </div>
         </section>
@@ -595,6 +617,13 @@
             btnElement.classList.add('active');
         }
 
+        function switchSubTab(paneId, btnElement) {
+            document.querySelectorAll('.media-sub-pane').forEach(pane => pane.classList.remove('active'));
+            document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(paneId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
         function toggleSpreadsheet() {
             document.body.classList.toggle('spreadsheet-mode');
         }
@@ -628,42 +657,15 @@
         const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);
         document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
 
-        // Weekly Brain-Rot Bulletin (3 weirdest world news reports with source links)
         const weirdWorldHeadlines = [
-            { 
-                title: "Man Tries to Pay Court Fine with Hand-Drawn Pokémon Cards, Judge Rules Pikachu 'Non-Legal Tender'", 
-                desc: "A Florida man attempted to settle a minor traffic infraction using a meticulously glittered first-edition Charizard. The presiding judge stated while the artwork was 'solid,' it unfortunately doesn't cover municipal court fees.",
-                url: "https://www.upi.com/" 
-            },
-            { 
-                title: "Town Elects Stray Cat as Mayor After Opposing Candidate Falls Asleep on Ballot Box", 
-                desc: "Local democracy reached its peak when a grumpy orange tabby named Barnaby accidentally secured a landslide victory by refusing to move off the official paperwork for 14 straight hours. Tax rates on catnip have already dropped.",
-                url: "https://www.bbc.com/news" 
-            },
-            { 
-                title: "Scientists Confused After Deep-Sea Camera Captures Crab Apparently Flexing in Front of Hydrothermal Vent", 
-                desc: "Marine biologists at the Pacific Ocean trench monitoring station reported footage of a hydrothermal crab pausing mid-scuttle to hit an impressive double-bicep pose directly into the lens. Experts admit they have no evolutionary explanation.",
-                url: "https://www.nationalgeographic.com/" 
-            }
+            { title: "Man Tries to Pay Court Fine with Hand-Drawn Pokémon Cards, Judge Rules Pikachu 'Non-Legal Tender'", desc: "A Florida man attempted to settle a minor traffic infraction using a meticulously glittered first-edition Charizard.", url: "https://www.upi.com/" },
+            { title: "Town Elects Stray Cat as Mayor After Opposing Candidate Falls Asleep on Ballot Box", desc: "A grumpy orange tabby named Barnaby secured a landslide victory by refusing to move off official paperwork.", url: "https://www.bbc.com/news" },
+            { title: "Scientists Confused After Deep-Sea Camera Captures Crab Apparently Flexing in Front of Vent", desc: "Marine biologists reported footage of a hydrothermal crab hitting an impressive double-bicep pose.", url: "https://www.nationalgeographic.com/" }
         ];
 
-        // General World News
         const generalWorldHeadlines = [
-            { 
-                title: "Global Tech Summit Announces New Frameworks for AI Governance and Grid Security", 
-                desc: "International delegates and tech executives gathered to establish unified cybersecurity protocols protecting critical infrastructure worldwide.",
-                url: "https://www.reuters.com/" 
-            },
-            { 
-                title: "Deep-Space Telescope Captures Unprecedented Detail of Distant Star Nursery", 
-                desc: "Astronomers released high-resolution imagery revealing complex gas pillars and nascent solar systems forming 5,000 light-years away.",
-                url: "https://www.nasa.gov/" 
-            },
-            { 
-                title: "Global Renewable Energy Milestone: Wind and Solar Outpace Coal for Full Quarter", 
-                desc: "Energy market analysts confirm a historic shift as green power generation records its highest quarterly output share in modern history.",
-                url: "https://www.theguardian.com/environment" 
-            }
+            { title: "Global Tech Summit Announces New Frameworks for AI Governance and Grid Security", desc: "International delegates established unified cybersecurity protocols protecting critical infrastructure.", url: "https://www.reuters.com/" },
+            { title: "Deep-Space Telescope Captures Unprecedented Detail of Distant Star Nursery", desc: "Astronomers released imagery revealing complex gas pillars forming 5,000 light-years away.", url: "https://www.nasa.gov/" }
         ];
 
         function loadStaticFeeds() {
@@ -681,191 +683,139 @@
         }
         loadStaticFeeds();
 
-        // GPS Geolocation & Dynamic Local News Loader
         function initGPSLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     async (position) => {
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
-
                         try {
-                            // Reverse geocode to get city and region/state name using free Nominatim API
                             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
                             const data = await res.json();
                             const address = data.address || {};
                             const city = address.city || address.town || address.village || address.county || "Your Area";
                             const state = address.state || address.province || "";
-
                             const locationString = state ? `${city}, ${state}` : city;
+
                             document.getElementById('weather-widget').innerHTML = `📍 GPS Active (${locationString}) — Live Local Feed Loaded`;
                             document.getElementById('local-heading').innerText = `📍 ${locationString} Local News Feed`;
 
-                            // Generate dynamic local headlines customized to the GPS detected city
-                            const localHtml = `
-                                <div class="news-card">
-                                    <span class="news-date">${locationString} • Today</span>
-                                    <h3>City Council Approves New Infrastructure and Public Works Budget for ${city}</h3>
-                                    <p>Local municipal officials voted on upcoming zoning upgrades, public transit improvements, and community park developments across ${city}.</p>
-                                    <a href="https://news.google.com/search?q=${encodeURIComponent(city + ' news')} " target="_blank" class="news-link">🔗 Read Full ${city} Report</a>
-                                </div>
-                                <div class="news-card">
-                                    <span class="news-date">${locationString} • Local Bulletin</span>
-                                    <h3>Community Spotlight: Upcoming Seasonal Festivals and Markets in ${city}</h3>
-                                    <p>Residents gather for local weekend markets, small business showcases, and outdoor community gatherings throughout the region.</p>
-                                    <a href="https://news.google.com/search?q=${encodeURIComponent(city + ' local events')} " target="_blank" class="news-link">🔗 Read Community Coverage</a>
-                                </div>
-                                <div class="news-card">
-                                    <span class="news-date">${locationString} • Regional Weather & Traffic</h3>
-                                    <h3>Current Advisory: Mild Conditions and Smooth Commute Expected Around ${city}</h3>
-                                    <p>Transportation authorities report clear roadways and favorable weather conditions for commuters traveling across the ${city} metropolitan area.</p>
-                                    <a href="https://news.google.com/search?q=${encodeURIComponent(city + ' weather traffic')} " target="_blank" class="news-link">🔗 Check Live Updates</a>
-                                </div>
+                            document.getElementById('local-news').innerHTML = `
+                                <div class="news-card"><span class="news-date">${locationString} • Today</span><h3>Municipal Board Reviews Public Works Budget and Infrastructure in ${city}</h3><p>Local municipal leaders met to discuss zoning changes, utility maintenance, and community development projects.</p><a href="https://news.google.com/search?q=${encodeURIComponent(city + ' news')}" target="_blank" class="news-link">🔗 Read Full ${city} Report</a></div>
+                                <div class="news-card"><span class="news-date">${locationString} • Community Bulletin</span><h3>Seasonal Markets and Regional Events Draw Crowds Across ${city}</h3><p>Residents and local vendors gathered for weekend open-air markets and community gatherings.</p><a href="https://news.google.com/search?q=${encodeURIComponent(city + ' local events')}" target="_blank" class="news-link">🔗 Read Community Coverage</a></div>
                             `;
-                            document.getElementById('local-news').innerHTML = localHtml;
-
-                        } catch (err) {
-                            loadDefaultLocalOttawa();
-                        }
+                        } catch (err) { loadDefaultLocalOttawa(); }
                     },
-                    () => {
-                        loadDefaultLocalOttawa();
-                    }
+                    () => { loadDefaultLocalOttawa(); }
                 );
-            } else {
-                loadDefaultLocalOttawa();
-            }
+            } else { loadDefaultLocalOttawa(); }
         }
 
         function loadDefaultLocalOttawa() {
             document.getElementById('weather-widget').innerHTML = `📍 Ottawa, ON (Default GPS) — 14°C — Perfect weather to stay glued to a screen.`;
             document.getElementById('local-heading').innerText = `🇨🇦 Ottawa Local News Feed`;
-            const ottawaHeadlines = [
-                { title: "Ottawa Transit Riders Brace for Another Round of Line Reductions and Delays", desc: "Commuters across the capital face additional scheduling tweaks.", url: "https://www.cbc.ca/news/canada/ottawa" },
-                { title: "Glebe Community Association Debates New Zoning Laws for Local Businesses", desc: "Local business owners and residents met to discuss proposed commercial expansions.", url: "https://ottawacitizen.com/" },
-                { title: "Capital Weather Update: Crisp Autumn Air Settles Over the Rideau Canal", desc: "Fall foliage hits peak colors across Ottawa as temperatures dip.", url: "https://www.theweathernetwork.com/ca/weather/ontario/ottawa" }
-            ];
-            let localHtml = "";
-            ottawaHeadlines.forEach(item => {
-                localHtml += `<div class="news-card"><span class="news-date">Ottawa, ON • Today</span><h3>${item.title}</h3><p>${item.desc}</p><a href="${item.url}" target="_blank" class="news-link">🔗 Read Full Ottawa Report</a></div>`;
-            });
-            document.getElementById('local-news').innerHTML = localHtml;
+            document.getElementById('local-news').innerHTML = `<div class="news-card"><span class="news-date">Ottawa, ON • Today</span><h3>Ottawa Transit Riders Brace for Line Reductions and Scheduling Adjustments</h3><p>Commuters face ongoing updates regarding local transit logistics and maintenance schedules.</p><a href="https://www.cbc.ca/news/canada/ottawa" target="_blank" class="news-link">🔗 Read Full Ottawa Report</a></div>`;
         }
-
         initGPSLocation();
 
-        const realSources = [
-            { name: " TikTok", type: "video" },
-            { name: " X (Twitter)", type: "text" },
-            { name: " Reddit (/r/collapse)", type: "text" },
-            { name: " 4chan (/pol/)", type: "text" },
-            { name: " Tumblr", type: "text" },
-            { name: " Bluesky", type: "text" },
-            { name: " Facebook Boomer Groups", type: "image" },
-            { name: " LinkedIn Corporate Cringe", type: "text" },
-            { name: " Instagram Reels", type: "video" },
-            { name: " YouTube Shorts", type: "video" }
-        ];
+        // Real-World Multi-Format Search (All Unhinged + Pictures, Videos, Text Posts)
+        async function runRealWorldSearch() {
+            const query = document.getElementById('media-search-input').value.trim() || "raccoons";
+            const unhingedPane = document.getElementById('unhinged-pane');
+            const picsPane = document.getElementById('pics-pane');
+            const vidsPane = document.getElementById('vids-pane');
+            const textsPane = document.getElementById('texts-pane');
 
-        const unhingedTemplates = [
-            (q, src) => `If you aren't waking up in cold sweats thinking about "${q}" on ${src}, are you even participating in society?`,
-            (q, src) => `Found an unhinged manifesto on ${src} arguing that "${q}" is actually running the global supply chain.`,
-            (q, src) => `Day 47 of letting "${q}" dictate my entire personality according to ${src} algorithms.`,
-            (q, src) => `Me staring into the mirror on ${src} after spending 6 hours researching "${q}".`,
-            (q, src) => `They banned my account on ${src} for posting raw analytical data about "${q}". The truth cannot be silenced!`
-        ];
+            const loadingMsg = `<p style="color:#747d8c; text-align:center;">Fetching live results for "${query}"...</p>`;
+            unhingedPane.innerHTML = loadingMsg;
+            picsPane.innerHTML = loadingMsg;
+            vidsPane.innerHTML = loadingMsg;
+            textsPane.innerHTML = loadingMsg;
 
-        const userHandles = [
-            "@void_crawler_99", "@doom_scroller_x", "@raccoon_syndicate", "@lost_in_the_sauce", 
-            "@caffeine_ghost", "@glitch_in_matrix", "@midnight_gremlin", "@timeline_survivor",
-            "@bleached_brain", "@terminal_lucidity"
-        ];
+            try {
+                const res = await fetch(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=35&sort=relevance`);
+                const json = await res.json();
+                const posts = json?.data?.children || [];
 
-        let currentFilteredResults = [];
-        let displayedCount = 10;
-        let activeMediaType = 'all';
+                let unhingedHtml = "";
+                let picsHtml = "";
+                let vidsHtml = "";
+                let textsHtml = "";
 
-        function runUnhingedSearch(reset = false) {
-            const rawQuery = document.getElementById('media-search-input').value.trim() || "chaos";
-            const query = rawQuery.toLowerCase();
+                posts.forEach(item => {
+                    const post = item.data;
+                    if (post.over_18) return; // Skip NSFW
 
-            if (reset) {
-                displayedCount = 10;
-                currentFilteredResults = [];
-                for (let i = 0; i < 40; i++) {
-                    const sourceObj = realSources[Math.floor(Math.random() * realSources.length)];
-                    const template = unhingedTemplates[Math.floor(Math.random() * unhingedTemplates.length)];
-                    const handle = userHandles[Math.floor(Math.random() * userHandles.length)];
+                    const title = post.title;
+                    const permalink = `https://reddit.com${post.permalink}`;
+                    const author = `u/${post.author}`;
+                    const score = post.score;
+                    const sub = post.subreddit_name_prefixed;
 
-                    currentFilteredResults.push({
-                        source: sourceObj.name,
-                        type: sourceObj.type,
-                        handle: handle,
-                        caption: template(query, sourceObj.name),
-                        views: (Math.random() * 900 + 0.5).toFixed(1) + "K",
-                        likes: Math.floor(Math.random() * 95000 + 100).toLocaleString()
-                    });
-                }
-            }
+                    // Determine format type
+                    const isImageUrl = post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.endsWith('.jpeg') || post.url.includes('i.redd.it'));
+                    const isVideo = post.is_video || (post.url && (post.url.includes('youtube.com') || post.url.includes('youtu.be') || post.url.includes('v.redd.it')));
+                    const isTextPost = post.is_self && post.selftext && post.selftext.length > 20;
 
-            renderMediaResults();
-        }
-
-        function setMediaType(type, btnElement) {
-            activeMediaType = type;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-            displayedCount = 10;
-            renderMediaResults();
-        }
-
-        function renderMediaResults() {
-            let filtered = currentFilteredResults;
-            if (activeMediaType !== 'all') {
-                filtered = currentFilteredResults.filter(item => item.type === activeMediaType);
-            }
-
-            const visibleItems = filtered.slice(0, displayedCount);
-            let html = "";
-
-            if (visibleItems.length === 0) {
-                html = `<p style="grid-column: 1/-1; text-align:center; color:#747d8c;">No unhinged results found for this category.</p>`;
-            } else {
-                visibleItems.forEach(item => {
-                    let embedHtml = "";
-                    if (item.type === 'video') {
-                        embedHtml = `<div class="media-embed-box">▶ [SIMULATED VIDEO CLIP - 0:48]</div>`;
-                    } else if (item.type === 'image') {
-                        embedHtml = `<div class="media-embed-box">🖼️ [SIMULATED CURSED IMAGE ATTACHMENT]</div>`;
+                    // Build card HTML based on content
+                    let cardVisual = "";
+                    if (isImageUrl) {
+                        cardVisual = `<img src="${post.url}" class="media-thumb" loading="lazy" alt="Live Image">`;
+                    } else if (isVideo) {
+                        if (post.url.includes('youtube.com/watch?v=')) {
+                            const vidId = post.url.split('v=')[1]?.substring(0, 11);
+                            cardVisual = `<div class="media-video-container"><iframe src="https://www.youtube.com/embed/${vidId}" allowfullscreen></iframe></div>`;
+                        } else if (post.url.includes('youtu.be/')) {
+                            const vidId = post.url.split('youtu.be/')[1]?.split('?')[0];
+                            cardVisual = `<div class="media-video-container"><iframe src="https://www.youtube.com/embed/${vidId}" allowfullscreen></iframe></div>`;
+                        } else {
+                            cardVisual = `<img src="${post.thumbnail && post.thumbnail.startsWith('http') ? post.thumbnail : 'https://picsum.photos/400/225'}" class="media-thumb" alt="Video Thumb">`;
+                        }
+                    } else if (isTextPost) {
+                        cardVisual = `<div class="media-caption">${post.selftext.substring(0, 160)}...</div>`;
                     }
 
-                    html += `
-                    <div class="media-result-card">
+                    const cardHtml = `
+                    <div class="media-result-card" style="margin-bottom: 15px;">
                         <div>
-                            <span class="media-source-tag">${item.source}</span>
-                            <div class="media-handle">${item.handle}</div>
-                            <div class="media-caption">"${item.caption}"</div>
-                            ${embedHtml}
+                            <span class="media-source-tag">${sub} • by ${author}</span>
+                            <a href="${permalink}" target="_blank" class="media-result-title">${title}</a>
+                            ${cardVisual}
                         </div>
                         <div class="media-stats">
-                            <span>👁️ ${item.views} views</span>
-                            <span>❤ ${item.likes} likes</span>
+                            <span>⭐ ${score} upvotes • 💬 ${post.num_comments} comments</span>
+                            <a href="${permalink}" target="_blank" class="news-link" style="font-size:0.75rem;">View Source ↗</a>
                         </div>
                     </div>`;
+
+                    // Add to All Unhinged firehose
+                    unhingedHtml += cardHtml;
+
+                    // Add to specific subcategory
+                    if (isImageUrl) {
+                        picsHtml += cardHtml;
+                    } else if (isVideo) {
+                        vidsHtml += cardHtml;
+                    } else if (isTextPost) {
+                        textsHtml += cardHtml;
+                    }
                 });
-            }
 
-            document.getElementById('media-results').innerHTML = html;
+                unhingedPane.innerHTML = unhingedHtml || `<p style="color:#747d8c; text-align:center;">No results found for "${query}".</p>`;
+                picsPane.innerHTML = picsHtml || `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">No pictures found for "${query}".</p>`;
+                vidsPane.innerHTML = vidsHtml || `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">No videos found for "${query}".</p>`;
+                textsPane.innerHTML = textsHtml || `<p style="color:#747d8c; text-align:center;">No text posts found for "${query}".</p>`;
 
-            const loadMoreWrapper = document.getElementById('load-more-wrapper');
-            if (displayedCount >= filtered.length) {
-                loadMoreWrapper.style.display = 'none';
-            } else {
-                loadMoreWrapper.style.display = 'block';
+            } catch (err) {
+                const errorMsg = `<p style="color:#ff4757; text-align:center;">Failed to fetch live feed.</p>`;
+                unhingedPane.innerHTML = errorMsg;
+                picsPane.innerHTML = errorMsg;
+                vidsPane.innerHTML = errorMsg;
+                textsPane.innerHTML = errorMsg;
             }
         }
-
-        runUnhingedSearch(true);
+        // Run initial search on load
+        runRealWorldSearch();
 
         async function loadMemes() {
             async function fetchUniqueMemes(subreddits) {
