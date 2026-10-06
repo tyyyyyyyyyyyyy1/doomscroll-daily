@@ -194,6 +194,43 @@
             color: var(--text-muted);
         }
 
+        /* Daily Forecast Rows/Cards */
+        .daily-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .weather-day-row {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .day-temps {
+            display: flex;
+            gap: 1rem;
+            font-size: 1rem;
+        }
+
+        .temp-high {
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .temp-low {
+            color: var(--text-muted);
+        }
+
         /* Search & Aggregator Engine */
         .search-container {
             background: var(--card-bg);
@@ -352,7 +389,8 @@
     <header>
         <div class="logo" id="app-logo">Doomscroll Daily</div>
         <nav>
-            <button class="nav-btn active" onclick="switchTab('news', this)">News & Weather</button>
+            <button class="nav-btn active" onclick="switchTab('news', this)">News</button>
+            <button class="nav-btn" onclick="switchTab('weather', this)">Weather</button>
             <button class="nav-btn" onclick="switchTab('search', this)">10-Platform Search</button>
             <button class="nav-btn" onclick="switchTab('memes', this)">Memes</button>
             <button class="nav-btn" onclick="switchTab('existential', this)">Existential</button>
@@ -364,21 +402,10 @@
 
     <main id="normal-view">
         
-        <!-- News & Weather Tab -->
+        <!-- News Tab -->
         <div id="tab-news" class="tab-content active">
+            <h2 style="margin-bottom: 1.5rem;">News Hub</h2>
             
-            <!-- Weather Section with Rolling 24-hr GPS Clock -->
-            <div class="weather-section">
-                <div class="weather-header">
-                    <h2 id="location-title">Loading Local Weather...</h2>
-                    <span id="gps-status" style="font-size: 0.85rem; color: var(--text-muted);">Syncing GPS...</span>
-                </div>
-                <div class="hourly-scroll" id="hourly-weather-container">
-                    <!-- Dynamic hourly cards injected here -->
-                </div>
-            </div>
-
-            <!-- News Subtabs: GPS Feed / Global News / Bulletin -->
             <div class="sub-nav">
                 <button class="sub-btn active" onclick="switchNewsSub('gps', this)">Local GPS Feed</button>
                 <button class="sub-btn" onclick="switchNewsSub('global', this)">Global News</button>
@@ -454,7 +481,56 @@
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- Weather Tab -->
+        <div id="tab-weather" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Live Meteorological Dashboard</h2>
+            
+            <div class="sub-nav">
+                <button class="sub-btn active" onclick="switchWeatherSub('hourly', this)">24-Hour Rolling</button>
+                <button class="sub-btn" onclick="switchWeatherSub('7day', this)">7-Day Forecast</button>
+                <button class="sub-btn" onclick="switchWeatherSub('14day', this)">14-Day Forecast</button>
+            </div>
+
+            <!-- 24-Hour Sub-content -->
+            <div id="sub-weather-hourly" class="sub-content active">
+                <div class="weather-section">
+                    <div class="weather-header">
+                        <h2 id="location-title-hourly">Loading Local Weather...</h2>
+                        <span id="gps-status-hourly" style="font-size: 0.85rem; color: var(--text-muted);">Syncing GPS...</span>
+                    </div>
+                    <div class="hourly-scroll" id="hourly-weather-container">
+                        <!-- Dynamic hourly cards injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7-Day Sub-content -->
+            <div id="sub-weather-7day" class="sub-content">
+                <div class="weather-section">
+                    <div class="weather-header">
+                        <h2 id="location-title-7day">7-Day Outlook</h2>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Live GPS Feed</span>
+                    </div>
+                    <div class="daily-list" id="seven-day-container">
+                        <!-- Dynamic 7-day rows injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 14-Day Sub-content -->
+            <div id="sub-weather-14day" class="sub-content">
+                <div class="weather-section">
+                    <div class="weather-header">
+                        <h2 id="location-title-14day">14-Day Extended Outlook</h2>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Live GPS Feed</span>
+                    </div>
+                    <div class="daily-list" id="fourteen-day-container">
+                        <!-- Dynamic 14-day rows injected here -->
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 10-Platform Search Tab -->
@@ -538,7 +614,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!-- Existential Tab -->
@@ -599,6 +674,15 @@
             if(btnElement) btnElement.classList.add('active');
         }
 
+        // Weather Sub-tab Switching
+        function switchWeatherSub(subName, btnElement) {
+            document.querySelectorAll('#tab-weather .sub-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('#tab-weather .sub-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('sub-weather-' + subName).classList.add('active');
+            if(btnElement) btnElement.classList.add('active');
+        }
+
         // Meme Sub-tab Switching
         function switchMemeSub(subName, btnElement) {
             document.querySelectorAll('#tab-memes .sub-content').forEach(el => el.classList.remove('active'));
@@ -637,10 +721,10 @@
             chip.classList.toggle('active');
         }
 
-        // GPS & Weather Fetcher (Rolling Current Hour Index)
+        // GPS & Weather Fetcher (Hourly + 7 Day + 14 Day)
         function initGPSWeather() {
             if (!navigator.geolocation) {
-                document.getElementById('location-title').innerText = "Local Feed (GPS Unavailable)";
+                loadWeatherData(45.4215, -75.6972, "Ottawa (Default)");
                 return;
             }
 
@@ -648,67 +732,104 @@
                 async (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    document.getElementById('gps-status').innerText = "GPS Synced";
-                    await fetchLocalWeather(lat, lon);
+                    document.getElementById('gps-status-hourly').innerText = "GPS Synced";
+                    loadWeatherData(lat, lon, "Local GPS");
                 }, 
                 (error) => {
                     console.warn("GPS lookup denied or failed, using Ottawa default:", error);
-                    document.getElementById('gps-status').innerText = "Default Location (Ottawa)";
-                    fetchLocalWeather(45.4215, -75.6972, "Ottawa");
+                    document.getElementById('gps-status-hourly').innerText = "Default (Ottawa)";
+                    loadWeatherData(45.4215, -75.6972, "Ottawa");
                 }
             );
         }
 
-        async function fetchLocalWeather(lat, lon, overrideName = null) {
+        async function loadWeatherData(lat, lon, locationLabel) {
             try {
-                if(overrideName) {
-                    document.getElementById('location-title').innerText = `Local ${overrideName} Feed`;
-                } else {
-                    document.getElementById('location-title').innerText = `Local GPS Feed`;
-                }
+                document.getElementById('location-title-hourly').innerText = `${locationLabel} Forecast`;
+                document.getElementById('location-title-7day').innerText = `7-Day Outlook (${locationLabel})`;
+                document.getElementById('location-title-14day').innerText = `14-Day Extended Outlook (${locationLabel})`;
 
-                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto`);
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,time&timezone=auto`);
                 const data = await response.json();
 
-                if (!data || !data.hourly) return;
+                if (!data) return;
 
-                const times = data.hourly.time;
-                const temps = data.hourly.temperature_2m;
+                // 1. Populate 24-Hour Rolling
+                if (data.hourly) {
+                    const times = data.hourly.time;
+                    const temps = data.hourly.temperature_2m;
 
-                // Match current local time hour index
-                const now = new Date();
-                let currentIndex = 0;
-                for (let i = 0; i < times.length; i++) {
-                    const forecastTime = new Date(times[i]);
-                    if (forecastTime >= now) {
-                        currentIndex = i;
-                        break;
+                    const now = new Date();
+                    let currentIndex = 0;
+                    for (let i = 0; i < times.length; i++) {
+                        if (new Date(times[i]) >= now) {
+                            currentIndex = i;
+                            break;
+                        }
+                    }
+
+                    const hourlyContainer = document.getElementById('hourly-weather-container');
+                    hourlyContainer.innerHTML = '';
+
+                    for (let i = currentIndex; i < currentIndex + 24; i++) {
+                        if (!times[i]) break;
+                        const tDate = new Date(times[i]);
+                        const hourLabel = tDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+                        const card = document.createElement('div');
+                        card.className = 'weather-hour-card';
+                        card.innerHTML = `
+                            <div class="weather-temp">${temps[i]}°C</div>
+                            <div class="weather-time">${hourLabel}</div>
+                        `;
+                        hourlyContainer.appendChild(card);
                     }
                 }
 
-                const container = document.getElementById('hourly-weather-container');
-                container.innerHTML = '';
+                // 2. Populate 7-Day & 14-Day Forecasts
+                if (data.daily) {
+                    const dTimes = data.daily.time;
+                    const dMax = data.daily.temperature_2m_max;
+                    const dMin = data.daily.temperature_2m_min;
 
-                // Loop through the next 24 hours starting precisely from current hour
-                for (let i = currentIndex; i < currentIndex + 24; i++) {
-                    if (!times[i]) break;
+                    // 7-Day
+                    const sevenContainer = document.getElementById('seven-day-container');
+                    sevenContainer.innerHTML = '';
+                    for (let i = 0; i < 7 && i < dTimes.length; i++) {
+                        const dateObj = new Date(dTimes[i] + 'T00:00:00');
+                        const dayName = dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+                        const row = document.createElement('div');
+                        row.className = 'weather-day-row';
+                        row.innerHTML = `
+                            <div class="day-name">${dayName}</div>
+                            <div class="day-temps">
+                                <span class="temp-high">${dMax[i]}°C</span>
+                                <span class="temp-low">${dMin[i]}°C</span>
+                            </div>
+                        `;
+                        sevenContainer.appendChild(row);
+                    }
 
-                    const tDate = new Date(times[i]);
-                    const hourLabel = tDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-                    const tempVal = temps[i];
-
-                    const card = document.createElement('div');
-                    card.className = 'weather-hour-card';
-                    card.innerHTML = `
-                        <div class="weather-temp">${tempVal}°C</div>
-                        <div class="weather-time">${hourLabel}</div>
-                    `;
-                    container.appendChild(card);
+                    // 14-Day
+                    const fourteenContainer = document.getElementById('fourteen-day-container');
+                    fourteenContainer.innerHTML = '';
+                    for (let i = 0; i < 14 && i < dTimes.length; i++) {
+                        const dateObj = new Date(dTimes[i] + 'T00:00:00');
+                        const dayName = dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+                        const row = document.createElement('div');
+                        row.className = 'weather-day-row';
+                        row.innerHTML = `
+                            <div class="day-name">${dayName}</div>
+                            <div class="day-temps">
+                                <span class="temp-high">${dMax[i]}°C</span>
+                                <span class="temp-low">${dMin[i]}°C</span>
+                            </div>
+                        `;
+                        fourteenContainer.appendChild(row);
+                    }
                 }
 
             } catch (err) {
-                console.error("Failed to fetch weather forecast:", err);
-                document.getElementById('location-title').innerText = "Weather Feed Unavailable";
+                console.error("Failed to fetch weather data:", err);
             }
         }
 
