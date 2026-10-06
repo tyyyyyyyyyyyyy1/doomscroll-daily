@@ -11,6 +11,8 @@
             --text-color: #e1e4e8;
             --accent-color: #ff4757;
             --secondary-accent: #ffa502;
+            --tab-bg: #222630;
+            --tab-active: #ff4757;
         }
         * { box-sizing: border-box; }
         body {
@@ -64,28 +66,50 @@
             font-size: 0.95rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        .container {
-            max-width: 1200px;
+        /* Tab Navigation Bar */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .tab-btn {
+            background-color: var(--tab-bg);
+            color: var(--text-color);
+            border: 1px solid #333;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background-color: #2f3542;
+        }
+        .tab-btn.active {
+            background-color: var(--tab-active);
+            color: #fff;
+            border-color: var(--tab-active);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+        /* Tab Content Panes */
+        .tab-pane {
+            display: none;
+            max-width: 900px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
         }
-        @media (min-width: 900px) {
-            .container { grid-template-columns: 1fr 1fr; gap: 30px; }
-        }
-        section {
-            background: rgba(26, 29, 36, 0.4);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #222;
+        .tab-pane.active {
+            display: block;
         }
         section h2 {
             border-bottom: 3px solid var(--accent-color);
             padding-bottom: 8px;
             margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-align: center;
         }
         .news-card {
             background-color: var(--card-bg);
@@ -111,40 +135,38 @@
             font-size: 0.95rem;
             line-height: 1.4;
         }
+        /* Meme Grid */
         .meme-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 15px;
+            gap: 20px;
         }
-        @media (min-width: 500px) { .meme-grid { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 600px) { .meme-grid { grid-template-columns: 1fr 1fr; } }
         .meme-card {
             background-color: var(--card-bg);
             border: 1px solid #2f3542;
             border-radius: 8px;
-            padding: 10px;
+            padding: 12px;
             text-align: center;
         }
         .meme-card img {
             width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 6px;
+            height: 240px;
+            object-fit: contain;
             background: #000;
+            border-radius: 6px;
         }
         .meme-card p {
-            font-size: 0.85rem;
-            margin: 8px 0 0 0;
+            font-size: 0.9rem;
+            margin: 10px 0 0 0;
             color: #d1d8e0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
         footer {
             text-align: center;
             padding: 30px 10px;
             color: #747d8c;
             border-top: 1px solid #222;
-            margin-top: 40px;
+            margin-top: 50px;
             font-size: 0.9rem;
         }
     </style>
@@ -159,28 +181,41 @@
 
     <div id="weather-widget">📍 Checking local doom climate...</div>
 
-    <div class="container">
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <section>
-                <h2>🌍 World Collapse</h2>
-                <div id="world-news">Loading global doom...</div>
-            </section>
-            <section>
-                <h2 id="local-heading">🇨🇦 Local Nonsense</h2>
-                <div id="local-news">Loading local nonsense...</div>
-            </section>
-        </div>
+    <!-- Tab Navigation Buttons -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('world-tab', this)">🌍 World Collapse</button>
+        <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">🇨🇦 Local Nonsense</button>
+        <button class="tab-btn" onclick="switchTab('dark-tab', this)">🌑 Dark Memes</button>
+        <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️ SFW Memes</button>
+    </div>
 
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <section>
-                <h2>🌑 Dark / Unfiltered Memes</h2>
-                <div id="dark-memes" class="meme-grid">Loading hourly chaos...</div>
-            </section>
-            <section>
-                <h2>☀️ Safe For Work (SFW) Memes</h2>
-                <div id="sfw-memes" class="meme-grid">Loading wholesome distractions...</div>
-            </section>
-        </div>
+    <!-- Tab Panels -->
+    <div id="world-tab" class="tab-pane active">
+        <section>
+            <h2>🌍 World Collapse Feed</h2>
+            <div id="world-news">Loading global doom...</div>
+        </section>
+    </div>
+
+    <div id="local-tab" class="tab-pane">
+        <section>
+            <h2 id="local-heading">🇨🇦 Local Nonsense Feed</h2>
+            <div id="local-news">Loading local nonsense...</div>
+        </section>
+    </div>
+
+    <div id="dark-tab" class="tab-pane">
+        <section>
+            <h2>🌑 Dark / Unfiltered Memes</h2>
+            <div id="dark-memes" class="meme-grid">Loading hourly chaos...</div>
+        </section>
+    </div>
+
+    <div id="sfw-tab" class="tab-pane">
+        <section>
+            <h2>☀️ Safe For Work (SFW) Memes</h2>
+            <div id="sfw-memes" class="meme-grid">Loading wholesome distractions...</div>
+        </section>
     </div>
 
     <footer>
@@ -188,6 +223,14 @@
     </footer>
 
     <script>
+        // Tab switching logic
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
         const snarkyPrefixes = [
             "In events everyone will completely forget by tomorrow: ",
             "Surprising absolutely no one, ",
@@ -226,7 +269,8 @@
                 const ipRes = await fetch('https://ipapi.co/json/');
                 const ipData = await ipRes.json();
                 const city = ipData.city || "Ottawa";
-                document.getElementById('local-heading').innerHTML = `📍 Local Nonsense (${city})`;
+                document.getElementById('local-heading').innerHTML = `🇨🇦 Local Nonsense (${city})`;
+                document.getElementById('local-tab-btn').innerText = `🇨🇦 Local (${city})`;
 
                 let rssUrl = "https://www.cbc.ca/webfeed/rss/rss-canada-ottawa";
                 if (city.toLowerCase().includes("toronto")) {
@@ -253,44 +297,58 @@
                 document.getElementById('local-news').innerHTML = "<p>Local updates unavailable, but your city is still wild.</p>";
             }
 
-            // 3. Parallel Meme Loading (Fetches 10 instantly using Promise.all)
-            try {
-                const fetchMemesBatch = async (subreddit) => {
-                    const promises = [];
-                    for (let i = 0; i < 10; i++) {
-                        promises.push(fetch(`https://meme-api.com/gimme/${subreddit}`).then(r => r.json()));
-                    }
-                    return await Promise.all(promises);
-                };
+            // 3. Unique Meme Fetcher (Guarantees 10 non-duplicate memes without external redirects)
+            async function fetchUniqueMemes(subreddit) {
+                const uniqueMemes = new Set();
+                const memeList = [];
+                let attempts = 0;
 
+                while (memeList.length < 10 && attempts < 40) {
+                    attempts++;
+                    try {
+                        const res = await fetch(`https://meme-api.com/gimme/${subreddit}`);
+                        const meme = await res.json();
+                        if (meme && meme.url && !uniqueMemes.has(meme.url)) {
+                            uniqueMemes.add(meme.url);
+                            memeList.push(meme);
+                        }
+                    } catch (err) {
+                        // ignore fetch blips and retry
+                    }
+                }
+                return memeList;
+            }
+
+            try {
+                // Using 'edgymemes' or 'dankmemes' for darker humor, 'wholesomememes' for SFW
                 const [darkMemes, sfwMemes] = await Promise.all([
-                    fetchMemesBatch('dankmemes'),
-                    fetchMemesBatch('wholesomememes')
+                    fetchUniqueMemes('edgymemes'),
+                    fetchUniqueMemes('wholesomememes')
                 ]);
 
                 let darkHtml = '';
                 darkMemes.forEach(meme => {
                     darkHtml += `
                     <div class="meme-card">
-                        <a href="${meme.postLink}" target="_blank"><img src="${meme.url}" alt="Dark Meme" loading="lazy"></a>
+                        <img src="${meme.url}" alt="Dark Meme" loading="lazy">
                         <p>${meme.title}</p>
                     </div>`;
                 });
-                document.getElementById('dark-memes').innerHTML = darkHtml;
+                document.getElementById('dark-memes').innerHTML = darkHtml || "<p>Dark memes are currently resting.</p>";
 
                 let sfwHtml = '';
                 sfwMemes.forEach(meme => {
                     sfwHtml += `
                     <div class="meme-card">
-                        <a href="${meme.postLink}" target="_blank"><img src="${meme.url}" alt="SFW Meme" loading="lazy"></a>
+                        <img src="${meme.url}" alt="SFW Meme" loading="lazy">
                         <p>${meme.title}</p>
                     </div>`;
                 });
-                document.getElementById('sfw-memes').innerHTML = sfwHtml;
+                document.getElementById('sfw-memes').innerHTML = sfwHtml || "<p>Wholesome memes currently resting.</p>";
 
             } catch (e) {
-                document.getElementById('dark-memes').innerHTML = "<p>Memes currently buffering.</p>";
-                document.getElementById('sfw-memes').innerHTML = "<p>Memes currently buffering.</p>";
+                document.getElementById('dark-memes').innerHTML = "<p>Meme servers buffering.</p>";
+                document.getElementById('sfw-memes').innerHTML = "<p>Meme servers buffering.</p>";
             }
 
             // 4. Weather Widget
@@ -299,18 +357,4 @@
                     try {
                         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`);
                         const data = await res.json();
-                        document.getElementById('weather-widget').innerHTML = `🌡 Local Weather: ${data.current_weather.temperature}°C — Perfect for scrolling.`;
-                    } catch(e) {
-                        document.getElementById('weather-widget').innerHTML = "🌡️ Weather: 100% chance of a digital existential crisis.";
-                    }
-                }, () => {
-                    document.getElementById('weather-widget').innerHTML = "🌡️ Weather: Location blocked, but looking gloomy.";
-                });
-            }
-        }
-
-        loadContent();
-        setInterval(loadContent, 3600000);
-    </script>
-</body>
-</html>
+                        document.getElementById('weather-widget').innerHTML = `🌡 Local Weather
