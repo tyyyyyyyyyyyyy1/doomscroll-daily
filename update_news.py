@@ -4,8 +4,9 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from google import genai
 
-# Initialize the Gemini client
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+# Initialize the Gemini client safely using environment variable
+api_key = os.environ.get("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key) if api_key else None
 
 WORLD_FEEDS = [
     "http://feeds.bbci.co.uk/news/world/rss.xml",
@@ -18,7 +19,10 @@ LOCAL_FEEDS = [
 ]
 
 def make_funny_and_snarky(title, original_summary):
-    """Uses Gemini to add a funny, sarcastic twist to the news."""
+    """Uses Gemini to add a funny, sarcastic twist with safety fallback."""
+    if not client:
+        return original_summary
+        
     prompt = f"""
     You are a cynical, darkly funny, sarcastic internet comedian writing for a satirical automated news site called 'The Doomscroll Daily'.
     
@@ -30,25 +34,29 @@ def make_funny_and_snarky(title, original_summary):
     Funny Rewrite:
     """
     try:
+        # Using gemini-2.5-flash for speed
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
         )
-        return response.text.strip()
+        if response and response.text:
+            return response.text.strip()
     except Exception as e:
-        print(f"AI Humor Error: {e}")
-        return original_summary
+        print(f"AI Humor Error (falling back to original text): {e}")
+    
+    return original_summary
 
 def fetch_and_roast_feeds(feed_urls, limit=3):
     items = []
     for url in feed_urls:
         try:
+            print(f"Reading feed: {url}")
             feed = feedparser.parse(url)
             for entry in feed.entries[:limit]:
                 title = entry.get('title', 'No Title')
                 raw_summary = BeautifulSoup(entry.get('summary', ''), "html.parser").get_text()
                 
-                print(f"Roasting: {title[:40]}...")
+                print(f"Processing: {title[:40]}...")
                 funny_summary = make_funny_and_snarky(title, raw_summary)
                 
                 items.append({
@@ -58,7 +66,7 @@ def fetch_and_roast_feeds(feed_urls, limit=3):
                     'summary': funny_summary
                 })
         except Exception as e:
-            print(f"Error parsing {url}: {e}")
+            print(f"Error parsing feed {url}: {e}")
     return items
 
 def generate_html_cards(items):
@@ -74,22 +82,22 @@ def generate_html_cards(items):
     return html_output if html_output else "<p>The robots are currently on a coffee break. Check back soon.</p>"
 
 if __name__ == "__main__":
-    print("Fetching and roasting world news...")
+    print("Starting news generation script...")
     world_items = fetch_and_roast_feeds(WORLD_FEEDS, limit=3)
-    
-    print("Fetching and roasting local Ottawa news...")
     local_items = fetch_and_roast_feeds(LOCAL_FEEDS, limit=3)
     
     world_html = generate_html_cards(world_items)
     local_html = generate_html_cards(local_items)
     
+    print("Reading index.html template...")
     with open("index.html", "r", encoding="utf-8") as f:
         template = f.read()
         
     updated_html = template.replace('<!-- PYTHON SCRIPT INJECTS WORLD NEWS HERE -->', world_html)
     updated_html = updated_html.replace('<!-- PYTHON SCRIPT INJECTS LOCAL NEWS HERE -->', local_html)
     
+    print("Writing updates to index.html...")
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(updated_html)
     
-    print("Successfully updated index.html with roasted news!")
+    print("Done! index.html successfully generated.")
