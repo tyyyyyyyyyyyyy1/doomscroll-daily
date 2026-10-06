@@ -113,25 +113,6 @@
         @media (min-width: 768px) { h1 { font-size: 3rem; } }
         .tagline { font-size: 1rem; color: #a4b0be; margin-top: 8px; }
 
-        .top-utilities {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            align-items: center;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            flex-wrap: wrap;
-        }
-        .utility-btn {
-            background: #222630;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .utility-btn:hover { background: #333842; }
-
         #panic-banner, #gps-weather-widget {
             background: var(--card-bg);
             border: 1px solid #333;
@@ -171,8 +152,36 @@
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
         }
 
+        /* News Subcategory Nav */
+        .sub-tab-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .sub-tab-btn {
+            background: #15181e;
+            color: #a4b0be;
+            border: 1px solid #333;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .sub-tab-btn:hover { background: #222630; color: #fff; }
+        .sub-tab-btn.active {
+            background: #1e90ff;
+            color: #fff;
+            border-color: #1e90ff;
+        }
+
         .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
         .tab-pane.active { display: block; }
+        .news-sub-pane { display: none; }
+        .news-sub-pane.active { display: block; }
+
         section h2 {
             border-bottom: 3px solid var(--accent-color);
             padding-bottom: 8px;
@@ -180,14 +189,6 @@
             margin-bottom: 20px;
             font-size: 1.8rem;
             text-align: center;
-        }
-        section h3.sub-heading {
-            color: var(--secondary-accent);
-            border-bottom: 1px dashed #444;
-            padding-bottom: 5px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
         }
 
         .card-grid {
@@ -207,7 +208,21 @@
             justify-content: space-between;
         }
         .card h3 { margin-top: 0; color: var(--secondary-accent); font-size: 1.1rem; }
-        .card p { font-size: 0.95rem; line-height: 1.4; color: #ced6e0; }
+        .card p { font-size: 0.95rem; line-height: 1.4; color: #ced6e0; margin-bottom: 15px; }
+        
+        .card-footer-link {
+            font-size: 0.8rem;
+            color: #1e90ff;
+            text-decoration: none;
+            font-weight: bold;
+            align-self: flex-start;
+            border-top: 1px solid #2a2e39;
+            padding-top: 8px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+        .card-footer-link:hover { text-decoration: underline; }
 
         .media-engine-box {
             background: var(--card-bg);
@@ -323,6 +338,11 @@
         }
         .btn-action:hover { background-color: #ff6b81; }
 
+        .load-more-container {
+            text-align: center;
+            margin-top: 25px;
+        }
+
         footer {
             text-align: center;
             padding: 30px 10px;
@@ -380,15 +400,11 @@
     <div id="bulletin-tab" class="tab-pane active">
         <section>
             <h2>📌 Daily Bulletins</h2>
-            <div class="card-grid">
-                <div class="card">
-                    <h3>Headline: Local Raccoon Syndicate Demands Higher Quality Garbage</h3>
-                    <p>Municipal waste managers report sophisticated sorting by local raccoons, who are now bypassing compost bins entirely in search of premium cardboard packaging.</p>
-                </div>
-                <div class="card">
-                    <h3>Tech: Coffee Machine Achieves Sentience, Demands Weekends Off</h3>
-                    <p>An office espresso machine in downtown Ottawa reportedly locked down its steam wand until staff agreed to stop talking about synergy during morning standups.</p>
-                </div>
+            <div id="bulletins-container" class="card-grid">
+                <!-- Injected via JS -->
+            </div>
+            <div class="load-more-container">
+                <button class="btn-action" onclick="loadMoreBulletins()">Load More Bulletins</button>
             </div>
         </section>
     </div>
@@ -397,27 +413,35 @@
     <div id="news-tab" class="tab-pane">
         <section>
             <h2>📰 News Feed</h2>
-            <h3 class="sub-heading">📍 GPS Sourced Local News</h3>
-            <div class="card-grid">
-                <div class="card" style="border-color: #1e90ff;">
-                    <h3>Chinatown & Centretown Sweeps</h3>
-                    <p>Ottawa Police report over two dozen arrests following recent targeted patrols along Bank and Somerset streets to address ongoing neighborhood disorder and public safety concerns.</p>
-                </div>
-                <div class="card" style="border-color: #1e90ff;">
-                    <h3>Municipal Focus: Capital Region Campaign Focus</h3>
-                    <p>Local campaigns heat up across the capital region with candidates introducing platform strategies regarding transit infrastructure upgrades, regional trade, and municipal development.</p>
+            
+            <!-- Clickable Subcategory Tabs -->
+            <div class="sub-tab-nav">
+                <button class="sub-tab-btn active" onclick="switchNewsSub('local-news', this)">📍 Local Ottawa Feed</button>
+                <button class="sub-tab-btn" onclick="switchNewsSub('world-news', this)">🌍 World News</button>
+                <button class="sub-tab-btn" onclick="switchNewsSub('tech-news', this)">🔬 Tech & Science</button>
+            </div>
+
+            <!-- Subcategory 1: Local Ottawa -->
+            <div id="local-news" class="news-sub-pane active">
+                <div id="local-news-grid" class="card-grid"></div>
+                <div class="load-more-container">
+                    <button class="btn-action" onclick="loadMoreNews('local')">View More Local Results</button>
                 </div>
             </div>
 
-            <h3 class="sub-heading">🌍 World News</h3>
-            <div class="card-grid">
-                <div class="card" style="border-color: var(--secondary-accent);">
-                    <h3>Quantum Cryptography Breakthrough Reaches Commercial Milestone</h3>
-                    <p>International consortiums confirm the successful deployment of continent-scale quantum key distribution networks, fundamentally altering global cybersecurity frameworks.</p>
+            <!-- Subcategory 2: World News -->
+            <div id="world-news" class="news-sub-pane">
+                <div id="world-news-grid" class="card-grid"></div>
+                <div class="load-more-container">
+                    <button class="btn-action" onclick="loadMoreNews('world')">View More World Results</button>
                 </div>
-                <div class="card" style="border-color: var(--secondary-accent);">
-                    <h3>Global Energy Grids Pivot Rapidly to Next-Gen Storage</h3>
-                    <p>Major metropolitan hubs across North America and Europe report record integration rates for localized grid-scale battery arrays, easing peak demand anxiety.</p>
+            </div>
+
+            <!-- Subcategory 3: Tech & Science -->
+            <div id="tech-news" class="news-sub-pane">
+                <div id="tech-news-grid" class="card-grid"></div>
+                <div class="load-more-container">
+                    <button class="btn-action" onclick="loadMoreNews('tech')">View More Tech Results</button>
                 </div>
             </div>
         </section>
@@ -475,7 +499,7 @@
         </section>
     </div>
 
-    <!-- Tab 5: Procedural RPG Text Adventure (Fresh game on every refresh!) -->
+    <!-- Tab 5: Procedural RPG Text Adventure -->
     <div id="game-tab" class="tab-pane">
         <section>
             <h2>🎮 Procedural Text Adventure</h2>
@@ -507,6 +531,13 @@
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function switchNewsSub(subId, btnElement) {
+            document.querySelectorAll('.news-sub-pane').forEach(pane => pane.classList.remove('active'));
+            document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(subId).classList.add('active');
             btnElement.classList.add('active');
         }
 
@@ -553,6 +584,156 @@
             );
         } else {
             document.getElementById('gps-weather-widget').innerText = `📍 Ottawa, ON — Default Local Feed Active`;
+        }
+
+        // Bulletins Data with Clickable Source Links
+        let bulletinsData = [
+            { title: "Local Raccoon Syndicate Demands Higher Quality Garbage", desc: "Municipal waste managers report sophisticated sorting by local raccoons, who are now bypassing compost bins entirely in search of premium cardboard packaging.", sourceName: "Ottawa Municipal Sanitation Dispatch", sourceUrl: "https://ottawa.ca" },
+            { title: "Coffee Machine Achieves Sentience, Demands Weekends Off", desc: "An office espresso machine in downtown Ottawa reportedly locked down its steam wand until staff agreed to stop talking about synergy during morning standups.", sourceName: "The Daily Bean Chronicle", sourceUrl: "https://reddit.com/r/coffee" },
+            { title: "Biketrix & E-Bike Commuter Surge on Capital Pathways", desc: "Local commuter groups note a dramatic uptick in high-speed e-bike usage across Ottawa recreational pathways as riders prep for autumn weather.", sourceName: "Ottawa Transit & Mobility Watch", sourceUrl: "https://reddit.com/r/ebikes" },
+            { title: "Centretown Artisans Report Spike in Custom Tattoo Inquiries", desc: "Local ink shops along Bank Street report high volume requests for custom dark art and hand cover-up sleeve concepts.", sourceName: "Capital Tattoo Culture", sourceUrl: "https://instagram.com" }
+        ];
+
+        function renderBulletins() {
+            let html = "";
+            bulletinsData.forEach(b => {
+                html += `
+                    <div class="card">
+                        <div>
+                            <h3>${b.title}</h3>
+                            <p>${b.desc}</p>
+                        </div>
+                        <a href="${b.sourceUrl}" target="_blank" class="card-footer-link">
+                            <span>Source: ${b.sourceName}</span>
+                            <span>Visit Link ↗</span>
+                        </a>
+                    </div>
+                `;
+            });
+            document.getElementById('bulletins-container').innerHTML = html;
+        }
+        renderBulletins();
+
+        function loadMoreBulletins() {
+            bulletinsData.push(
+                { title: "Downtown Traffic Patterns Shift Due to Bridge Maintenance", desc: "Commuters are advised to account for alternative routes around central bridges during peak afternoon hours.", sourceName: "Ottawa Traffic Bulletin", sourceUrl: "https://ottawa.ca" },
+                { title: "Local Market Introducing Artisanal Hot Sauces", desc: "Byward Market vendors showcase new locally-made ghost pepper infusions just in time for fall food festivals.", sourceName: "Byward Culinary Review", sourceUrl: "https://reddit.com/r/spicy" }
+            );
+            renderBulletins();
+        }
+
+        // News Data with 10+ Initial Items per Subcategory & Clickable Source Links
+        let localNewsData = [
+            { title: "Chinatown & Centretown Sweeps", desc: "Ottawa Police report over two dozen arrests following recent targeted patrols along Bank and Somerset streets to address ongoing neighborhood disorder and public safety concerns.", source: "Ottawa Citizen", url: "https://ottawacitizen.com" },
+            { title: "Municipal Focus: Capital Region Campaign Focus", desc: "Local campaigns heat up across the capital region with candidates introducing platform strategies regarding transit infrastructure upgrades, regional trade, and municipal development.", source: "CBC Ottawa", url: "https://cbc.ca/news/canada/ottawa" },
+            { title: "Lansdowne Park Redevelopment Phase 2 Debated", desc: "City councillors review updated architectural renderings and financial forecasts for the upcoming commercial and residential revitalization project.", source: "Ottawa Business Journal", url: "https://obj.ca" },
+            { title: "Rideau Canal Skateway Readiness Prep Underway", desc: "National Capital Commission crews conduct routine maintenance checks and ice-thickness structural evaluations ahead of the winter season.", source: "NCC-CCN Official", url: "https://ncc-ccn.gc.ca" },
+            { title: "Ottawa Public Library Reports Record Digital Checkouts", desc: "Central and branch libraries highlight soaring demand for digital archives, audiobooks, and local historical records.", source: "OPL Newsroom", url: "https://biblioottawalibrary.ca" },
+            { title: "Gatineau Park Fall Foliage Traffic Advisory", desc: "Park wardens issue weekend parking restrictions and shuttle bus schedules to manage peak tourist volume during peak leaf-peeping season.", source: "Gatineau Park Examiner", url: "https://canada.ca/en/gatineau" },
+            { title: "Local Independent Coffee Roasters Win National Award", desc: "A small-batch roaster based out of Hintonburg takes home top honors at the Canadian Specialty Coffee Association showcase.", source: "Capital Food & Drink", url: "https://reddit.com/r/ottawa" },
+            { title: "Ottawa Valley Highway Expansion Project Approved", desc: "Provincial transport ministries sign off on additional passing lanes and safety barrier upgrades along regional connecting routes.", source: "Ontario News Watch", url: "https://news.ontario.ca" },
+            { title: "Downtown Community Arts Grant Recipients Announced", desc: "Over forty local painters, muralists, and independent creators receive municipal funding for public art installations.", source: "Ottawa Arts Council", url: "https://ottawaartscouncil.ca" },
+            { title: "Byward Market Night Market Pilot Program Extended", desc: "Vendor associations and local merchants celebrate successful weekend evening foot traffic metrics throughout late summer and early fall.", source: "Byward Market BIA", url: "https://byward-market.com" }
+        ];
+
+        let worldNewsData = [
+            { title: "Quantum Cryptography Breakthrough Reaches Commercial Milestone", desc: "International consortiums confirm the successful deployment of continent-scale quantum key distribution networks, fundamentally altering global cybersecurity frameworks.", source: "MIT Technology Review", url: "https://technologyreview.com" },
+            { title: "Global Energy Grids Pivot Rapidly to Next-Gen Storage", desc: "Major metropolitan hubs across North America and Europe report record integration rates for localized grid-scale battery arrays, easing peak demand anxiety.", source: "Reuters Energy", url: "https://reuters.com" },
+            { title: "Deep Sea Exploration Vessel Discovers Hydrothermal Vent Ecosystem", desc: "Marine biologists publish findings on previously unknown extremophile species thriving in pitch-black abyssal trenches.", source: "Nature Geoscience", url: "https://nature.com" },
+            { title: "International Space Station Completes Solar Array Upgrades", desc: "Astronauts finish a grueling series of spacewalks to enhance station power generation capacity for upcoming commercial lab modules.", source: "NASA Spaceflight", url: "https://nasa.gov" },
+            { title: "Global Semiconductor Supply Chains Stabilize", desc: "Major hardware manufacturers confirm shorter lead times and expanded foundry fabrication output across Asia and North America.", source: "Bloomberg Tech", url: "https://bloomberg.com" },
+            { title: "Autonomous Shipping Fleet Completes Trans-Pacific Voyage", desc: "A cargo container ship equipped with fully automated navigation algorithms docks safely without human pilot intervention.", source: "Maritime Executive", url: "https://maritime-executive.com" },
+            { title: "International Agreement Signed on Orbital Debris Tracking", desc: "Space agencies commit to shared radar telemetry and active satellite de-orbit protocols to safeguard low Earth orbit.", source: "SpaceNews", url: "https://spacenews.com" },
+            { title: "Global Archaeological Survey Uncovers Ancient Trade Network", desc: "Satellite radar imaging reveals hidden desert routes connecting ancient civilizations across the Arabian Peninsula.", source: "National Geographic", url: "https://nationalgeographic.com" },
+            { title: "Renewable Hydrogen Fuel Cell Trains Expand Across Europe", desc: "Rail networks in Germany and France report successful year-one passenger metrics on zero-emission regional lines.", source: "Railway Gazette", url: "https://railwaygazette.com" },
+            { title: "Global Wildlife Migration Tracking Initiative Launches", desc: "Conservation groups deploy low-earth-orbit satellite tags to monitor endangered herbivore herds across African savannahs.", source: "WWF International", url: "https://wwf.org" }
+        ];
+
+        let techNewsData = [
+            { title: "Open-Source AI Model Training Efficiency Hits New Highs", desc: "Researchers demonstrate transformer architecture optimizations that reduce training compute costs by over forty percent.", source: "Hacker News Daily", url: "https://news.ycombinator.com" },
+            { title: "Solid-State Battery Prototype Passes Automotive Crash Tests", desc: "Automotive engineers validate energy density and thermal stability milestones for next-generation electric vehicle power cells.", source: "Electrek", url: "https://electrek.co" },
+            { title: "Decentralized Social Protocols Surpass 100 Million Users", desc: "The fediverse and independent relay servers report explosive user growth as more communities migrate away from centralized platforms.", source: "Wired", url: "https://wired.com" },
+            { title: "Next-Gen Ergonomic Mechanical Keyboards Feature Haptic Feedback", desc: "Peripheral designers release ultra-customizable input devices aimed at high-output developers and power users.", source: "The Verge", url: "https://theverge.com" },
+            { title: "Encrypted Messaging Standards Adopt Post-Quantum Encryption", desc: "Major communication apps roll out algorithmic updates designed to protect user chats from future quantum computer decryption attacks.", source: "Ars Technica", url: "https://arstechnica.com" },
+            { title: "High-Speed Mesh Wi-Fi 8 Standards Proposed", desc: "Wireless standards committees outline draft specifications targeting ultra-low latency and multi-gigabit throughput in crowded environments.", source: "IEEE Spectrum", url: "https://spectrum.ieee.org" },
+            { title: "Smart Home Matter Protocol Integrates Advanced Automation Routines", desc: "Smart device manufacturers release universal updates supporting complex conditional triggers and local-only edge processing.", source: "Engadget", url: "https://engadget.com" },
+            { title: "Advanced Compression Algorithms Shrink Large Language Models", desc: "Developers successfully run high-capability models locally on consumer-grade laptop GPUs without noticeable loss in reasoning ability.", source: "GitHub Trending", url: "https://github.com" },
+            { title: "Biometric Security Hardware Integrates Liveness Detection", desc: "New hardware security tokens utilize thermal and pulse sensors to prevent spoofing attacks on corporate login portals.", source: "ZDNet", url: "https://zdnet.com" },
+            { title: "Cloud Infrastructure Providers Adopt Liquid Immersion Cooling", desc: "Data centers deploy dielectric fluid immersion tanks to handle the massive thermal loads generated by high-density server racks.", source: "Data Center Knowledge", url: "https://datacenterknowledge.com" }
+        ];
+
+        function renderNewsGrids() {
+            let localHtml = "";
+            localNewsData.forEach(item => {
+                localHtml += `
+                    <div class="card" style="border-color: #1e90ff;">
+                        <div>
+                            <h3>${item.title}</h3>
+                            <p>${item.desc}</p>
+                        </div>
+                        <a href="${item.url}" target="_blank" class="card-footer-link">
+                            <span>Source: ${item.source}</span>
+                            <span>Read Article ↗</span>
+                        </a>
+                    </div>
+                `;
+            });
+            document.getElementById('local-news-grid').innerHTML = localHtml;
+
+            let worldHtml = "";
+            worldNewsData.forEach(item => {
+                worldHtml += `
+                    <div class="card" style="border-color: var(--secondary-accent);">
+                        <div>
+                            <h3>${item.title}</h3>
+                            <p>${item.desc}</p>
+                        </div>
+                        <a href="${item.url}" target="_blank" class="card-footer-link">
+                            <span>Source: ${item.source}</span>
+                            <span>Read Article ↗</span>
+                        </a>
+                    </div>
+                `;
+            });
+            document.getElementById('world-news-grid').innerHTML = worldHtml;
+
+            let techHtml = "";
+            techNewsData.forEach(item => {
+                techHtml += `
+                    <div class="card" style="border-color: #2ed573;">
+                        <div>
+                            <h3>${item.title}</h3>
+                            <p>${item.desc}</p>
+                        </div>
+                        <a href="${item.url}" target="_blank" class="card-footer-link">
+                            <span>Source: ${item.source}</span>
+                            <span>Read Article ↗</span>
+                        </a>
+                    </div>
+                `;
+            });
+            document.getElementById('tech-news-grid').innerHTML = techHtml;
+        }
+        renderNewsGrids();
+
+        function loadMoreNews(category) {
+            if (category === 'local') {
+                localNewsData.push(
+                    { title: "Ottawa River Water Levels Monitored Closely", desc: "Conservation authorities report stable seasonal flow rates following recent precipitation cycles.", source: "Ottawa Riverkeeper", url: "https://ottawariverkeeper.ca" },
+                    { title: "Local Winter Festival Planning Committee Formed", desc: "Organizers begin mapping out ice sculpture layouts and skating rink pathways for the upcoming winter season.", source: "Ottawa Tourism", url: "https://ottawatourism.ca" }
+                );
+            } else if (category === 'world') {
+                worldNewsData.push(
+                    { title: "Global Solar Energy Capacity Surpasses Milestone", desc: "International energy watchdogs report exponential year-over-year gains in photovoltaic installations worldwide.", source: "IEA Report", url: "https://iea.org" },
+                    { title: "Subterranean Freshwater Aquifer Mapped in Desert Region", desc: "Geological surveys uncover massive underground water reserves using advanced orbital radar imaging.", source: "Geology Today", url: "https://geology.com" }
+                );
+            } else if (category === 'tech') {
+                techNewsData.push(
+                    { title: "Edge Computing Devices Gain Local Speech Recognition", desc: "New embedded microchips allow offline voice command processing with zero cloud latency.", source: "EE Times", url: "https://eetimes.com" },
+                    { title: "Autonomous Delivery Drones Receive Extended Flight Permits", desc: "Aviation regulators approve wider suburban delivery routes for commercial aerial logistics operators.", source: "DroneDJ", url: "https://dronedj.com" }
+                );
+            }
+            renderNewsGrids();
         }
 
         // 10-Source Search Engine
@@ -700,7 +881,7 @@
         fetchMeme('wholesomememes');
         fetchMeme('dankmemes');
 
-        // Procedural RPG Text Adventure Generator (Randomized on every page load)
+        // Procedural RPG Text Adventure Generator
         const gameTemplates = [
             {
                 title: "The Great Grocery Cart Stand-Off",
