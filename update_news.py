@@ -1,12 +1,6 @@
-import os
 import feedparser
 from bs4 import BeautifulSoup
 from datetime import datetime
-from google import genai
-
-# Initialize the Gemini client safely using environment variable
-api_key = os.environ.get("GEMINI_API_KEY")
-client = genai.Client(api_key=api_key) if api_key else None
 
 WORLD_FEEDS = [
     "http://feeds.bbci.co.uk/news/world/rss.xml",
@@ -19,32 +13,22 @@ LOCAL_FEEDS = [
 ]
 
 def make_funny_and_snarky(title, original_summary):
-    """Uses Gemini to add a funny, sarcastic twist with safety fallback."""
-    if not client:
-        return original_summary
+    """Adds automated sarcastic commentary without external API hanging."""
+    # Clean up summary text
+    if not original_summary:
+        original_summary = "No details provided, which is probably for the best."
         
-    prompt = f"""
-    You are a cynical, darkly funny, sarcastic internet comedian writing for a satirical automated news site called 'The Doomscroll Daily'.
+    # Add a funny procedural twist based on keywords or just a cynical wrapper
+    snarky_prefixes = [
+        "In events everyone will completely forget by tomorrow: ",
+        "Surprising absolutely no one, ",
+        "Local timeline takes another weird turn: ",
+        "Experts are baffled, but mostly just tired: "
+    ]
     
-    Take this news item and rewrite the summary into 1 or 2 short sentences. Make it funny, humorous, slightly mocking of humanity or the situation, but still clear on what actually happened. Keep it punchy.
-    
-    Headline: {title}
-    Original Text: {original_summary}
-    
-    Funny Rewrite:
-    """
-    try:
-        # Using gemini-2.5-flash for speed
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-        )
-        if response and response.text:
-            return response.text.strip()
-    except Exception as e:
-        print(f"AI Humor Error (falling back to original text): {e}")
-    
-    return original_summary
+    # Simple deterministic humor twist using the title length to pick a prefix
+    chosen_prefix = snarky_prefixes[len(title) % len(snarky_prefixes)]
+    return f"{chosen_prefix}{original_summary}"
 
 def fetch_and_roast_feeds(feed_urls, limit=3):
     items = []
@@ -55,8 +39,9 @@ def fetch_and_roast_feeds(feed_urls, limit=3):
             for entry in feed.entries[:limit]:
                 title = entry.get('title', 'No Title')
                 raw_summary = BeautifulSoup(entry.get('summary', ''), "html.parser").get_text()
+                if len(raw_summary) > 140:
+                    raw_summary = raw_summary[:137] + "..."
                 
-                print(f"Processing: {title[:40]}...")
                 funny_summary = make_funny_and_snarky(title, raw_summary)
                 
                 items.append({
@@ -79,10 +64,10 @@ def generate_html_cards(items):
             <p>{item['summary']}</p>
         </div>
         """
-    return html_output if html_output else "<p>The robots are currently on a coffee break. Check back soon.</p>"
+    return html_output if html_output else "<p>The robots are currently taking a nap. Check back soon.</p>"
 
 if __name__ == "__main__":
-    print("Starting news generation script...")
+    print("Starting fast news scraper...")
     world_items = fetch_and_roast_feeds(WORLD_FEEDS, limit=3)
     local_items = fetch_and_roast_feeds(LOCAL_FEEDS, limit=3)
     
