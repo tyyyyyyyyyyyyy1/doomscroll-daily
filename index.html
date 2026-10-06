@@ -230,7 +230,7 @@
             return snarkyPrefixes[title.length % snarkyPrefixes.length] + trimmed;
         }
 
-        // 1. World News (Refreshes hourly via cache-busting timestamp)
+        // 1. World News
         async function loadWorldNews() {
             try {
                 const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml&_t=${Date.now()}`);
@@ -250,7 +250,7 @@
             }
         }
 
-        // 2. Local News based on IP location
+        // 2. Local News
         async function loadLocalNews() {
             const localContainer = document.getElementById('local-news');
             const localHeading = document.getElementById('local-heading');
@@ -283,64 +283,50 @@
                 });
                 localContainer.innerHTML = html;
             } catch (e) {
-                localContainer.innerHTML = "<p>Local area is chaotic, but news feeds failed to load.</p>";
+                localContainer.innerHTML = "<p>Local news feeds failed to load.</p>";
             }
         }
 
-        // 3. Hourly Memes Feeds (Dark & SFW)
+        // 3. Reliable Meme Feeds (10 Dark & 10 SFW)
         async function loadMemes() {
             try {
-                // Dark Memes from r/dankmemes or r/memes
-                const darkRes = await fetch(`https://www.reddit.com/r/dankmemes/hot.json?limit=25&_t=${Date.now()}`);
-                const darkData = await darkRes.json();
                 const darkContainer = document.getElementById('dark-memes');
                 let darkHtml = '';
-                let darkCount = 0;
+                for (let i = 0; i < 10; i++) {
+                    const res = await fetch(`https://meme-api.com/gimme/dankmemes`);
+                    const meme = await res.json();
+                    darkHtml += `
+                    <div class="meme-card">
+                        <a href="${meme.postLink}" target="_blank">
+                            <img src="${meme.url}" alt="Dark Meme" loading="lazy">
+                        </a>
+                        <p>${meme.title}</p>
+                    </div>`;
+                }
+                darkContainer.innerHTML = darkHtml;
 
-                darkData.data.children.forEach(post => {
-                    const url = post.data.url;
-                    if (darkCount < 10 && (url.endsWith('.jpg') || url.endsWith('.png') || url.endsWith('.jpeg'))) {
-                        darkHtml += `
-                        <div class="meme-card">
-                            <a href="https://reddit.com${post.data.permalink}" target="_blank">
-                                <img src="${url}" alt="Dark Meme" loading="lazy">
-                            </a>
-                            <p>${post.data.title}</p>
-                        </div>`;
-                        darkCount++;
-                    }
-                });
-                darkContainer.innerHTML = darkHtml || "<p>Dark memes are currently hiding.</p>";
-
-                // SFW Memes from r/wholesomememes or r/me_irl
-                const sfwRes = await fetch(`https://www.reddit.com/r/wholesomememes/hot.json?limit=25&_t=${Date.now()}`);
-                const sfwData = await sfwRes.json();
                 const sfwContainer = document.getElementById('sfw-memes');
                 let sfwHtml = '';
-                let sfwCount = 0;
-
-                sfwData.data.children.forEach(post => {
-                    const url = post.data.url;
-                    if (sfwCount < 10 && (url.endsWith('.jpg') || url.endsWith('.png') || url.endsWith('.jpeg'))) {
-                        sfwHtml += `
-                        <div class="meme-card">
-                            <a href="https://reddit.com${post.data.permalink}" target="_blank">
-                                <img src="${url}" alt="SFW Meme" loading="lazy">
-                            </a>
-                            <p>${post.data.title}</p>
-                        </div>`;
-                        sfwCount++;
-                    }
-                });
-                sfwContainer.innerHTML = sfwHtml || "<p>Wholesome memes taking a break.</p>";
+                for (let i = 0; i < 10; i++) {
+                    const res = await fetch(`https://meme-api.com/gimme/wholesomememes`);
+                    const meme = await res.json();
+                    sfwHtml += `
+                    <div class="meme-card">
+                        <a href="${meme.postLink}" target="_blank">
+                            <img src="${meme.url}" alt="SFW Meme" loading="lazy">
+                        </a>
+                        <p>${meme.title}</p>
+                    </div>`;
+                }
+                sfwContainer.innerHTML = sfwHtml;
 
             } catch (e) {
-                document.getElementById('dark-memes').innerHTML = "<p>Meme servers overloaded.</p>";
-                document.getElementById('sfw-memes').innerHTML = "<p>Meme servers overloaded.</p>";
+                document.getElementById('dark-memes').innerHTML = "<p>Meme servers taking a quick breather.</p>";
+                document.getElementById('sfw-memes').innerHTML = "<p>Meme servers taking a quick breather.</p>";
             }
         }
 
-        // 4. Hourly Weather (GPS Geolocation)
+        // 4. Weather Widget
         async function loadWeather() {
             const widget = document.getElementById('weather-widget');
             if (!navigator.geolocation) {
@@ -351,28 +337,4 @@
                 try {
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
-                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-                    const data = await res.json();
-                    widget.innerHTML = `🌡 Hourly Local Weather: ${data.current_weather.temperature}°C — Perfect for scrolling.`;
-                } catch(e) {
-                    widget.innerHTML = "🌡️ Weather: 100% chance of an existential crisis.";
-                }
-            }, () => {
-                widget.innerHTML = "🌡️ Weather: Location blocked, but things look gloomy.";
-            });
-        }
-
-        // Execute all loads on page load + set hourly refresh interval
-        function refreshAll() {
-            loadWorldNews();
-            loadLocalNews();
-            loadMemes();
-            loadWeather();
-        }
-
-        refreshAll();
-        // Auto refresh every hour (3600000 milliseconds)
-        setInterval(refreshAll, 3600000);
-    </script>
-</body>
-</html>
+                    const
