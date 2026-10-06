@@ -23,7 +23,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir feedparser beautifulsoup4
+          pip install --no-cache-dir feedparser beautifulsoup4 requests
 
       - name: Run Sarcastic News Script
         run: |
