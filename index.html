@@ -252,8 +252,74 @@
             color: #d1d8e0;
         }
 
-        /* Mini Game Styling */
-        .game-box {
+        /* Unhinged Media Engine Styling */
+        .media-engine-box {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .search-bar-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-bar-wrapper input {
+            flex: 1;
+            background: #0f1115;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .search-bar-wrapper button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .search-bar-wrapper button:hover { background: #ff6b81; }
+        .media-results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        @media (min-width: 600px) { .media-results-grid { grid-template-columns: 1fr 1fr; } }
+        .media-result-card {
+            background: #101217;
+            border: 1px solid #2f3542;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .media-handle {
+            font-size: 0.8rem;
+            color: #ff6b81;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .media-caption {
+            font-size: 0.95rem;
+            color: #e1e4e8;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .media-stats {
+            font-size: 0.75rem;
+            color: #747d8c;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #222;
+            padding-top: 8px;
+        }
+
+        /* Mini Game & Intrusive Thought Styling */
+        .game-box, .thought-box {
             background: var(--card-bg);
             border: 1px solid #333;
             border-radius: 8px;
@@ -262,8 +328,8 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        .game-box p { font-size: 1.1rem; line-height: 1.5; margin-bottom: 25px; }
-        .game-btn {
+        .game-box p, .thought-box p { font-size: 1.1rem; line-height: 1.5; margin-bottom: 25px; }
+        .game-btn, .thought-btn {
             background: #ff4757;
             color: white;
             border: none;
@@ -273,7 +339,7 @@
             cursor: pointer;
             font-weight: bold;
         }
-        .game-btn:hover { background: #ff6b81; }
+        .game-btn:hover, .thought-btn:hover { background: #ff6b81; }
 
         footer {
             text-align: center;
@@ -342,7 +408,9 @@
         <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">🇨🇦 Local Nonsense</button>
         <button class="tab-btn" onclick="switchTab('dark-tab', this)">💀 Terminally Online</button>
         <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️ Serotonin Trap</button>
+        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Unhinged Search</button>
         <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 Choose Descent</button>
+        <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
     </div>
 
     <!-- Tab Panels -->
@@ -374,6 +442,22 @@
         </section>
     </div>
 
+    <!-- Unhinged Media Search Engine Tab -->
+    <div id="media-tab" class="tab-pane">
+        <section>
+            <h2>📺 Unhinged Media Engine</h2>
+            <div class="media-engine-box">
+                <div class="search-bar-wrapper">
+                    <input type="text" id="media-search-input" placeholder="Search any unhinged topic (e.g. raccoons, anxiety, coffee)..." value="raccoons">
+                    <button onclick="runUnhingedSearch()">Search Feed</button>
+                </div>
+                <div id="media-results" class="media-results-grid">
+                    <!-- Dynamic results populate here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
     <!-- Mini-Game Tab -->
     <div id="game-tab" class="tab-pane">
         <section>
@@ -388,11 +472,22 @@
         </section>
     </div>
 
+    <!-- Intrusive Thought Generator Tab -->
+    <div id="thought-tab" class="tab-pane">
+        <section>
+            <h2>🧠 The Intrusive Thought Generator</h2>
+            <div class="thought-box">
+                <p id="thought-text">"If you drop your keys into molten lava, are they technically retrievable if you're fast enough?"</p>
+                <button class="thought-btn" onclick="generateThought()">Generate 2 AM Thought</button>
+            </div>
+        </section>
+    </div>
+
     <footer id="footer-text">
         <p>&copy; 2026 The Doomscroll Daily. Zero friction, maximum collapse.</p>
     </footer>
 
-    <!-- Audio Element (Web Audio API generated ambient noise simulator) -->
+    <!-- Audio Element & App Logic -->
     <script>
         // --- FEATURE 1: Boss Key / Spreadsheet Toggle ---
         function toggleSpreadsheet() {
@@ -418,252 +513,51 @@
             const mins = Math.floor(secondsOnSite / 60);
             const secs = secondsOnSite % 60;
             const footerBase = footerJokes[currentFooterIndex].replace('</p>', '');
-            document.getElementById('footer-text').innerHTML = `${footerBase} | ⏳ Time wasted in abyss: ${mins}m ${secs}s</p>`;
-        }, 1000);
+            document.getElementById('footer-text').innerHTML = `${footerBase} | ⏳ Time wasted in abyss: ${mins}m ${secs}s</p>`;         }, 1000);          const footerJokes = [             "&copy; 2026 The Doomscroll Daily. You've scrolled this far, might as well keep going.",             "&copy; 2026 The Doomscroll Daily. Proudly wasting your precious minutes since yesterday.",             "&copy; 2026 The Doomscroll Daily. Side effects may include mild despair and lost time.",             "&copy; 2026 The Doomscroll Daily. No data was harmed, but your productivity sure was."         ];         const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);         document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
 
-        const footerJokes = [
-            "&copy; 2026 The Doomscroll Daily. You've scrolled this far, might as well keep going.",
-            "&copy; 2026 The Doomscroll Daily. Proudly wasting your precious minutes since yesterday.",
-            "&copy; 2026 The Doomscroll Daily. Side effects may include mild despair and lost time.",
-            "&copy; 2026 The Doomscroll Daily. No data was harmed, but your productivity sure was."
+        // --- NEW FEATURE: Unhinged Media Search Engine Logic ---
+        const unhingedTemplates = [
+            (query) => `POV: You tried to research "${query}" at 3 AM and now local wildlife is plotting against you.`,
+            (query) => `Day 14 of studying "${query}" without human contact. I am fluent in garbage language now.`,
+            (query) => `They don't want you to know the truth about "${query}". Look at the numbers!!`,
+            (query) => `Me explaining to my cat why "${query}" is the most important crisis of our generation.`,
+            (query) => `Spotted someone trying to weaponize "${query}" at a local convenience store. Ottawa is wild.`,
+            (query) => `If you don't wake up screaming about "${query}" every morning, are you even experiencing the timeline correctly?`
         ];
-        const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);
-        document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
+
+        const userHandles = [
+            "@void_crawler_99", "@doom_scroller_x", "@raccoon_syndicate", "@lost_in_the_sauce", 
+            "@caffeine_ghost", "@glitch_in_matrix", "@midnight_gremlin", "@timeline_survivor"
+        ];
+
+        function runUnhingedSearch() {
+            const rawQuery = document.getElementById('media-search-input').value.trim() || "chaos";
+            const query = rawQuery.toLowerCase();
+            let html = "";
+
+            for (let i = 0; i < 6; i++) {
+                const template = unhingedTemplates[Math.floor(Math.random() * unhingedTemplates.length)];
+                const handle = userHandles[Math.floor(Math.random() * userHandles.length)];
+                const views = (Math.random() * 800 + 1.2).toFixed(1) + "K";
+                const likes = Math.floor(Math.random() * 90000 + 400);
+
+                html += `
+                <div class="media-result-card">
+                    <div class="media-handle">${handle}</div>
+                    <div class="media-caption">"${template(query)}"</div>
+                    <div class="media-stats">
+                        <span>👁️ ${views} views</span>
+                        <span>❤️ ${likes.toLocaleString()} likes</span>
+                        <span>💬 404 comments</span>
+                    </div>
+                </div>`;
+            }
+            document.getElementById('media-results').innerHTML = html;
+        }
 
         // --- FEATURE 4: Mini Game Logic ---
         function nextStage(choice) {
             const container = document.getElementById('game-container');
             if (choice === 1) {
                 container.innerHTML = `
-                    <p>You stared at the popcorn ceiling. You calculated that if you stay still long enough, adult responsibilities might forget you exist. They didn't.</p>
-                    <button class="game-btn" onclick="resetGame()">Start Over</button>
-                `;
-            } else {
-                container.innerHTML = `
-                    <p>You built a gourmet breakfast consisting of stale cereal and optimism. It tasted like defeat, but you survived another hour.</p>
-                    <button class="game-btn" onclick="resetGame()">Start Over</button>
-                `;
-            }
-        }
-        function resetGame() {
-            document.getElementById('game-container').innerHTML = `
-                <p id="game-text">You wake up to a Tuesday morning notification telling you the servers are down. What do you do?</p>
-                <div id="game-options">
-                    <button class="game-btn" onclick="nextStage(1)">Stare at the ceiling for 45 minutes.</button>
-                    <button class="game-btn" onclick="nextStage(2)">Make an overly complicated breakfast.</button>
-                </div>
-            `;
-        }
-
-        // --- FEATURE 5: Ambient Audio Generator (Rain/Vinyl White Noise) ---
-        let audioCtx = null;
-        let isPlaying = false;
-        let noiseNode = null;
-
-        function toggleAudio() {
-            const btn = document.getElementById('audio-btn');
-            if (!isPlaying) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                // Create brownian/pink noise buffer for cozy vinyl static/rain simulation
-                const bufferSize = audioCtx.sampleRate * 2;
-                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-                const data = buffer.getChannelData(0);
-                let lastOut = 0.0;
-                for (let i = 0; i < bufferSize; i++) {
-                    const white = Math.random() * 2 - 1;
-                    data[i] = (lastOut + (0.02 * white)) / 1.02; // pink noise filter approximation
-                    lastOut = data[i];
-                }
-                noiseNode = audioCtx.createBufferSource();
-                noiseNode.buffer = buffer;
-                noiseNode.loop = true;
-
-                const filter = audioCtx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 800; // Muffled cozy sound
-
-                const gain = audioCtx.createGain();
-                gain.gain.value = 0.05; // Low volume background
-
-                noiseNode.connect(filter);
-                filter.connect(gain);
-                gain.connect(audioCtx.destination);
-                noiseNode.start();
-
-                isPlaying = true;
-                btn.innerText = "🔊 Ambient Audio: Playing (Rain/Static)";
-            } else {
-                if (noiseNode) noiseNode.stop();
-                if (audioCtx) audioCtx.close();
-                isPlaying = false;
-                btn.innerText = "🔊 Ambient Audio: Muted";
-            }
-        }
-
-        // Standard site scripts
-        function switchTab(tabId, btnElement) {
-            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            btnElement.classList.add('active');
-        }
-
-        const snarkyPrefixes = [
-            "In events everyone will completely forget by tomorrow: ",
-            "Surprising absolutely no one, ",
-            "Local timeline takes another weird turn: ",
-            "Experts are baffled, but mostly just tired: ",
-            "Another classic entry for the history books of doom: "
-        ];
-
-        function makeSnarky(title, summary) {
-            const cleanSummary = summary ? summary.replace(/<[^>]*>?/gm, '') : "No details provided.";
-            const trimmed = cleanSummary.length > 130 ? cleanSummary.substring(0, 127) + "..." : cleanSummary;
-            return snarkyPrefixes[title.length % snarkyPrefixes.length] + trimmed;
-        }
-
-        async function loadWorldNews() {
-            try {
-                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://feeds.bbci.co.uk/news/world/rss.xml')}&_t=${Date.now()}`);
-                const data = await res.json();
-                if (data.status === 'ok' && data.items) {
-                    let html = '';
-                    data.items.slice(0, 10).forEach(item => {
-                        html += `
-                        <div class="news-card">
-                            <span class="news-date">${new Date(item.pubDate).toLocaleDateString()}</span>
-                            <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
-                            <p>${makeSnarky(item.title, item.description)}</p>
-                        </div>`;
-                    });
-                    document.getElementById('world-news').innerHTML = html;
-                } else { throw new Error(); }
-            } catch (e) {
-                document.getElementById('world-news').innerHTML = "<p>Global servers are taking a much-needed nap.</p>";
-            }
-        }
-
-        async function loadLocalNews() {
-            try {
-                const ipRes = await fetch('https://ipapi.co/json/');
-                const ipData = await ipRes.json();
-                const city = ipData.city || "Ottawa";
-                document.getElementById('local-heading').innerHTML = `🇨🇦 Local Nonsense (${city}) Feed`;
-                document.getElementById('local-tab-btn').innerText = `🇨🇦 Local (${city})`;
-
-                let rssUrl = "https://www.cbc.ca/webfeed/rss/rss-canada-ottawa";
-                if (city.toLowerCase().includes("toronto")) {
-                    rssUrl = "https://www.cbc.ca/webfeed/rss/rss-canada-toronto";
-                } else if (ipData.country_code === "US") {
-                    rssUrl = "https://rss.cnn.com/rss/edition_us.rss";
-                } else if (ipData.country_code === "GB") {
-                    rssUrl = "https://feeds.bbci.co.uk/news/uk/rss.xml";
-                }
-
-                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&_t=${Date.now()}`);
-                const data = await res.json();
-                if (data.status === 'ok' && data.items) {
-                    let html = '';
-                    data.items.slice(0, 10).forEach(item => {
-                        html += `
-                        <div class="news-card">
-                            <span class="news-date">${new Date(item.pubDate).toLocaleDateString()}</span>
-                            <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
-                            <p>${makeSnarky(item.title, item.description)}</p>
-                        </div>`;
-                    });
-                    document.getElementById('local-news').innerHTML = html;
-                } else { throw new Error(); }
-            } catch (e) {
-                document.getElementById('local-news').innerHTML = "<p>Local updates unavailable, but your city is definitely still chaotic.</p>";
-            }
-        }
-
-        async function loadMemes() {
-            async function fetchUniqueMemes(subreddits) {
-                const uniqueMemes = new Set();
-                const memeList = [];
-                let attempts = 0;
-                while (memeList.length < 10 && attempts < 50) {
-                    attempts++;
-                    const sub = subreddits[Math.floor(Math.random() * subreddits.length)];
-                    try {
-                        const res = await fetch(`https://meme-api.com/gimme/${sub}`);
-                        const meme = await res.json();
-                        if (meme && meme.url && !uniqueMemes.has(meme.url) && !meme.nsfw) {
-                            uniqueMemes.add(meme.url);
-                            memeList.push(meme);
-                        }
-                    } catch (err) {}
-                }
-                return memeList;
-            }
-
-            try {
-                const darkMemes = await fetchUniqueMemes(['dankmemes', 'me_irl', 'PrequelMemes']);
-                let darkHtml = '';
-                darkMemes.forEach(meme => {
-                    darkHtml += `
-                    <div class="meme-card">
-                        <img src="${meme.url}" alt="Dark Meme" loading="lazy">
-                        <p>${meme.title}</p>
-                    </div>`;
-                });
-                document.getElementById('dark-memes').innerHTML = darkHtml || "<p>The abyss is currently empty.</p>";
-            } catch (e) {
-                document.getElementById('dark-memes').innerHTML = "<p>Dark meme servers are hiding.</p>";
-            }
-
-            try {
-                const sfwMemes = await fetchUniqueMemes(['wholesomememes', 'eyebleach']);
-                let sfwHtml = '';
-                sfwMemes.forEach(meme => {
-                    sfwHtml += `
-                    <div class="meme-card">
-                        <img src="${meme.url}" alt="SFW Meme" loading="lazy">
-                        <p>${meme.title}</p>
-                    </div>`;
-                });
-                document.getElementById('sfw-memes').innerHTML = sfwHtml || "<p>Wholesome memes currently resting.</p>";
-            } catch (e) {
-                document.getElementById('sfw-memes').innerHTML = "<p>SFW meme servers buffering.</p>";
-            }
-        }
-
-        async function loadWeather() {
-            const weatherJokes = [
-                temp => `🌡 Local Weather: ${temp}°C — Excellent temperature for hiding indoors.`,
-                temp => `🌡 Local Weather: ${temp}°C — A crisp reminder that nature outside is hostile.`,
-                temp => `🌡 Local Weather: ${temp}°C — Perfect weather to stay glued to a screen.`
-            ];
-            const weatherErrors = [
-                "🌡️ Weather: Location blocked, but things look gloomy regardless.",
-                "🌡️ Weather: 100% chance of an existential crisis."
-            ];
-            try {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(async (pos) => {
-                        try {
-                            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`);
-                            const data = await res.json();
-                            const temp = data.current_weather.temperature;
-                            document.getElementById('weather-widget').innerHTML = weatherJokes[Math.floor(Math.random() * weatherJokes.length)](temp);
-                        } catch(e) {
-                            document.getElementById('weather-widget').innerHTML = weatherErrors[Math.floor(Math.random() * weatherErrors.length)];
-                        }
-                    }, () => {
-                        document.getElementById('weather-widget').innerHTML = weatherErrors[Math.floor(Math.random() * weatherErrors.length)];
-                    });
-                }
-            } catch (e) {
-                document.getElementById('weather-widget').innerHTML = "🌡️ Weather: Temporarily hiding from reality.";
-            }
-        }
-
-        loadWorldNews();
-        loadLocalNews();
-        loadMemes();
-        loadWeather();
-    </script>
-</body>
-</html>
+                    <p>You stared at the popcorn ceiling. You calculated that if
