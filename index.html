@@ -23,13 +23,57 @@
             padding: 10px;
         }
         @media (min-width: 768px) { body { padding: 20px; } }
+        
+        /* Floating Panic Button */
+        #panic-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+            transition: transform 0.1s;
+        }
+        #panic-btn:hover { transform: scale(1.05); }
+
+        /* Fake Spreadsheet Mode (Boss Key) */
+        body.spreadsheet-mode {
+            background-color: #ffffff !important;
+            color: #333333 !important;
+            font-family: Arial, sans-serif !important;
+        }
+        body.spreadsheet-mode header, 
+        body.spreadsheet-mode .tab-nav, 
+        body.spreadsheet-mode .tab-pane, 
+        body.spreadsheet-mode footer, 
+        body.spreadsheet-mode #weather-widget, 
+        body.spreadsheet-mode #panic-btn,
+        body.spreadsheet-mode #panic-banner {
+            display: none !important;
+        }
+        #fake-spreadsheet {
+            display: none;
+            padding: 20px;
+        }
+        body.spreadsheet-mode #fake-spreadsheet {
+            display: block !important;
+        }
+
         header {
             text-align: center;
             padding: 25px 10px;
             border-bottom: 2px dashed #333;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             background: linear-gradient(135deg, #1a1d24 0%, #2f1b25 100%);
             border-radius: 12px;
+            position: relative;
         }
         h1 {
             font-size: 2.2rem;
@@ -44,7 +88,40 @@
             color: #a4b0be;
             margin-top: 8px;
         }
-        /* Funny Doomscrolling Illustration Banner */
+
+        /* Audio & Panic Banner Bar */
+        .top-utilities {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+        }
+        .audio-toggle {
+            background: #222630;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Panic Index Bar */
+        #panic-banner {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 15px auto;
+            font-size: 0.9rem;
+            color: #ff6b81;
+            font-weight: bold;
+        }
+
         .doom-banner-container {
             width: 100%;
             max-width: 450px;
@@ -80,6 +157,7 @@
             font-size: 0.95rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
+
         /* Tab Navigation Bar */
         .tab-nav {
             display: flex;
@@ -99,24 +177,21 @@
             font-size: 0.95rem;
             transition: all 0.2s ease;
         }
-        .tab-btn:hover {
-            background-color: #2f3542;
-        }
+        .tab-btn:hover { background-color: #2f3542; }
         .tab-btn.active {
             background-color: var(--tab-active);
             color: #fff;
             border-color: var(--tab-active);
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
         }
+
         /* Tab Content Panes */
         .tab-pane {
             display: none;
             max-width: 900px;
             margin: 0 auto;
         }
-        .tab-pane.active {
-            display: block;
-        }
+        .tab-pane.active { display: block; }
         section h2 {
             border-bottom: 3px solid var(--accent-color);
             padding-bottom: 8px;
@@ -149,6 +224,7 @@
             font-size: 0.95rem;
             line-height: 1.4;
         }
+
         /* Meme Grid */
         .meme-grid {
             display: grid;
@@ -175,6 +251,30 @@
             margin: 10px 0 0 0;
             color: #d1d8e0;
         }
+
+        /* Mini Game Styling */
+        .game-box {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .game-box p { font-size: 1.1rem; line-height: 1.5; margin-bottom: 25px; }
+        .game-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .game-btn:hover { background: #ff6b81; }
+
         footer {
             text-align: center;
             padding: 30px 10px;
@@ -187,30 +287,53 @@
 </head>
 <body>
 
+    <!-- Floating Boss Key Button -->
+    <button id="panic-btn" onclick="toggleSpreadsheet()">🚨 Act Normal (Esc)</button>
+
+    <!-- Fake Spreadsheet Mode View -->
+    <div id="fake-spreadsheet">
+        <h2>Q3 Logistics & Regional Synergy Report</h2>
+        <p style="color: #666; font-size: 0.9rem;">Last updated: Today | Status: Compliant</p>
+        <table border="1" style="width:100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem;">
+            <tr style="background:#f2f2f2;">
+                <th style="padding:8px;">Region</th>
+                <th style="padding:8px;">Projected Q3 Output</th>
+                <th style="padding:8px;">Efficiency Variance</th>
+                <th style="padding:8px;">Status</th>
+            </tr>
+            <tr><td style="padding:6px;">North Sector</td><td style="padding:6px;">1,420 units</td><td style="padding:6px;">+4.2%</td><td style="padding:6px;">Stable</td></tr>
+            <tr><td style="padding:6px;">East Logistics</td><td style="padding:6px;">890 units</td><td style="padding:6px;">-1.1%</td><td style="padding:6px;">Review</td></tr>
+            <tr><td style="padding:6px;">Western Hub</td><td style="padding:6px;">2,150 units</td><td style="padding:6px;">+8.9%</td><td style="padding:6px;">Optimal</td></tr>
+        </table>
+        <p style="margin-top: 20px; font-style:italic; color:#888;">Press [Esc] or click the panic button again to return to the abyss.</p>
+    </div>
+
+    <!-- Main Content Container -->
     <header>
         <h1>The Doomscroll Daily</h1>
         <p class="tagline">Hourly automated briefing of global collapse, local nonsense, and internet humor.</p>
         
-        <!-- Funny Doomscroller Vector Graphic -->
+        <div class="top-utilities">
+            <button class="audio-toggle" id="audio-btn" onclick="toggleAudio()">🔊 Ambient Audio: Muted</button>
+        </div>
+
         <div class="doom-banner-container">
             <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
-                <!-- Glowing phone screen -->
                 <rect x="75" y="15" width="50" height="45" rx="4" fill="#1e90ff" opacity="0.8"/>
                 <line x1="82" y1="25" x2="118" y2="25" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
                 <line x1="82" y1="35" x2="110" y2="35" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
                 <line x1="82" y1="45" x2="100" y2="45" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-                <!-- Sad thumb scrolling -->
                 <circle cx="100" cy="68" r="7" fill="#ff4757"/>
-                <!-- Eye strain glow lines -->
                 <path d="M 65 30 Q 50 20 40 10" stroke="#ffa502" stroke-width="2" fill="none" stroke-dasharray="3,3"/>
                 <path d="M 135 30 Q 150 20 160 10" stroke="#ffa502" stroke-width="2" fill="none" stroke-dasharray="3,3"/>
-                <!-- Text banner -->
                 <text x="100" y="78" fill="#a4b0be" font-size="7" text-anchor="middle">LIVE FEED: 3 AM STARE INTO THE VOID</text>
             </svg>
             <div class="doom-banner-caption">"Just 5 more minutes of world collapse before bed."</div>
         </div>
     </header>
 
+    <!-- Global Panic Index Bar -->
+    <div id="panic-banner">📊 Global Panic Index: Calculating digital catastrophe levels...</div>
     <div id="weather-widget">📍 Calculating your exact level of regret...</div>
 
     <!-- Tab Navigation Buttons -->
@@ -219,6 +342,7 @@
         <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">🇨🇦 Local Nonsense</button>
         <button class="tab-btn" onclick="switchTab('dark-tab', this)">💀 Terminally Online</button>
         <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️ Serotonin Trap</button>
+        <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 Choose Descent</button>
     </div>
 
     <!-- Tab Panels -->
@@ -250,25 +374,52 @@
         </section>
     </div>
 
+    <!-- Mini-Game Tab -->
+    <div id="game-tab" class="tab-pane">
+        <section>
+            <h2>🎮 Choose Your Own Descent</h2>
+            <div class="game-box" id="game-container">
+                <p id="game-text">You wake up to a Tuesday morning notification telling you the servers are down. What do you do?</p>
+                <div id="game-options">
+                    <button class="game-btn" onclick="nextStage(1)">Stare at the ceiling for 45 minutes.</button>
+                    <button class="game-btn" onclick="nextStage(2)">Make an overly complicated breakfast.</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
     <footer id="footer-text">
         <p>&copy; 2026 The Doomscroll Daily. Zero friction, maximum collapse.</p>
     </footer>
 
+    <!-- Audio Element (Web Audio API generated ambient noise simulator) -->
     <script>
-        // Randomized humorous arrays for dynamic text
-        const weatherJokes = [
-            temp => `🌡 Local Weather: ${temp}°C — Excellent temperature for hiding indoors.`,
-            temp => `🌡 Local Weather: ${temp}°C — A crisp reminder that nature outside is hostile.`,
-            temp => `🌡 Local Weather: ${temp}°C — Perfect weather to stay glued to a screen.`,
-            temp => `🌡 Local Weather: ${temp}°C — Highly conducive to staring blankly at a wall.`
-        ];
+        // --- FEATURE 1: Boss Key / Spreadsheet Toggle ---
+        function toggleSpreadsheet() {
+            document.body.classList.toggle('spreadsheet-mode');
+        }
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') toggleSpreadsheet();
+        });
 
-        const weatherErrors = [
-            "🌡️ Weather: Location blocked, but things look gloomy regardless.",
-            "🌡️ Weather: 100% chance of an existential crisis.",
-            "🌡️ Weather: Satellites refuse to look at your current coordinates.",
-            "🌡️ Weather: Currently broadcasting straight from the void."
+        // --- FEATURE 2: Panic Index Bar Generator ---
+        const panicMetrics = [
+            "📊 Global Panic Index: 98.4% (Existential dread levels optimal)",
+            "📊 Global Panic Index: 89.2% (Coffee reserves depleting rapidly)",
+            "📊 Global Panic Index: 99.9% (Timeline operating at maximum absurdity)",
+            "📊 Global Panic Index: 91.5% (Servers holding together with pure tape and hope)"
         ];
+        document.getElementById('panic-banner').innerText = panicMetrics[Math.floor(Math.random() * panicMetrics.length)];
+
+        // --- FEATURE 3: Regret Timer in Footer ---
+        let secondsOnSite = 0;
+        setInterval(() => {
+            secondsOnSite++;
+            const mins = Math.floor(secondsOnSite / 60);
+            const secs = secondsOnSite % 60;
+            const footerBase = footerJokes[currentFooterIndex].replace('</p>', '');
+            document.getElementById('footer-text').innerHTML = `${footerBase} | ⏳ Time wasted in abyss: ${mins}m ${secs}s</p>`;
+        }, 1000);
 
         const footerJokes = [
             "&copy; 2026 The Doomscroll Daily. You've scrolled this far, might as well keep going.",
@@ -276,10 +427,80 @@
             "&copy; 2026 The Doomscroll Daily. Side effects may include mild despair and lost time.",
             "&copy; 2026 The Doomscroll Daily. No data was harmed, but your productivity sure was."
         ];
+        const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);
+        document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
 
-        // Apply random footer joke on load
-        document.getElementById('footer-text').innerHTML = `<p>${footerJokes[Math.floor(Math.random() * footerJokes.length)]}</p>`;
+        // --- FEATURE 4: Mini Game Logic ---
+        function nextStage(choice) {
+            const container = document.getElementById('game-container');
+            if (choice === 1) {
+                container.innerHTML = `
+                    <p>You stared at the popcorn ceiling. You calculated that if you stay still long enough, adult responsibilities might forget you exist. They didn't.</p>
+                    <button class="game-btn" onclick="resetGame()">Start Over</button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <p>You built a gourmet breakfast consisting of stale cereal and optimism. It tasted like defeat, but you survived another hour.</p>
+                    <button class="game-btn" onclick="resetGame()">Start Over</button>
+                `;
+            }
+        }
+        function resetGame() {
+            document.getElementById('game-container').innerHTML = `
+                <p id="game-text">You wake up to a Tuesday morning notification telling you the servers are down. What do you do?</p>
+                <div id="game-options">
+                    <button class="game-btn" onclick="nextStage(1)">Stare at the ceiling for 45 minutes.</button>
+                    <button class="game-btn" onclick="nextStage(2)">Make an overly complicated breakfast.</button>
+                </div>
+            `;
+        }
 
+        // --- FEATURE 5: Ambient Audio Generator (Rain/Vinyl White Noise) ---
+        let audioCtx = null;
+        let isPlaying = false;
+        let noiseNode = null;
+
+        function toggleAudio() {
+            const btn = document.getElementById('audio-btn');
+            if (!isPlaying) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                // Create brownian/pink noise buffer for cozy vinyl static/rain simulation
+                const bufferSize = audioCtx.sampleRate * 2;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                let lastOut = 0.0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    data[i] = (lastOut + (0.02 * white)) / 1.02; // pink noise filter approximation
+                    lastOut = data[i];
+                }
+                noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+                noiseNode.loop = true;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 800; // Muffled cozy sound
+
+                const gain = audioCtx.createGain();
+                gain.gain.value = 0.05; // Low volume background
+
+                noiseNode.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                noiseNode.start();
+
+                isPlaying = true;
+                btn.innerText = "🔊 Ambient Audio: Playing (Rain/Static)";
+            } else {
+                if (noiseNode) noiseNode.stop();
+                if (audioCtx) audioCtx.close();
+                isPlaying = false;
+                btn.innerText = "🔊 Ambient Audio: Muted";
+            }
+        }
+
+        // Standard site scripts
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -301,7 +522,6 @@
             return snarkyPrefixes[title.length % snarkyPrefixes.length] + trimmed;
         }
 
-        // 1. World News
         async function loadWorldNews() {
             try {
                 const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://feeds.bbci.co.uk/news/world/rss.xml')}&_t=${Date.now()}`);
@@ -317,15 +537,12 @@
                         </div>`;
                     });
                     document.getElementById('world-news').innerHTML = html;
-                } else {
-                    throw new Error("Invalid RSS");
-                }
+                } else { throw new Error(); }
             } catch (e) {
                 document.getElementById('world-news').innerHTML = "<p>Global servers are taking a much-needed nap.</p>";
             }
         }
 
-        // 2. Local News
         async function loadLocalNews() {
             try {
                 const ipRes = await fetch('https://ipapi.co/json/');
@@ -356,15 +573,12 @@
                         </div>`;
                     });
                     document.getElementById('local-news').innerHTML = html;
-                } else {
-                    throw new Error("Local RSS failed");
-                }
+                } else { throw new Error(); }
             } catch (e) {
                 document.getElementById('local-news').innerHTML = "<p>Local updates unavailable, but your city is definitely still chaotic.</p>";
             }
         }
 
-        // 3. Robust Unique Meme Fetcher (Supports multiple fallback subreddits)
         async function loadMemes() {
             async function fetchUniqueMemes(subreddits) {
                 const uniqueMemes = new Set();
@@ -372,7 +586,6 @@
                 let attempts = 0;
                 while (memeList.length < 10 && attempts < 50) {
                     attempts++;
-                    // Pick a random subreddit from the provided list
                     const sub = subreddits[Math.floor(Math.random() * subreddits.length)];
                     try {
                         const res = await fetch(`https://meme-api.com/gimme/${sub}`);
@@ -386,7 +599,6 @@
                 return memeList;
             }
 
-            // Dark Memes pool (dankmemes, me_irl, PrequelMemes)
             try {
                 const darkMemes = await fetchUniqueMemes(['dankmemes', 'me_irl', 'PrequelMemes']);
                 let darkHtml = '';
@@ -397,12 +609,11 @@
                         <p>${meme.title}</p>
                     </div>`;
                 });
-                document.getElementById('dark-memes').innerHTML = darkHtml || "<p>The abyss is currently empty. Try refreshing.</p>";
+                document.getElementById('dark-memes').innerHTML = darkHtml || "<p>The abyss is currently empty.</p>";
             } catch (e) {
                 document.getElementById('dark-memes').innerHTML = "<p>Dark meme servers are hiding.</p>";
             }
 
-            // SFW Memes pool (wholesomememes, eyebleach)
             try {
                 const sfwMemes = await fetchUniqueMemes(['wholesomememes', 'eyebleach']);
                 let sfwHtml = '';
@@ -419,8 +630,16 @@
             }
         }
 
-        // 4. Weather Widget with Randomized Humor
         async function loadWeather() {
+            const weatherJokes = [
+                temp => `🌡 Local Weather: ${temp}°C — Excellent temperature for hiding indoors.`,
+                temp => `🌡 Local Weather: ${temp}°C — A crisp reminder that nature outside is hostile.`,
+                temp => `🌡 Local Weather: ${temp}°C — Perfect weather to stay glued to a screen.`
+            ];
+            const weatherErrors = [
+                "🌡️ Weather: Location blocked, but things look gloomy regardless.",
+                "🌡️ Weather: 100% chance of an existential crisis."
+            ];
             try {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -428,8 +647,7 @@
                             const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`);
                             const data = await res.json();
                             const temp = data.current_weather.temperature;
-                            const randomJokeFunc = weatherJokes[Math.floor(Math.random() * weatherJokes.length)];
-                            document.getElementById('weather-widget').innerHTML = randomJokeFunc(temp);
+                            document.getElementById('weather-widget').innerHTML = weatherJokes[Math.floor(Math.random() * weatherJokes.length)](temp);
                         } catch(e) {
                             document.getElementById('weather-widget').innerHTML = weatherErrors[Math.floor(Math.random() * weatherErrors.length)];
                         }
@@ -442,7 +660,6 @@
             }
         }
 
-        // Run all functions independently
         loadWorldNews();
         loadLocalNews();
         loadMemes();
