@@ -739,7 +739,8 @@
                     console.warn("GPS lookup denied or failed, using Ottawa default:", error);
                     document.getElementById('gps-status-hourly').innerText = "Default (Ottawa)";
                     loadWeatherData(45.4215, -75.6972, "Ottawa");
-                }
+                },
+                { timeout: 10000 }
             );
         }
 
@@ -749,7 +750,8 @@
                 document.getElementById('location-title-7day').innerText = `7-Day Outlook (${locationLabel})`;
                 document.getElementById('location-title-14day').innerText = `14-Day Extended Outlook (${locationLabel})`;
 
-                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,time&timezone=auto`);
+                // Added &forecast_days=16 so the API returns enough daily data for the 14-day view
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,time&timezone=auto&forecast_days=16`);
                 const data = await response.json();
 
                 if (!data) return;
@@ -830,6 +832,7 @@
 
             } catch (err) {
                 console.error("Failed to fetch weather data:", err);
+                document.getElementById('location-title-hourly').innerText = "Weather Feed Unavailable";
             }
         }
 
