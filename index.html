@@ -337,4 +337,26 @@
                 try {
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
-                    const
+                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                    const data = await res.json();
+                    widget.innerHTML = `🌡 Local Weather: ${data.current_weather.temperature}°C — Perfect for scrolling.`;
+                } catch(e) {
+                    widget.innerHTML = "🌡️ Weather: 100% chance of an existential crisis.";
+                }
+            }, () => {
+                widget.innerHTML = "🌡️ Weather: Location blocked, but things look gloomy.";
+            });
+        }
+
+        function refreshAll() {
+            loadWorldNews();
+            loadLocalNews();
+            loadMemes();
+            loadWeather();
+        }
+
+        refreshAll();
+        setInterval(refreshAll, 3600000);
+    </script>
+</body>
+</html>
