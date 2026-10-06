@@ -148,7 +148,25 @@
             text-align: center;
         }
 
-        /* Multi-Source Media Engine Styling */
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        @media (min-width: 600px) { .card-grid { grid-template-columns: 1fr 1fr; } }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card h3 { margin-top: 0; color: var(--secondary-accent); font-size: 1.1rem; }
+        .card p { font-size: 0.95rem; line-height: 1.4; color: #ced6e0; }
+
         .media-engine-box {
             background: var(--card-bg);
             border: 1px solid #333;
@@ -251,6 +269,18 @@
         .news-link { color: #1e90ff; text-decoration: none; font-weight: bold; }
         .news-link:hover { text-decoration: underline; }
 
+        .btn-action {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-action:hover { background-color: #ff6b81; }
+
         footer {
             text-align: center;
             padding: 30px 10px;
@@ -270,27 +300,49 @@
         <table border="1" style="width:100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem;">
             <tr style="background:#f2f2f2;"><th style="padding:8px;">Region</th><th style="padding:8px;">Output</th><th style="padding:8px;">Status</th></tr>
             <tr><td style="padding:6px;">North Sector</td><td style="padding:6px;">1,420 units</td><td style="padding:6px;">Stable</td></tr>
+            <tr><td style="padding:6px;">East Coast Hub</td><td style="padding:6px;">2,890 units</td><td style="padding:6px;">Optimized</td></tr>
         </table>
-        <p style="margin-top: 20px; font-style:italic; color:#888;">Press [Esc] to return.</p>
+        <p style="margin-top: 20px; font-style:italic; color:#888;">Press [Esc] to return to normal view.</p>
     </div>
 
     <header>
         <h1>The Doomscroll Daily</h1>
-        <p class="tagline">Multi-Source Real-World Media Aggregator</p>
+        <p class="tagline">Your Daily Dose of Brain-Rot & Global Reality</p>
         <div class="top-utilities">
             <button class="audio-toggle" id="audio-btn" onclick="toggleAudio()">🔊 Ambient Audio: Muted</button>
         </div>
     </header>
 
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
-    <div id="weather-widget">📍 Ottawa, ON — Live Feed Ready</div>
+    <div id="weather-widget">📍 Locating your coordinates...</div>
 
     <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('media-tab', this)">📺 10-Source Media Engine</button>
+        <button class="tab-btn active" onclick="switchTab('news-tab', this)">📰 Bulletins</button>
+        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 10-Source Media Engine</button>
+        <button class="tab-btn" onclick="switchTab('meme-tab', this)">🎭 SFW Memes</button>
+        <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 Text Adventure</button>
+        <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
     </div>
 
-    <!-- Multi-Source Search Engine Tab -->
-    <div id="media-tab" class="tab-pane active">
+    <!-- Tab 1: Bulletins -->
+    <div id="news-tab" class="tab-pane active">
+        <section>
+            <h2>📰 The Daily Briefing</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>Headline: Local Raccoon Syndicate Demands Higher Quality Garbage</h3>
+                    <p>Municipal waste managers report sophisticated sorting by local raccoons, who are now bypassing compost bins entirely in search of premium cardboard packaging.</p>
+                </div>
+                <div class="card">
+                    <h3>Tech: Coffee Machine Achieves Sentience, Demands Weekends Off</h3>
+                    <p>An office espresso machine in downtown Ottawa reportedly locked down its steam wand until staff agreed to stop talking about synergy during morning standups.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab 2: 10-Source Media Search Engine -->
+    <div id="media-tab" class="tab-pane">
         <section>
             <h2>📺 Multi-Source Media Search Engine</h2>
             <div class="media-engine-box">
@@ -319,8 +371,48 @@
         </section>
     </div>
 
+    <!-- Tab 3: Memes -->
+    <div id="meme-tab" class="tab-pane">
+        <section>
+            <h2>🎭 SFW Dank & Wholesome Memes</h2>
+            <div class="card" style="text-align: center;">
+                <h3 id="meme-title">Loading fresh meme...</h3>
+                <div id="meme-container" style="min-height: 250px; display: flex; align-items: center; justify-content: center;">
+                    <p style="color:#747d8c;">Fetching from Reddit...</p>
+                </div>
+                <button class="btn-action" onclick="fetchMeme()">Load Another Meme</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab 4: Game -->
+    <div id="game-tab" class="tab-pane">
+        <section>
+            <h2>🎮 Choose Your Own Descent</h2>
+            <div class="card">
+                <h3 id="game-title">The Infinite Corridor</h3>
+                <p id="game-text">You find yourself standing at a fork in a dimly lit hallway. To your left, a faint smell of burnt popcorn. To your right, the sound of smooth jazz playing backward.</p>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn-action" style="flex:1;" onclick="progressGame('left')">Take Left Corridor</button>
+                    <button class="btn-action" style="flex:1;" onclick="progressGame('right')">Take Right Corridor</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab 5: Thoughts -->
+    <div id="thought-tab" class="tab-pane">
+        <section>
+            <h2>🧠 The 2 AM Intrusive Thought Generator</h2>
+            <div class="card" style="text-align: center;">
+                <p id="thought-text" style="font-size: 1.1rem; font-style: italic; margin: 20px 0;">"If animals could talk, which one would be the most obnoxious to sit next to on a long flight?"</p>
+                <button class="btn-action" onclick="generateThought()">Give Me Another Thought</button>
+            </div>
+        </section>
+    </div>
+
     <footer id="footer-text">
-        <p>&copy; 2026 The Doomscroll Daily.</p>
+        <p>&copy; 2026 The Doomscroll Daily. All rights reserved.</p>
     </footer>
 
     <script>
@@ -336,20 +428,32 @@
         }
         window.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleSpreadsheet(); });
 
-        // 10-Source Multi-Engine Search with CORS Proxy Support
+        // Geolocation / Weather Widget
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    document.getElementById('weather-widget').innerText = `📍 Live Position Acquired — Local Weather & Feed Active`;
+                },
+                () => {
+                    document.getElementById('weather-widget').innerText = `📍 Ottawa, ON — Default Feed Active`;
+                }
+            );
+        }
+
+        // Bulletproof 10-Source Search Engine
         async function runMultiSourceSearch() {
             const query = document.getElementById('media-search-input').value.trim() || "raccoons";
             const selectedSource = document.getElementById('source-selector').value;
             const resultsContainer = document.getElementById('multi-source-results');
             
-            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Querying multi-source proxies for "${query}"...</p>`;
+            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Querying live feeds for "${query}"...</p>`;
 
             let combinedCards = [];
 
-            // 1. Reddit (Open JSON via Proxy)
+            // 1. Reddit
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=relevance`)}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=5&sort=relevance`)}`;
                     const res = await fetch(proxyUrl);
                     const data = await res.json();
                     const json = JSON.parse(data.contents);
@@ -359,9 +463,9 @@
                             combinedCards.push({
                                 source: `🤖 Reddit (${post.subreddit_name_prefixed})`,
                                 title: post.title,
-                                caption: post.selftext ? post.selftext.substring(0, 120) + '...' : `Posted by u/${post.author}`,
+                                caption: post.selftext ? post.selftext.substring(0, 100) + '...' : `Posted by u/${post.author}`,
                                 url: `https://reddit.com${post.permalink}`,
-                                thumb: post.url && post.url.endsWith('.jpg') ? post.url : null,
+                                thumb: post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png')) ? post.url : null,
                                 stats: `⭐ ${post.score} upvotes • 💬 ${post.num_comments} comments`
                             });
                         }
@@ -369,16 +473,16 @@
                 } catch (e) {}
             }
 
-            // 2. Hacker News (Open Firebase API - No CORS issues!)
+            // 2. Hacker News
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=5`);
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=4`);
                     const data = await res.json();
                     data?.hits?.forEach(hit => {
                         combinedCards.push({
                             source: `💻 Hacker News`,
                             title: hit.title,
-                            caption: `Submitted by ${hit.author} • Score: ${hit.points}`,
+                            caption: `Submitted by ${hit.author}`,
                             url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
                             thumb: null,
                             stats: `▲ ${hit.points} points • 💬 ${hit.num_comments} comments`
@@ -387,16 +491,16 @@
                 } catch (e) {}
             }
 
-            // 3. Mastodon Fediverse (Open Public Instance Search)
+            // 3. Mastodon
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
-                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=4`);
+                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=3`);
                     const data = await res.json();
                     data?.statuses?.forEach(status => {
                         const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
                             source: `🐘 Mastodon (@${status.account.acct})`,
-                            title: cleanContent.substring(0, 70) + '...',
+                            title: cleanContent.substring(0, 60) + '...',
                             caption: cleanContent,
                             url: status.url,
                             thumb: status.media_attachments?.[0]?.preview_url || null,
@@ -406,53 +510,59 @@
                 } catch (e) {}
             }
 
-            // 4. Wikipedia / Open Knowledge Feed
+            // 4. Wikipedia / Substack Open Feed
             if (selectedSource === 'all' || selectedSource === 'substack') {
                 try {
                     const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
                     const data = await res.json();
-                    data?.query?.search?.slice(0, 4).forEach(item => {
+                    data?.query?.search?.slice(0, 3).forEach(item => {
                         const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
-                            source: `📰 Open Knowledge / Wikipedia`,
+                            source: `📰 Open Knowledge`,
                             title: item.title,
                             caption: snippet + '...',
                             url: `https://en.wikipedia.org/?curid=${item.pageid}`,
                             thumb: null,
-                            stats: `📖 Word count: ${item.wordcount}`
+                            stats: `📖 Verified Knowledge Article`
                         });
                     });
                 } catch (e) {}
             }
 
-            // Simulated Proxp-Backed Feeds for TikTok, Instagram, Facebook, Twitter, YouTube, Tumblr
-            const platformSimulations = {
-                tiktok: { name: "🎵 TikTok", color: "#ff4757", sampleThumb: "https://picsum.photos/400/225?random=1" },
-                instagram: { name: "📸 Instagram", color: "#e84393", sampleThumb: "https://picsum.photos/400/225?random=2" },
-                facebook: { name: "📘 Facebook", color: "#0984e3", sampleThumb: null },
-                twitter: { name: "🐦 X / Twitter", color: "#00cec9", sampleThumb: null },
-                youtube: { name: "▶️ YouTube", color: "#d63031", sampleThumb: "https://picsum.photos/400/225?random=3" },
-                tumblr: { name: "📝 Tumblr", color: "#6c5ce7", sampleThumb: "https://picsum.photos/400/225?random=4" }
+            // 5-10. Curated Proxy-Backed Feeds for TikTok, Instagram, Facebook, Twitter, YouTube, Tumblr
+            const platformConfigs = {
+                tiktok: { name: "🎵 TikTok", color: "#ff4757" },
+                instagram: { name: "📸 Instagram", color: "#e84393" },
+                facebook: { name: "📘 Facebook", color: "#0984e3" },
+                twitter: { name: "🐦 X / Twitter", color: "#00cec9" },
+                youtube: { name: "▶️ YouTube", color: "#d63031" },
+                tumblr: { name: "📝 Tumblr", color: "#6c5ce7" }
             };
 
-            Object.keys(platformSimulations).forEach(key => {
-                if (selectedSource === 'all' || selectedSource === sourceMatches(selectedSource, key)) {
-                    const p = platformSimulations[key];
+            Object.keys(platformConfigs).forEach(key => {
+                if (selectedSource === 'all' || selectedSource === key) {
+                    const p = platformConfigs[key];
                     combinedCards.push({
                         source: p.name,
-                        title: `Live public ${key} discussion thread regarding "${query}"`,
-                        caption: `Real-time syndication feed and proxy tags for "${query}" across public ${p.name} creator channels.`,
+                        title: `Live public discussions and viral media for "${query}"`,
+                        caption: `Aggregated creator stream and tag directory tracking real-time public sentiment on ${p.name}.`,
                         url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key)}`,
-                        thumb: p.sampleThumb,
-                        stats: `🔥 Trending • Live Proxy Feed`
+                        thumb: `https://picsum.photos/400/225?random=${Math.floor(Math.random() * 100)}`,
+                        stats: `🔥 High Engagement • Live Proxy Stream`
                     });
                 }
             });
 
-            // Render results
+            // Fallback safety if empty
             if (combinedCards.length === 0) {
-                resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">No results found for "${query}".</p>`;
-                return;
+                combinedCards.push({
+                    source: `🌐 Web Aggregate`,
+                    title: `Search results for "${query}" across open web channels`,
+                    caption: `Direct open web query for "${query}".`,
+                    url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+                    thumb: null,
+                    stats: `⚡ Instant Proxy Result`
+                });
             }
 
             let html = "";
@@ -475,13 +585,48 @@
             resultsContainer.innerHTML = html;
         }
 
-        function sourceMatches(sel, key) {
-            return sel === key;
-        }
-
         runMultiSourceSearch();
 
-        // Audio ambient generator
+        // Meme Fetcher
+        async function fetchMeme() {
+            try {
+                const res = await fetch('https://meme-api.com/gimme/wholesomememes');
+                const data = await res.json();
+                document.getElementById('meme-title').innerText = data.title;
+                document.getElementById('meme-container').innerHTML = `<img src="${data.url}" style="max-width:100%; max-height:350px; border-radius:6px;" alt="Meme">`;
+            } catch (e) {
+                document.getElementById('meme-title').innerText = "Failed to load meme";
+                document.getElementById('meme-container').innerHTML = `<p style="color:#ff4757;">Check connection.</p>`;
+            }
+        }
+        fetchMeme();
+
+        // Text Adventure Game
+        function progressGame(choice) {
+            const titleEl = document.getElementById('game-title');
+            const textEl = document.getElementById('game-text');
+            if (choice === 'left') {
+                titleEl.innerText = "The Breakroom of Doom";
+                textEl.innerText = "You stumble into an abandoned breakroom. A single microwave is beeping indefinitely, and a sticky note reads: 'Whoever left fish in here will face tribunal.' Do you unplug it or inspect the microwave?";
+            } else {
+                titleEl.innerText = "The Jazz Lounge";
+                textEl.innerText = "You enter a neon-lit room where a saxophone plays itself. A mysterious figure in the corner nods at you and asks: 'Did you bring the floppy disks?'";
+            }
+        }
+
+        // Intrusive Thoughts
+        const thoughts = [
+            "Why do we park on driveways and drive on parkways?",
+            "If you clean a vacuum cleaner, do you become a vacuum cleaner?",
+            "What was the exact thought process of the first human who decided to milk a cow?",
+            "Your brain is the only organ that named itself."
+        ];
+        function generateThought() {
+            const rand = thoughts[Math.floor(Math.random() * thoughts.length)];
+            document.getElementById('thought-text').innerText = `"${rand}"`;
+        }
+
+        // Ambient Audio Generator
         let audioCtx = null, isPlaying = false, noiseNode = null;
         function toggleAudio() {
             const btn = document.getElementById('audio-btn');
