@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Doomscroll Daily | Automated World & Local News</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --border: #334155;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+        header h1 { margin: 0; font-size: 2.5rem; color: var(--accent); }
+        header p { color: var(--text-muted); margin-top: 0.5rem; }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        
+        section h2 { border-bottom: 2px solid var(--accent); padding-bottom: 0.5rem; margin-top: 0; }
+        .news-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .news-card:hover { transform: translateY(-2px); }
+        .news-card h3 { margin-top: 0; }
+        .news-card h3 a { color: var(--text-color); text-decoration: none; }
+        .news-card h3 a:hover { color: var(--accent); }
+        .news-card p { color: var(--text-muted); font-size: 0.95rem; }
+        .news-date { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; display: block; }
+
+        /* Ad Container Placeholders */
+        .ad-box {
+            background: rgba(56, 189, 248, 0.05);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The Doomscroll Daily</h1>
+        <p>Fully automated world headlines and local insights. Updated hourly by a script.</p>
+    </header>
+
+    <div class="container">
+        <!-- Main News Content Column -->
+        <main>
+            <!-- TOP AD PLACEHOLDER -->
+            <div class="ad-box">
+                <!-- INSERT AD CODE HERE (e.g., Adsterra Banner Code) -->
+                <p>--- Advertisement Placeholder ---</p>
+            </div>
+
+            <section>
+                <h2>World News</h2>
+                <div id="world-news-container">
+                    <!-- PYTHON SCRIPT INJECTS WORLD NEWS HERE -->
+                    <p>Loading headlines...</p>
+                </div>
+            </section>
+
+            <section style="margin-top: 3rem;">
+                <h2>Local Ottawa News</h2>
+                <div id="local-news-container">
+                    <!-- PYTHON SCRIPT INJECTS LOCAL NEWS HERE -->
+                    <p>Loading headlines...</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Sidebar Column -->
+        <aside>
+            <!-- SIDEBAR AD PLACEHOLDER -->
+            <div class="ad-box" style="padding: 4rem 1rem;">
+                <!-- INSERT AD CODE HERE -->
+                <p>--- Sidebar Ad Placeholder ---</p>
+            </div>
+
+            <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem;">
+                <h3 style="margin-top:0;">About This Site</h3>
+                <p style="font-size: 0.9rem;">This site has zero human editors. It compiles news automatically via RSS feeds and Python scripts so you don't have to jump across ten different tabs.</p>
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 The Doomscroll Daily. Automated with Python & GitHub Actions.</p>
+    </footer>
+
+</body>
+</html>
