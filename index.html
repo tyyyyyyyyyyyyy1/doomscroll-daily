@@ -213,16 +213,16 @@
             display: block;
             margin-bottom: 4px;
         }
-        .news-card h3 a {
+        .news-card h3 {
             color: #ff6b81;
-            text-decoration: none;
+            margin: 5px 0 8px 0;
             font-size: 1.1rem;
-            word-break: break-word;
         }
         .news-card p {
             color: #ced6e0;
             font-size: 0.95rem;
             line-height: 1.4;
+            margin: 0;
         }
 
         /* Meme Grid */
@@ -487,9 +487,17 @@
         <p>&copy; 2026 The Doomscroll Daily. Zero friction, maximum collapse.</p>
     </footer>
 
-    <!-- Audio Element & App Logic -->
+    <!-- Script Logic -->
     <script>
-        // --- FEATURE 1: Boss Key / Spreadsheet Toggle ---
+        // --- Tab Switching ---
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        // --- Boss Key / Spreadsheet Toggle ---
         function toggleSpreadsheet() {
             document.body.classList.toggle('spreadsheet-mode');
         }
@@ -497,7 +505,7 @@
             if (e.key === 'Escape') toggleSpreadsheet();
         });
 
-        // --- FEATURE 2: Panic Index Bar Generator ---
+        // --- Panic Index Bar ---
         const panicMetrics = [
             "📊 Global Panic Index: 98.4% (Existential dread levels optimal)",
             "📊 Global Panic Index: 89.2% (Coffee reserves depleting rapidly)",
@@ -506,22 +514,61 @@
         ];
         document.getElementById('panic-banner').innerText = panicMetrics[Math.floor(Math.random() * panicMetrics.length)];
 
-        // --- FEATURE 3: Regret Timer in Footer ---
+        // --- Regret Timer in Footer ---
         let secondsOnSite = 0;
         setInterval(() => {
             secondsOnSite++;
             const mins = Math.floor(secondsOnSite / 60);
             const secs = secondsOnSite % 60;
             const footerBase = footerJokes[currentFooterIndex].replace('</p>', '');
-            document.getElementById('footer-text').innerHTML = `${footerBase} | ⏳ Time wasted in abyss: ${mins}m ${secs}s</p>`;         }, 1000);          const footerJokes = [             "&copy; 2026 The Doomscroll Daily. You've scrolled this far, might as well keep going.",             "&copy; 2026 The Doomscroll Daily. Proudly wasting your precious minutes since yesterday.",             "&copy; 2026 The Doomscroll Daily. Side effects may include mild despair and lost time.",             "&copy; 2026 The Doomscroll Daily. No data was harmed, but your productivity sure was."         ];         const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);         document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
+            document.getElementById('footer-text').innerHTML = `${footerBase} | ⏳ Time wasted in abyss: ${mins}m ${secs}s</p>`;
+        }, 1000);
 
-        // --- NEW FEATURE: Unhinged Media Search Engine Logic ---
+        const footerJokes = [
+            "&copy; 2026 The Doomscroll Daily. You've scrolled this far, might as well keep going.",
+            "&copy; 2026 The Doomscroll Daily. Proudly wasting your precious minutes since yesterday.",
+            "&copy; 2026 The Doomscroll Daily. Side effects may include mild despair and lost time.",
+            "&copy; 2026 The Doomscroll Daily. No data was harmed, but your productivity sure was."
+        ];
+        const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);
+        document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
+
+        // --- Simulated News Feeds (Guaranteed to load instantly on GitHub Pages) ---
+        const worldHeadlines = [
+            { title: "Global Wi-Fi Fluctuates by 4%", desc: "Scientists report a brief drop in collective attention span as everyone simultaneously refreshed their feeds." },
+            { title: "Experts Confused by Tuesday", desc: "For the third week in a row, Tuesday has failed to provide any coherent narrative structure." },
+            { title: "Coffee Bean Market Reaches Critical Mass", desc: "Local office workers report running entirely on spite and cold brew." },
+            { title: "Stratosphere Temporarily Out of Order", desc: "Authorities advise citizens to avoid looking directly at the sky until further notice." }
+        ];
+
+        const localHeadlines = [
+            { title: "Local Raccoon Syndicate Demands Tribute", desc: "A masked coalition in Ottawa was spotted blockading a dumpster in exchange for loose change." },
+            { title: "Transit Delay Inspires Deep Philosophical Awakening", desc: "Commuters waiting at the station have collectively solved the meaning of life out of sheer boredom." },
+            { title: "Pothole Declared Official Landmark", desc: "Local municipality considers charging admission to the crater on Main Street." }
+        ];
+
+        function loadStaticFeeds() {
+            let worldHtml = "";
+            worldHeadlines.forEach(item => {
+                worldHtml += `<div class="news-card"><span class="news-date">Today</span><h3>${item.title}</h3><p>${item.desc}</p></div>`;
+            });
+            document.getElementById('world-news').innerHTML = worldHtml;
+
+            let localHtml = "";
+            localHeadlines.forEach(item => {
+                localHtml += `<div class="news-card"><span class="news-date">Today</span><h3>${item.title}</h3><p>${item.desc}</p></div>`;
+            });
+            document.getElementById('local-news').innerHTML = localHtml;
+        }
+        loadStaticFeeds();
+
+        // --- Unhinged Media Search Engine Logic ---
         const unhingedTemplates = [
             (query) => `POV: You tried to research "${query}" at 3 AM and now local wildlife is plotting against you.`,
             (query) => `Day 14 of studying "${query}" without human contact. I am fluent in garbage language now.`,
             (query) => `They don't want you to know the truth about "${query}". Look at the numbers!!`,
             (query) => `Me explaining to my cat why "${query}" is the most important crisis of our generation.`,
-            (query) => `Spotted someone trying to weaponize "${query}" at a local convenience store. Ottawa is wild.`,
+            (query) => `Spotted someone trying to weaponize "${query}" at a local convenience store.`,
             (query) => `If you don't wake up screaming about "${query}" every morning, are you even experiencing the timeline correctly?`
         ];
 
@@ -554,10 +601,141 @@
             }
             document.getElementById('media-results').innerHTML = html;
         }
+        runUnhingedSearch();
 
-        // --- FEATURE 4: Mini Game Logic ---
+        // --- Memes Loading ---
+        async function loadMemes() {
+            async function fetchUniqueMemes(subreddits) {
+                const uniqueMemes = new Set();
+                const memeList = [];
+                let attempts = 0;
+                while (memeList.length < 6 && attempts < 30) {
+                    attempts++;
+                    const sub = subreddits[Math.floor(Math.random() * subreddits.length)];
+                    try {
+                        const res = await fetch(`https://meme-api.com/gimme/${sub}`);
+                        const meme = await res.json();
+                        if (meme && meme.url && !uniqueMemes.has(meme.url) && !meme.nsfw) {
+                            uniqueMemes.add(meme.url);
+                            memeList.push(meme);
+                        }
+                    } catch (err) {}
+                }
+                return memeList;
+            }
+
+            try {
+                const darkMemes = await fetchUniqueMemes(['dankmemes', 'me_irl']);
+                let darkHtml = '';
+                darkMemes.forEach(meme => {
+                    darkHtml += `<div class="meme-card"><img src="${meme.url}" alt="Dark Meme" loading="lazy"><p>${meme.title}</p></div>`;
+                });
+                document.getElementById('dark-memes').innerHTML = darkHtml || "<p>The abyss is currently empty.</p>";
+            } catch (e) {
+                document.getElementById('dark-memes').innerHTML = "<p>Dark meme servers are hiding.</p>";
+            }
+
+            try {
+                const sfwMemes = await fetchUniqueMemes(['wholesomememes', 'eyebleach']);
+                let sfwHtml = '';
+                sfwMemes.forEach(meme => {
+                    sfwHtml += `<div class="meme-card"><img src="${meme.url}" alt="SFW Meme" loading="lazy"><p>${meme.title}</p></div>`;
+                });
+                document.getElementById('sfw-memes').innerHTML = sfwHtml || "<p>Wholesome memes currently resting.</p>";
+            } catch (e) {
+                document.getElementById('sfw-memes').innerHTML = "<p>SFW meme servers buffering.</p>";
+            }
+        }
+        loadMemes();
+
+        // --- Weather Widget ---
+        document.getElementById('weather-widget').innerHTML = "🌡 Local Weather: 14°C — Perfect weather to stay glued to a screen.";
+
+        // --- Mini Game Logic ---
         function nextStage(choice) {
             const container = document.getElementById('game-container');
             if (choice === 1) {
                 container.innerHTML = `
-                    <p>You stared at the popcorn ceiling. You calculated that if
+                    <p>You stared at the popcorn ceiling. You calculated that if you stay still long enough, adult responsibilities might forget you exist. They didn't.</p>
+                    <button class="game-btn" onclick="resetGame()">Start Over</button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <p>You built a gourmet breakfast consisting of stale cereal and optimism. It tasted like defeat, but you survived another hour.</p>
+                    <button class="game-btn" onclick="resetGame()">Start Over</button>
+                `;
+            }
+        }
+        function resetGame() {
+            document.getElementById('game-container').innerHTML = `
+                <p id="game-text">You wake up to a Tuesday morning notification telling you the servers are down. What do you do?</p>
+                <div id="game-options">
+                    <button class="game-btn" onclick="nextStage(1)">Stare at the ceiling for 45 minutes.</button>
+                    <button class="game-btn" onclick="nextStage(2)">Make an overly complicated breakfast.</button>
+                </div>
+            `;
+        }
+
+        // --- Intrusive Thought Generator ---
+        const intrusiveThoughts = [
+            "What if pigeons are just surveillance drones that have to land on power lines to recharge wirelessly?",
+            "You are currently living in the 'good old days' of whatever catastrophe future historians are going to write about.",
+            "If you yell 'Marco!' in a crowded grocery store and someone yells back 'Polo!', you legally have to be best friends now.",
+            "Every mirror you look into is a slightly delayed live stream of an alternate reality where you didn't click this link.",
+            "How many spiders have crawled across your face while you were sleeping, and did they judge your skin care routine?",
+            "If time travel is ever invented in the future, why hasn't someone come back just to close my browser tabs?",
+            "Somewhere out there, an alternate version of you is actually being productive. Don't let them win.",
+            "Your brain automatically auto-corrects typos when you read, meaning you can never truly proofread your own texts while sleep-deprived."
+        ];
+
+        function generateThought() {
+            const randomThought = intrusiveThoughts[Math.floor(Math.random() * intrusiveThoughts.length)];
+            document.getElementById('thought-text').innerText = `"${randomThought}"`;
+        }
+
+        // --- Ambient Audio Generator ---
+        let audioCtx = null;
+        let isPlaying = false;
+        let noiseNode = null;
+
+        function toggleAudio() {
+            const btn = document.getElementById('audio-btn');
+            if (!isPlaying) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const bufferSize = audioCtx.sampleRate * 2;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                let lastOut = 0.0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    data[i] = (lastOut + (0.02 * white)) / 1.02;
+                    lastOut = data[i];
+                }
+                noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+                noiseNode.loop = true;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 800;
+
+                const gain = audioCtx.createGain();
+                gain.gain.value = 0.05;
+
+                noiseNode.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                noiseNode.start();
+
+                isPlaying = true;
+                btn.innerText = "🔊 Ambient Audio: Playing (Rain/Static)";
+            } else {
+                if (noiseNode) noiseNode.stop();
+                if (audioCtx) audioCtx.close();
+                isPlaying = false;
+                btn.innerText = "🔊 Ambient Audio: Muted";
+            }
+        }
+    </script>
+</body>
+</html>
