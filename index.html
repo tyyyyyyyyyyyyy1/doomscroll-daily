@@ -24,43 +24,75 @@
         }
         @media (min-width: 768px) { body { padding: 20px; } }
         
-        #panic-btn {
+        .panic-controls {
             position: fixed;
             top: 15px;
             right: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 9999;
+        }
+        .panic-btn {
             background: #ff4757;
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             cursor: pointer;
-            z-index: 9999;
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
         }
-        #panic-btn:hover { transform: scale(1.05); }
+        .panic-btn.raccoon { background: #ffa502; color: #000; }
+        .panic-btn:hover { transform: scale(1.05); }
 
-        body.spreadsheet-mode {
-            background-color: #ffffff !important;
-            color: #333333 !important;
-            font-family: Arial, sans-serif !important;
-        }
-        body.spreadsheet-mode header, 
-        body.spreadsheet-mode .tab-nav, 
-        body.spreadsheet-mode .tab-pane, 
-        body.spreadsheet-mode footer, 
-        body.spreadsheet-mode #gps-weather-widget, 
-        body.spreadsheet-mode #panic-btn,
-        body.spreadsheet-mode #panic-banner {
+        /* Corporate Bullsh!t Panic Mode */
+        body.panic-mode header, 
+        body.panic-mode .tab-nav, 
+        body.panic-mode .tab-pane, 
+        body.panic-mode footer, 
+        body.panic-mode #gps-weather-widget, 
+        body.panic-mode .panic-controls,
+        body.panic-mode #panic-banner,
+        body.panic-mode #raccoon-chaos {
             display: none !important;
         }
-        #fake-spreadsheet {
+        #corporate-panic {
             display: none;
-            padding: 20px;
+            padding: 40px;
+            background: #ffffff;
+            color: #111;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
         }
-        body.spreadsheet-mode #fake-spreadsheet {
+        body.panic-mode #corporate-panic {
             display: block !important;
+        }
+
+        /* Raccoon Chaos Mode */
+        body.raccoon-mode header, 
+        body.raccoon-mode .tab-nav, 
+        body.raccoon-mode .tab-pane, 
+        body.raccoon-mode footer, 
+        body.raccoon-mode #gps-weather-widget, 
+        body.raccoon-mode .panic-controls,
+        body.raccoon-mode #panic-banner,
+        body.raccoon-mode #corporate-panic {
+            display: none !important;
+        }
+        #raccoon-chaos {
+            display: none;
+            padding: 40px;
+            background: #000;
+            color: #ff4757;
+            text-align: center;
+            min-height: 100vh;
+        }
+        body.raccoon-mode #raccoon-chaos {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         header {
@@ -88,8 +120,9 @@
             align-items: center;
             margin-top: 10px;
             font-size: 0.85rem;
+            flex-wrap: wrap;
         }
-        .audio-toggle {
+        .utility-btn {
             background: #222630;
             border: 1px solid #444;
             color: #fff;
@@ -97,6 +130,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
+        .utility-btn:hover { background: #333842; }
 
         #panic-banner, #gps-weather-widget {
             background: var(--card-bg);
@@ -146,6 +180,14 @@
             margin-bottom: 20px;
             font-size: 1.8rem;
             text-align: center;
+        }
+        section h3.sub-heading {
+            color: var(--secondary-accent);
+            border-bottom: 1px dashed #444;
+            padding-bottom: 5px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
         }
 
         .card-grid {
@@ -293,50 +335,52 @@
 </head>
 <body>
 
-    <button id="panic-btn" onclick="toggleSpreadsheet()">🚨 Act Normal (Esc)</button>
+    <div class="panic-controls">
+        <button class="panic-btn raccoon" onclick="toggleRaccoonChaos()">🦝 Trash Panda Mode</button>
+        <button class="panic-btn" onclick="toggleCorporatePanic()">📈 Corporate BS (Esc)</button>
+    </div>
 
-    <div id="fake-spreadsheet">
-        <h2>Q3 Logistics & Regional Synergy Report</h2>
-        <table border="1" style="width:100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem;">
-            <tr style="background:#f2f2f2;"><th style="padding:8px;">Region</th><th style="padding:8px;">Output</th><th style="padding:8px;">Status</th></tr>
-            <tr><td style="padding:6px;">North Sector</td><td style="padding:6px;">1,420 units</td><td style="padding:6px;">Stable</td></tr>
-            <tr><td style="padding:6px;">East Coast Hub</td><td style="padding:6px;">2,890 units</td><td style="padding:6px;">Optimized</td></tr>
-        </table>
-        <p style="margin-top: 20px; font-style:italic; color:#888;">Press [Esc] to return to normal view.</p>
+    <!-- Corporate Bullsh!t Generator Panic Screen -->
+    <div id="corporate-panic">
+        <h2 style="color: #0056b3; margin-top:0;">📊 Executive Synergy & Paradigm Strategy Memorandum</h2>
+        <p id="corporate-memo" style="font-size: 1.2rem; line-height: 1.6; background: #f8f9fa; padding: 20px; border-left: 5px solid #0056b3; border-radius: 4px;">
+            Loading executive bullshit stream...
+        </p>
+        <div style="display:flex; gap: 15px; margin-top: 20px;">
+            <button class="btn-action" style="background:#0056b3;" onclick="generateCorporateBS()">Generate New Corporate Word Salad</button>
+            <button class="btn-action" style="background:#6c757d;" onclick="toggleCorporatePanic()">Return to Dashboard (Esc)</button>
+        </div>
+    </div>
+
+    <!-- Trash Panda Chaos Mode -->
+    <div id="raccoon-chaos">
+        <h1 style="color: #ffa502; font-size: 3.5rem; margin-bottom: 10px;">🦝 THE GARBAGE GOBLINS HAVE AWOKEN 🦝</h1>
+        <p style="font-size: 1.3rem; color: #ced6e0; max-width: 600px; line-height: 1.5;">You clicked the forbidden trash button. The local raccoon syndicate demands all leftover pizza crusts immediately or your Wi-Fi router gets chewed through.</p>
+        <button class="btn-action" style="background: #ffa502; color: #000; margin-top: 25px;" onclick="toggleRaccoonChaos()">Appease the Raccoons & Escape</button>
     </div>
 
     <header>
         <h1>The Doomscroll Daily</h1>
         <p class="tagline">Your Daily Dose of Brain-Rot & Global Reality</p>
-        <div class="top-utilities">
-            <button class="audio-toggle" id="audio-btn" onclick="toggleAudio()">🔊 Ambient Audio: Muted</button>
-        </div>
     </header>
 
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     <div id="gps-weather-widget">📍 GPS Locating coordinates...</div>
 
     <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('news-tab', this)">📰 Bulletins & Local/World News</button>
+        <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Bulletins</button>
+        <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News</button>
         <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 10-Source Media Engine</button>
         <button class="tab-btn" onclick="switchTab('meme-tab', this)">🎭 Memes</button>
-        <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 Text Adventure</button>
+        <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 RPG Adventure</button>
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
     </div>
 
-    <!-- Tab 1: Bulletins, GPS Local News & World News -->
-    <div id="news-tab" class="tab-pane active">
+    <!-- Tab 1: Bulletins -->
+    <div id="bulletin-tab" class="tab-pane active">
         <section>
-            <h2>📰 Bulletins, GPS Local & World News</h2>
+            <h2>📌 Daily Bulletins</h2>
             <div class="card-grid">
-                <div class="card" style="border-color: #1e90ff;">
-                    <h3>📍 GPS Local News: Chinatown & Centretown Sweeps</h3>
-                    <p>Ottawa Police report over two dozen arrests following recent targeted patrols along Bank and Somerset streets to address ongoing neighborhood disorder and public safety concerns.</p>
-                </div>
-                <div class="card" style="border-color: #1e90ff;">
-                    <h3>📍 Municipal Focus: Mayoral Election Campaign Focus</h3>
-                    <p>Local campaigns heat up across the capital region with candidates introducing platform strategies regarding transit infrastructure upgrades, regional trade, and municipal development.</p>
-                </div>
                 <div class="card">
                     <h3>Headline: Local Raccoon Syndicate Demands Higher Quality Garbage</h3>
                     <p>Municipal waste managers report sophisticated sorting by local raccoons, who are now bypassing compost bins entirely in search of premium cardboard packaging.</p>
@@ -345,19 +389,41 @@
                     <h3>Tech: Coffee Machine Achieves Sentience, Demands Weekends Off</h3>
                     <p>An office espresso machine in downtown Ottawa reportedly locked down its steam wand until staff agreed to stop talking about synergy during morning standups.</p>
                 </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab 2: News -->
+    <div id="news-tab" class="tab-pane">
+        <section>
+            <h2>📰 News Feed</h2>
+            <h3 class="sub-heading">📍 GPS Sourced Local News</h3>
+            <div class="card-grid">
+                <div class="card" style="border-color: #1e90ff;">
+                    <h3>Chinatown & Centretown Sweeps</h3>
+                    <p>Ottawa Police report over two dozen arrests following recent targeted patrols along Bank and Somerset streets to address ongoing neighborhood disorder and public safety concerns.</p>
+                </div>
+                <div class="card" style="border-color: #1e90ff;">
+                    <h3>Municipal Focus: Capital Region Campaign Focus</h3>
+                    <p>Local campaigns heat up across the capital region with candidates introducing platform strategies regarding transit infrastructure upgrades, regional trade, and municipal development.</p>
+                </div>
+            </div>
+
+            <h3 class="sub-heading">🌍 World News</h3>
+            <div class="card-grid">
                 <div class="card" style="border-color: var(--secondary-accent);">
-                    <h3>🌍 Global: Quantum Cryptography Breakthrough Reaches Commercial Milestone</h3>
+                    <h3>Quantum Cryptography Breakthrough Reaches Commercial Milestone</h3>
                     <p>International consortiums confirm the successful deployment of continent-scale quantum key distribution networks, fundamentally altering global cybersecurity frameworks.</p>
                 </div>
                 <div class="card" style="border-color: var(--secondary-accent);">
-                    <h3>🌐 Geopolitics: Global Energy Grids Pivot Rapidly to Next-Gen Storage</h3>
+                    <h3>Global Energy Grids Pivot Rapidly to Next-Gen Storage</h3>
                     <p>Major metropolitan hubs across North America and Europe report record integration rates for localized grid-scale battery arrays, easing peak demand anxiety.</p>
                 </div>
             </div>
         </section>
     </div>
 
-    <!-- Tab 2: 10-Source Media Search Engine -->
+    <!-- Tab 3: Media Engine -->
     <div id="media-tab" class="tab-pane">
         <section>
             <h2>📺 Multi-Source Media Search Engine</h2>
@@ -379,7 +445,6 @@
                     </select>
                     <button onclick="runMultiSourceSearch()">Search Sources</button>
                 </div>
-
                 <div id="multi-source-results" class="media-grid">
                     <p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Select sources and enter a query to query live feeds...</p>
                 </div>
@@ -387,7 +452,7 @@
         </section>
     </div>
 
-    <!-- Tab 3: Memes (Wholesome & Dark Sections) -->
+    <!-- Tab 4: Memes -->
     <div id="meme-tab" class="tab-pane">
         <section>
             <h2>🎭 Dank & Dark Meme Feed</h2>
@@ -410,22 +475,19 @@
         </section>
     </div>
 
-    <!-- Tab 4: Game -->
+    <!-- Tab 5: Procedural RPG Text Adventure (Fresh game on every refresh!) -->
     <div id="game-tab" class="tab-pane">
         <section>
-            <h2>🎮 Choose Your Own Descent</h2>
+            <h2>🎮 Procedural Text Adventure</h2>
             <div class="card">
-                <h3 id="game-title">The Infinite Corridor</h3>
-                <p id="game-text">You find yourself standing at a fork in a dimly lit hallway. To your left, a faint smell of burnt popcorn. To your right, the sound of smooth jazz playing backward.</p>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="btn-action" style="flex:1;" onclick="progressGame('left')">Take Left Corridor</button>
-                    <button class="btn-action" style="flex:1;" onclick="progressGame('right')">Take Right Corridor</button>
-                </div>
+                <h3 id="game-title">Loading Adventure...</h3>
+                <p id="game-text" style="font-size: 1.05rem; line-height: 1.5; min-height: 80px;">Generating randomized scenario...</p>
+                <div id="game-choices" style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;"></div>
             </div>
         </section>
     </div>
 
-    <!-- Tab 5: Thoughts -->
+    <!-- Tab 6: Thoughts -->
     <div id="thought-tab" class="tab-pane">
         <section>
             <h2>🧠 The 2 AM Intrusive Thought Generator</h2>
@@ -436,8 +498,8 @@
         </section>
     </div>
 
-    <footer id="footer-text">
-        <p>&copy; 2026 The Doomscroll Daily. All rights reserved.</p>
+    <footer>
+        <p>&copy; 2026 The Doomscroll Daily. All rights reserved. | Press [Esc] for Corporate BS Mode.</p>
     </footer>
 
     <script>
@@ -448,35 +510,57 @@
             btnElement.classList.add('active');
         }
 
-        function toggleSpreadsheet() {
-            document.body.classList.toggle('spreadsheet-mode');
+        // Fun Panic Modes
+        function toggleCorporatePanic() {
+            document.body.classList.toggle('panic-mode');
+            if(document.body.classList.contains('panic-mode')) generateCorporateBS();
         }
-        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleSpreadsheet(); });
+        function toggleRaccoonChaos() {
+            document.body.classList.toggle('raccoon-mode');
+        }
+        window.addEventListener('keydown', (e) => { 
+            if (e.key === 'Escape') {
+                document.body.classList.remove('panic-mode');
+                document.body.classList.remove('raccoon-mode');
+            }
+        });
 
-        // GPS Geolocation & Live Weather / Local News Integration
+        // Corporate Bullsh!t Generator
+        const bsVerbs = ["leveraging", "synergizing", "disrupting", "optimizing", "pivoting", "streamlining", "reimagining"];
+        const bsAdjectives = ["cross-platform", "holistic", "scalable", "paradigm-shifting", "quantum-grade", "low-friction", "agile"];
+        const bsNouns = ["touchpoints", "deliverables", "bandwidth", "core competencies", "market vectors", "ecosystems", "stakeholder value"];
+        
+        function generateCorporateBS() {
+            const verb = bsVerbs[Math.floor(Math.random() * bsVerbs.length)];
+            const adj1 = bsAdjectives[Math.floor(Math.random() * bsAdjectives.length)];
+            const adj2 = bsAdjectives[Math.floor(Math.random() * bsAdjectives.length)];
+            const noun = bsNouns[Math.floor(Math.random() * bsNouns.length)];
+            const noun2 = bsNouns[Math.floor(Math.random() * bsNouns.length)];
+
+            const memo = `In order to successfully execute our Q4 objectives, we must focus on ${verb} ${adj1} ${noun} while simultaneously driving organic growth across our primary ${adj2} ${noun2}. Let's touch base offline regarding this holistic paradigm shift.`;
+            document.getElementById('corporate-memo').innerText = memo;
+        }
+
+        // GPS Geolocation
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude.toFixed(2);
                     const lon = position.coords.longitude.toFixed(2);
-                    document.getElementById('gps-weather-widget').innerText = `📍 GPS Locked (${lat}, ${lon}) — Ottawa Local News & Feeds Active`;
+                    document.getElementById('gps-weather-widget').innerText = `📍 GPS Locked (${lat}, ${lon}) — Ottawa Local News Subcategory Active`;
                 },
-                () => {
-                    document.getElementById('gps-weather-widget').innerText = `📍 GPS Location Unavailable — Ottawa, ON Default Feed Active`;
-                }
+                () => { document.getElementById('gps-weather-widget').innerText = `📍 GPS Location Unavailable — Ottawa, ON Default Local Feed Active`; }
             );
         } else {
             document.getElementById('gps-weather-widget').innerText = `📍 Ottawa, ON — Default Local Feed Active`;
         }
 
-        // Bulletproof 10-Source Search Engine
+        // 10-Source Search Engine
         async function runMultiSourceSearch() {
             const query = document.getElementById('media-search-input').value.trim() || "Ottawa";
             const selectedSource = document.getElementById('source-selector').value;
             const resultsContainer = document.getElementById('multi-source-results');
-            
             resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Querying live feeds for "${query}"...</p>`;
-
             let combinedCards = [];
 
             if (selectedSource === 'all' || selectedSource === 'reddit') {
@@ -555,14 +639,8 @@
             }
 
             const platformConfigs = {
-                tiktok: { name: "🎵 TikTok" },
-                instagram: { name: "📸 Instagram" },
-                facebook: { name: "📘 Facebook" },
-                twitter: { name: "🐦 X / Twitter" },
-                youtube: { name: "▶️ YouTube" },
-                tumblr: { name: "📝 Tumblr" }
+                tiktok: { name: "🎵 TikTok" }, instagram: { name: "📸 Instagram" }, facebook: { name: "📘 Facebook" }, twitter: { name: "🐦 X / Twitter" }, youtube: { name: "▶️ YouTube" }, tumblr: { name: "📝 Tumblr" }
             };
-
             Object.keys(platformConfigs).forEach(key => {
                 if (selectedSource === 'all' || selectedSource === key) {
                     const p = platformConfigs[key];
@@ -579,12 +657,7 @@
 
             if (combinedCards.length === 0) {
                 combinedCards.push({
-                    source: `🌐 Web Aggregate`,
-                    title: `Search results for "${query}" across open web channels`,
-                    caption: `Direct open web query for "${query}".`,
-                    url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-                    thumb: null,
-                    stats: `⚡ Instant Proxy Result`
+                    source: `🌐 Web Aggregate`, title: `Search results for "${query}" across open web channels`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, thumb: null, stats: `⚡ Instant Proxy Result`
                 });
             }
 
@@ -607,15 +680,13 @@
             });
             resultsContainer.innerHTML = html;
         }
-
         runMultiSourceSearch();
 
-        // Dual Meme Fetcher (Wholesome & Dark/Dank)
+        // Dual Meme Fetcher
         async function fetchMeme(sub) {
             const isDark = sub === 'dankmemes';
             const titleEl = document.getElementById(isDark ? 'dark-meme-title' : 'meme-title');
             const containerEl = document.getElementById(isDark ? 'dark-meme-container' : 'meme-container');
-            
             try {
                 const res = await fetch(`https://meme-api.com/gimme/${sub}`);
                 const data = await res.json();
@@ -629,18 +700,64 @@
         fetchMeme('wholesomememes');
         fetchMeme('dankmemes');
 
-        // Text Adventure Game
-        function progressGame(choice) {
-            const titleEl = document.getElementById('game-title');
-            const textEl = document.getElementById('game-text');
-            if (choice === 'left') {
-                titleEl.innerText = "The Breakroom of Doom";
-                textEl.innerText = "You stumble into an abandoned breakroom. A single microwave is beeping indefinitely, and a sticky note reads: 'Whoever left fish in here will face tribunal.' Do you unplug it or inspect the microwave?";
-            } else {
-                titleEl.innerText = "The Jazz Lounge";
-                textEl.innerText = "You enter a neon-lit room where a saxophone plays itself. A mysterious figure in the corner nods at you and asks: 'Did you bring the floppy disks?'";
+        // Procedural RPG Text Adventure Generator (Randomized on every page load)
+        const gameTemplates = [
+            {
+                title: "The Great Grocery Cart Stand-Off",
+                startText: "You are blocking the cereal aisle at 2 AM with your shopping cart. An intense stranger approaches, whispering that your box of Chex is the chosen key to an ancient pantry vault. Do you defend your cereal or throw it at them and run?",
+                choices: [
+                    { text: "Defend the Cereal", next: "p1_defend" },
+                    { text: "Throw & Run", next: "p1_run" }
+                ],
+                nodes: {
+                    p1_defend: { text: "You cross your arms. The stranger nods in deep respect, crowns you King of Breakfast, and gifts you a lifetime supply of oat milk.", win: true },
+                    p1_run: { text: "You trip over a display of discount energy drinks and get buried under an avalanche of aluminum cans. RIP.", win: false }
+                }
+            },
+            {
+                title: "The Midnight Coffee Machine Rebellion",
+                startText: "The office espresso machine glows with a terrifying red LED. It prints a label that says: 'Pay tribute or lose your caffeine privileges forever.' Do you offer it a sacrifice of spare change or challenge it to a staring contest?",
+                choices: [
+                    { text: "Offer Spare Change", next: "p2_coin" },
+                    { text: "Staring Contest", next: "p2_stare" }
+                ],
+                nodes: {
+                    p2_coin: { text: "The machine accepts your tribute and dispenses the smoothest macchiato of your life. You are spared.", win: true },
+                    p2_stare: { text: "Machines don't blink. It blasts hot steam directly into your face out of sheer disrespect.", win: false }
+                }
+            },
+            {
+                title: "The Rogue Autonomous Scooter",
+                startText: "A parked electric scooter suddenly starts beeping on its own, revving its motor as if it wants to race you home. Do you accept the challenge or walk backward slowly?",
+                choices: [
+                    { text: "Accept the Race", next: "p3_race" },
+                    { text: "Walk Backward", next: "p3_walk" }
+                ],
+                nodes: {
+                    p3_race: { text: "You sprint neck-and-neck with the scooter down the sidewalk, achieving peak aerobic greatness. You win by a front wheel.", win: true },
+                    p3_walk: { text: "The scooter follows you home, chirping mockingly outside your window until dawn.", win: false }
+                }
             }
+        ];
+
+        let currentGame = gameTemplates[Math.floor(Math.random() * gameTemplates.length)];
+        function initGame() {
+            document.getElementById('game-title').innerText = currentGame.title;
+            document.getElementById('game-text').innerText = currentGame.startText;
+            let html = "";
+            currentGame.choices.forEach(c => {
+                html += `<button class="btn-action" style="flex:1;" onclick="progressGame('${c.next}')">${c.text}</button>`;
+            });
+            document.getElementById('game-choices').innerHTML = html;
         }
+
+        function progressGame(nodeKey) {
+            const node = currentGame.nodes[nodeKey];
+            document.getElementById('game-text').innerText = node.text;
+            let endHtml = node.win ? `<p style="color:#2ed573; font-weight:bold; width:100%;">🎉 Victory! Refresh the page to play a brand new adventure.</p>` : `<p style="color:#ff4757; font-weight:bold; width:100%;">💀 Defeat! Refresh the page to try again.</p>`;
+            document.getElementById('game-choices').innerHTML = endHtml;
+        }
+        initGame();
 
         // Intrusive Thoughts
         const thoughts = [
@@ -652,30 +769,6 @@
         function generateThought() {
             const rand = thoughts[Math.floor(Math.random() * thoughts.length)];
             document.getElementById('thought-text').innerText = `"${rand}"`;
-        }
-
-        // Ambient Audio Generator
-        let audioCtx = null, isPlaying = false, noiseNode = null;
-        function toggleAudio() {
-            const btn = document.getElementById('audio-btn');
-            if (!isPlaying) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < buffer.sampleRate * 2; i++) data[i] = (Math.random() * 2 - 1) * 0.05;
-                noiseNode = audioCtx.createBufferSource();
-                noiseNode.buffer = buffer;
-                noiseNode.loop = true;
-                noiseNode.connect(audioCtx.destination);
-                noiseNode.start();
-                isPlaying = true;
-                btn.innerText = "🔊 Ambient Audio: Playing";
-            } else {
-                if (noiseNode) noiseNode.stop();
-                if (audioCtx) audioCtx.close();
-                isPlaying = false;
-                btn.innerText = "🔊 Ambient Audio: Muted";
-            }
         }
     </script>
 </body>
