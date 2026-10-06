@@ -22,7 +22,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install feedparser beautifulsoup4 google-genai
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir feedparser beautifulsoup4 google-genai
 
       - name: Run Sarcastic News Script
         env:
