@@ -12,104 +12,161 @@
             --accent-color: #ff4757;
             --secondary-accent: #ffa502;
         }
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding: 10px;
+        }
+        @media (min-width: 768px) {
+            body { padding: 20px; }
         }
         header {
             text-align: center;
-            padding: 40px 20px;
+            padding: 25px 10px;
             border-bottom: 2px dashed #333;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             background: linear-gradient(135deg, #1a1d24 0%, #2f1b25 100%);
             border-radius: 12px;
         }
         h1 {
-            font-size: 3rem;
+            font-size: 2.2rem;
             margin: 0;
             color: var(--accent-color);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+        }
+        @media (min-width: 768px) {
+            h1 { font-size: 3rem; }
         }
         .tagline {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: #a4b0be;
-            margin-top: 10px;
+            margin-top: 8px;
         }
         .doom-banner {
-            max-width: 600px;
+            width: 100%;
+            max-width: 500px;
+            height: auto;
             margin: 15px auto 0 auto;
             border-radius: 8px;
             opacity: 0.9;
+            display: block;
         }
-        /* Weather Widget Styling */
+        /* Weather Widget */
         #weather-widget {
             background: var(--card-bg);
             border: 1px solid #333;
-            padding: 15px 25px;
+            padding: 12px 15px;
             border-radius: 8px;
             text-align: center;
-            max-width: 500px;
-            margin: 0 auto 30px auto;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
             font-weight: bold;
             color: var(--secondary-accent);
+            font-size: 0.95rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
+        /* Layout Grid - Mobile First (1 Column), Desktop (2 Columns) */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            grid-template-columns: 1fr;
+            gap: 20px;
         }
-        @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
+        @media (min-width: 900px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+        }
+        section {
+            background: rgba(26, 29, 36, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #222;
         }
         section h2 {
             border-bottom: 3px solid var(--accent-color);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
         }
+        /* News Cards */
         .news-card {
             background-color: var(--card-bg);
             border: 1px solid #2f3542;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
         }
         .news-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(255, 71, 87, 0.15);
+            transform: translateY(-2px);
         }
         .news-date {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #747d8c;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .news-card h3 a {
             color: #ff6b81;
             text-decoration: none;
-            font-size: 1.3rem;
-        }
-        .news-card h3 a:hover {
-            text-decoration: underline;
+            font-size: 1.1rem;
+            word-break: break-word;
         }
         .news-card p {
             color: #ced6e0;
-            line-height: 1.5;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        /* Meme Grid */
+        .meme-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        @media (min-width: 500px) {
+            .meme-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .meme-card {
+            background-color: var(--card-bg);
+            border: 1px solid #2f3542;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+        .meme-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #000;
+        }
+        .meme-card p {
+            font-size: 0.85rem;
+            margin: 8px 0 0 0;
+            color: #d1d8e0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         footer {
             text-align: center;
-            padding: 40px;
+            padding: 30px 10px;
             color: #747d8c;
             border-top: 1px solid #222;
-            margin-top: 50px;
+            margin-top: 40px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -117,33 +174,48 @@
 
     <header>
         <h1>The Doomscroll Daily</h1>
-        <p class="tagline">Your automated daily briefing of global collapse and local nonsense.</p>
+        <p class="tagline">Hourly automated briefing of global collapse, local nonsense, and internet humor.</p>
         <img class="doom-banner" src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600&auto=format&fit=crop" alt="Matrix Doomscrolling">
     </header>
 
-    <!-- Weather Widget -->
+    <!-- Hourly Weather Widget -->
     <div id="weather-widget">
-        📍 Detecting your coordinates for local weather...
+        📍 Detecting coordinates for your local weather...
     </div>
 
     <div class="container">
-        <section>
-            <h2>🌍 World Collapse</h2>
-            <div id="world-news">Loading global doom...</div>
-        </section>
+        <!-- Column 1: News -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <section>
+                <h2>🌍 World Collapse</h2>
+                <div id="world-news">Loading global doom...</div>
+            </section>
 
-        <section>
-            <h2 id="local-heading">🇨🇦 Local Nonsense</h2>
-            <div id="local-news">Detecting your location for local headlines...</div>
-        </section>
+            <section>
+                <h2 id="local-heading">🇨🇦 Local Nonsense</h2>
+                <div id="local-news">Detecting location for local updates...</div>
+            </section>
+        </div>
+
+        <!-- Column 2: Memes -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <section>
+                <h2>🌑 Dark / Unfiltered Memes</h2>
+                <div id="dark-memes" class="meme-grid">Loading hourly chaos...</div>
+            </section>
+
+            <section>
+                <h2>☀️ Safe For Work (SFW) Memes</h2>
+                <div id="sfw-memes" class="meme-grid">Loading wholesome distractions...</div>
+            </section>
+        </div>
     </div>
 
     <footer>
-        <p>&copy; 2026 The Doomscroll Daily. Powered by GitHub Pages & JavaScript Magic.</p>
+        <p>&copy; 2026 The Doomscroll Daily. Updates hourly via client-side magic.</p>
     </footer>
 
     <script>
-        // Snarky generator for client-side items
         const snarkyPrefixes = [
             "In events everyone will completely forget by tomorrow: ",
             "Surprising absolutely no one, ",
@@ -154,19 +226,17 @@
 
         function makeSnarky(title, summary) {
             const cleanSummary = summary ? summary.replace(/<[^>]*>?/gm, '') : "No details provided.";
-            const trimmed = cleanSummary.length > 140 ? cleanSummary.substring(0, 137) + "..." : cleanSummary;
-            const prefix = snarkyPrefixes[title.length % snarkyPrefixes.length];
-            return prefix + trimmed;
+            const trimmed = cleanSummary.length > 130 ? cleanSummary.substring(0, 127) + "..." : cleanSummary;
+            return snarkyPrefixes[title.length % snarkyPrefixes.length] + trimmed;
         }
 
-        // Fetch World News
+        // 1. World News (Refreshes hourly via cache-busting timestamp)
         async function loadWorldNews() {
             try {
-                // Using RSS2JSON free API to bypass browser CORS limits for client-side feeds
-                const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml');
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml&_t=${Date.now()}`);
                 const data = await res.json();
                 let html = '';
-                data.items.slice(0, 8).forEach(item => {
+                data.items.slice(0, 10).forEach(item => {
                     html += `
                     <div class="news-card">
                         <span class="news-date">${new Date(item.pubDate).toLocaleDateString()}</span>
@@ -176,39 +246,34 @@
                 });
                 document.getElementById('world-news').innerHTML = html;
             } catch (e) {
-                document.getElementById('world-news').innerHTML = "<p>Global servers are taking a nap.</p>";
+                document.getElementById('world-news').innerHTML = "<p>Global servers are offline.</p>";
             }
         }
 
-        // Fetch Local News Based on User Location
+        // 2. Local News based on IP location
         async function loadLocalNews() {
             const localContainer = document.getElementById('local-news');
             const localHeading = document.getElementById('local-heading');
-
             try {
-                // Get user IP location city using a free geo lookup API
                 const ipRes = await fetch('https://ipapi.co/json/');
                 const ipData = await ipRes.json();
                 const city = ipData.city || "Ottawa";
                 const country = ipData.country_name || "Canada";
+                localHeading.innerHTML = `📍 Local Nonsense (${city})`;
 
-                localHeading.innerHTML = `📍 Local Nonsense (${city}, ${country})`;
-
-                // Map common locations to RSS feeds, default to Ottawa/Canada
                 let rssUrl = "https://www.cbc.ca/webfeed/rss/rss-canada-ottawa";
                 if (city.toLowerCase().includes("toronto")) {
                     rssUrl = "https://www.cbc.ca/webfeed/rss/rss-canada-toronto";
-                } else if (country.toLowerCase() === "united states" || ipData.country_code === "US") {
+                } else if (ipData.country_code === "US") {
                     rssUrl = "https://rss.cnn.com/rss/edition_us.rss";
-                } else if (country.toLowerCase() === "united kingdom" || ipData.country_code === "GB") {
+                } else if (ipData.country_code === "GB") {
                     rssUrl = "https://feeds.bbci.co.uk/news/uk/rss.xml";
                 }
 
-                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&_t=${Date.now()}`);
                 const data = await res.json();
-                
                 let html = '';
-                data.items.slice(0, 8).forEach(item => {
+                data.items.slice(0, 10).forEach(item => {
                     html += `
                     <div class="news-card">
                         <span class="news-date">${new Date(item.pubDate).toLocaleDateString()}</span>
@@ -217,39 +282,97 @@
                     </div>`;
                 });
                 localContainer.innerHTML = html;
-
             } catch (e) {
-                localContainer.innerHTML = "<p>Could not load local headlines, but rest assured your local area is still chaotic.</p>";
+                localContainer.innerHTML = "<p>Local area is chaotic, but news feeds failed to load.</p>";
             }
         }
 
-        // Weather Widget based on Geolocation GPS
+        // 3. Hourly Memes Feeds (Dark & SFW)
+        async function loadMemes() {
+            try {
+                // Dark Memes from r/dankmemes or r/memes
+                const darkRes = await fetch(`https://www.reddit.com/r/dankmemes/hot.json?limit=25&_t=${Date.now()}`);
+                const darkData = await darkRes.json();
+                const darkContainer = document.getElementById('dark-memes');
+                let darkHtml = '';
+                let darkCount = 0;
+
+                darkData.data.children.forEach(post => {
+                    const url = post.data.url;
+                    if (darkCount < 10 && (url.endsWith('.jpg') || url.endsWith('.png') || url.endsWith('.jpeg'))) {
+                        darkHtml += `
+                        <div class="meme-card">
+                            <a href="https://reddit.com${post.data.permalink}" target="_blank">
+                                <img src="${url}" alt="Dark Meme" loading="lazy">
+                            </a>
+                            <p>${post.data.title}</p>
+                        </div>`;
+                        darkCount++;
+                    }
+                });
+                darkContainer.innerHTML = darkHtml || "<p>Dark memes are currently hiding.</p>";
+
+                // SFW Memes from r/wholesomememes or r/me_irl
+                const sfwRes = await fetch(`https://www.reddit.com/r/wholesomememes/hot.json?limit=25&_t=${Date.now()}`);
+                const sfwData = await sfwRes.json();
+                const sfwContainer = document.getElementById('sfw-memes');
+                let sfwHtml = '';
+                let sfwCount = 0;
+
+                sfwData.data.children.forEach(post => {
+                    const url = post.data.url;
+                    if (sfwCount < 10 && (url.endsWith('.jpg') || url.endsWith('.png') || url.endsWith('.jpeg'))) {
+                        sfwHtml += `
+                        <div class="meme-card">
+                            <a href="https://reddit.com${post.data.permalink}" target="_blank">
+                                <img src="${url}" alt="SFW Meme" loading="lazy">
+                            </a>
+                            <p>${post.data.title}</p>
+                        </div>`;
+                        sfwCount++;
+                    }
+                });
+                sfwContainer.innerHTML = sfwHtml || "<p>Wholesome memes taking a break.</p>";
+
+            } catch (e) {
+                document.getElementById('dark-memes').innerHTML = "<p>Meme servers overloaded.</p>";
+                document.getElementById('sfw-memes').innerHTML = "<p>Meme servers overloaded.</p>";
+            }
+        }
+
+        // 4. Hourly Weather (GPS Geolocation)
         async function loadWeather() {
             const widget = document.getElementById('weather-widget');
             if (!navigator.geolocation) {
                 widget.innerHTML = "🌡️ Weather: Geolocation not supported.";
                 return;
             }
-
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 try {
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
                     const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
                     const data = await res.json();
-                    widget.innerHTML = `🌡 Local Weather: ${data.current_weather.temperature}°C — Ideal temperature for staring blankly at your screen.`;
+                    widget.innerHTML = `🌡 Hourly Local Weather: ${data.current_weather.temperature}°C — Perfect for scrolling.`;
                 } catch(e) {
-                    widget.innerHTML = "🌡️️ Weather: 100% chance of a digital existential crisis.";
+                    widget.innerHTML = "🌡️ Weather: 100% chance of an existential crisis.";
                 }
             }, () => {
-                widget.innerHTML = "🌡️ Weather: Location permission denied, but things look gloomy regardless.";
+                widget.innerHTML = "🌡️ Weather: Location blocked, but things look gloomy.";
             });
         }
 
-        // Run everything on page load
-        loadWorldNews();
-        loadLocalNews();
-        loadWeather();
+        // Execute all loads on page load + set hourly refresh interval
+        function refreshAll() {
+            loadWorldNews();
+            loadLocalNews();
+            loadMemes();
+            loadWeather();
+        }
+
+        refreshAll();
+        // Auto refresh every hour (3600000 milliseconds)
+        setInterval(refreshAll, 3600000);
     </script>
 </body>
 </html>
