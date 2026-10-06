@@ -52,6 +52,7 @@
         body.panic-mode .tab-pane, 
         body.panic-mode footer, 
         body.panic-mode #gps-weather-widget, 
+        body.panic-mode #frontpage-weather-banner,
         body.panic-mode .panic-controls,
         body.panic-mode #panic-banner,
         body.panic-mode #raccoon-chaos {
@@ -75,6 +76,7 @@
         body.raccoon-mode .tab-pane, 
         body.raccoon-mode footer, 
         body.raccoon-mode #gps-weather-widget, 
+        body.raccoon-mode #frontpage-weather-banner,
         body.raccoon-mode .panic-controls,
         body.raccoon-mode #panic-banner,
         body.raccoon-mode #corporate-panic {
@@ -113,7 +115,7 @@
         @media (min-width: 768px) { h1 { font-size: 3rem; } }
         .tagline { font-size: 1rem; color: #a4b0be; margin-top: 8px; }
 
-        #panic-banner, #gps-weather-widget {
+        #panic-banner, #gps-weather-widget, #frontpage-weather-banner {
             background: var(--card-bg);
             border: 1px solid #333;
             padding: 10px 15px;
@@ -124,6 +126,16 @@
             font-size: 0.9rem;
             color: var(--secondary-accent);
             font-weight: bold;
+        }
+        #frontpage-weather-banner {
+            background: linear-gradient(135deg, #1a1d24 0%, #1e272c 100%);
+            border-color: #1e90ff44;
+            color: #fff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .tab-nav {
@@ -237,7 +249,7 @@
             padding: 10px;
             text-align: center;
         }
-        .weather-time { font-size: 0.8rem; color: #a4b0be; font-weight: bold; margin-bottom: 5px; }
+        .weather-time { font-size: 0.8rem; color: #1e90ff; font-weight: bold; margin-bottom: 5px; }
         .weather-temp { font-size: 1.2rem; color: var(--secondary-accent); font-weight: bold; margin: 5px 0; }
         .weather-cond { font-size: 0.8rem; color: #ced6e0; }
 
@@ -421,7 +433,13 @@
     </header>
 
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
-    <div id="gps-weather-widget">📍 Acquiring GPS & Ottawa Weather...</div>
+    
+    <!-- Front Page Quick Weather Summary Banner -->
+    <div id="frontpage-weather-banner">
+        <span>📍 Locating GPS...</span>
+        <span>🌡️️ Loading live temp...</span>
+        <span>🌤️ Synced Local Time</span>
+    </div>
 
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Bulletins</button>
@@ -477,12 +495,12 @@
         </section>
     </div>
 
-    <!-- Tab 3: Weather (NEW) -->
+    <!-- Tab 3: Weather -->
     <div id="weather-tab" class="tab-pane">
         <section>
             <h2>🌤️ Comprehensive Weather Forecast</h2>
             <div class="sub-tab-nav">
-                <button class="sub-tab-btn active" onclick="switchWeatherSub('hourly-weather', this)">⚡ 72-Hour Hourly</button>
+                <button class="sub-tab-btn active" onclick="switchWeatherSub('hourly-weather', this)">⚡ 72-Hour Hourly (Local Time)</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSub('week7-weather', this)">📅 7-Day Forecast</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSub('week14-weather', this)">🗓️ 14-Day Extended</button>
             </div>
@@ -490,10 +508,10 @@
             <!-- Sub 1: 72 Hour Hourly -->
             <div id="hourly-weather" class="weather-sub-pane active">
                 <div class="card" style="margin-bottom: 15px;">
-                    <h3 style="margin-top:0;">Hourly Breakdown (Next 72 Hours)</h3>
-                    <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:15px;">Live synchronous forecast data</p>
+                    <h3 style="margin-top:0;">Hourly Breakdown (Next 72 Hours - Local Time Synced)</h3>
+                    <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:15px;">Synchronized with local time zone timestamps</p>
                     <div id="hourly-grid-container" class="weather-grid-hourly">
-                        <p style="color:#747d8c; text-align:center; grid-column:1/-1;">Loading 72-hour forecast...</p>
+                        <p style="color:#747d8c; text-align:center; grid-column:1/-1;">Loading local time hourly forecast...</p>
                     </div>
                 </div>
             </div>
@@ -606,7 +624,6 @@
 
         function switchWeatherSub(subId, btnElement) {
             document.querySelectorAll('.weather-sub-pane').forEach(pane => pane.classList.remove('active'));
-            // Remove active from sibling weather sub buttons specifically
             const parentNav = btnElement.parentElement;
             parentNav.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(subId).classList.add('active');
@@ -644,50 +661,62 @@
             document.getElementById('corporate-memo').innerText = memo;
         }
 
-        // Live Weather Data Fetcher (Open-Meteo)
+        // Live Weather Data Fetcher with Local Time Synced Timestamps (&timezone=auto)
         let userLat = 45.42; // Default Ottawa
         let userLon = -75.69;
 
         async function initWeatherAndGPS() {
-            const widget = document.getElementById('gps-weather-widget');
+            const banner = document.getElementById('frontpage-weather-banner');
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     async (position) => {
                         userLat = position.coords.latitude;
                         userLon = position.coords.longitude;
-                        await fetchDetailedWeatherData(userLat, userLon);
-                        widget.innerText = `📍 Ottawa, ON (Lat: ${userLat.toFixed(2)}, Lon: ${userLon.toFixed(2)}) — Live Weather Synced`;
+                        await fetchDetailedWeatherData(userLat, userLon, "GPS Synced Location");
                     },
                     async () => { 
-                        await fetchDetailedWeatherData(userLat, userLon);
-                        widget.innerText = `📍 Ottawa, ON (Default) — 🌡️ Live Weather Synced`; 
+                        await fetchDetailedWeatherData(userLat, userLon, "Ottawa, ON (Default)"); 
                     }
                 );
             } else {
-                await fetchDetailedWeatherData(userLat, userLon);
-                widget.innerText = `📍 Ottawa, ON — Live Weather Synced`;
+                await fetchDetailedWeatherData(userLat, userLon, "Ottawa, ON");
             }
         }
 
-        async function fetchDetailedWeatherData(lat, lon) {
+        async function fetchDetailedWeatherData(lat, lon, locationName) {
             try {
-                // Fetch hourly (72 hours) and daily (14 days) weather
+                // &timezone=auto ensures Open-Meteo returns timestamps matching the exact local timezone of the coordinates
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
                 const res = await fetch(url);
                 const data = await res.json();
 
-                // 1. Render 72-Hour Hourly
+                // Get current live temperature (matching current hour index)
+                const currentHourIndex = new Date().getHours();
+                const currentTemp = data.hourly.temperature_2m[currentHourIndex] || data.hourly.temperature_2m[0];
+
+                // Update Front-Page Weather Banner
+                document.getElementById('frontpage-weather-banner').innerHTML = `
+                    <span>📍 ${locationName}</span>
+                    <span>🌡️ Current: <strong>${currentTemp}°C</strong></span>
+                    <span>⚡ Local Time Synced</span>
+                `;
+
+                // 1. Render 72-Hour Hourly with Local Time Stamps
                 let hourlyHtml = "";
                 const hourlyTimes = data.hourly.time;
                 const hourlyTemps = data.hourly.temperature_2m;
+                
                 for (let i = 0; i < 72; i++) {
-                    const dateObj = new Date(hourlyTimes[i]);
-                    const timeStr = dateObj.toLocaleTimeString([], { hour: 'numeric', month: 'short', day: 'numeric' });
+                    const rawTime = hourlyTimes[i]; // e.g. "2026-10-06T15:00" in local timezone format
+                    const dateObj = new Date(rawTime);
+                    // Format nicely into local time string
+                    const timeStr = !isNaN(dateObj) ? dateObj.toLocaleTimeString([], { hour: 'numeric', month: 'short', day: 'numeric' }) : rawTime;
+                    
                     hourlyHtml += `
                         <div class="weather-hour-card">
                             <div class="weather-time">${timeStr}</div>
                             <div class="weather-temp">${hourlyTemps[i]}°C</div>
-                            <div class="weather-cond">Normal</div>
+                            <div class="weather-cond">Local Time</div>
                         </div>
                     `;
                 }
@@ -727,7 +756,8 @@
                 document.getElementById('week14-container').innerHTML = week14Html;
 
             } catch (err) {
-                document.getElementById('hourly-grid-container').innerHTML = `<p style="color:#ff4757; text-align:center; grid-column:1/-1;">Failed to load live weather stream.</p>`;
+                document.getElementById('hourly-grid-container').innerHTML = `<p style="color:#ff4757; text-align:center; grid-column:1/-1;">Failed to load live local weather stream.</p>`;
+                document.getElementById('frontpage-weather-banner').innerHTML = `<span>📍 Location Weather Error</span>`;
             }
         }
         initWeatherAndGPS();
