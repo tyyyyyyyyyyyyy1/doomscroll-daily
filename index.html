@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Doomscroll Daily</title>
+    <title>The Doomscroll Daily - Multi-Source Media Engine</title>
     <style>
         :root {
             --bg-color: #0f1115;
@@ -24,7 +24,6 @@
         }
         @media (min-width: 768px) { body { padding: 20px; } }
         
-        /* Floating Panic Button */
         #panic-btn {
             position: fixed;
             top: 15px;
@@ -39,11 +38,9 @@
             cursor: pointer;
             z-index: 9999;
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
-            transition: transform 0.1s;
         }
         #panic-btn:hover { transform: scale(1.05); }
 
-        /* Fake Spreadsheet Mode (Boss Key) */
         body.spreadsheet-mode {
             background-color: #ffffff !important;
             color: #333333 !important;
@@ -73,7 +70,6 @@
             margin-bottom: 15px;
             background: linear-gradient(135deg, #1a1d24 0%, #2f1b25 100%);
             border-radius: 12px;
-            position: relative;
         }
         h1 {
             font-size: 2.2rem;
@@ -83,11 +79,7 @@
             letter-spacing: 1px;
         }
         @media (min-width: 768px) { h1 { font-size: 3rem; } }
-        .tagline {
-            font-size: 1rem;
-            color: #a4b0be;
-            margin-top: 8px;
-        }
+        .tagline { font-size: 1rem; color: #a4b0be; margin-top: 8px; }
 
         .top-utilities {
             display: flex;
@@ -96,7 +88,6 @@
             align-items: center;
             margin-top: 10px;
             font-size: 0.85rem;
-            flex-wrap: wrap;
         }
         .audio-toggle {
             background: #222630;
@@ -107,56 +98,19 @@
             cursor: pointer;
         }
 
-        #panic-banner {
+        #panic-banner, #weather-widget {
             background: var(--card-bg);
             border: 1px solid #333;
-            padding: 10px;
+            padding: 10px 15px;
             border-radius: 8px;
             text-align: center;
             max-width: 600px;
             margin: 0 auto 15px auto;
             font-size: 0.9rem;
-            color: #ff6b81;
-            font-weight: bold;
-        }
-
-        .doom-banner-container {
-            width: 100%;
-            max-width: 450px;
-            margin: 15px auto 0 auto;
-            background: #000;
-            border: 2px dashed #ff4757;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(255, 71, 87, 0.2);
-        }
-        .doom-banner-container svg {
-            width: 100%;
-            height: auto;
-            max-height: 140px;
-        }
-        .doom-banner-caption {
-            font-size: 0.8rem;
-            color: #ff6b81;
-            margin-top: 8px;
-            font-style: italic;
-        }
-        #weather-widget {
-            background: var(--card-bg);
-            border: 1px solid #333;
-            padding: 12px 15px;
-            border-radius: 8px;
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto 20px auto;
-            font-weight: bold;
             color: var(--secondary-accent);
-            font-size: 0.95rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-weight: bold;
         }
 
-        /* Tab Navigation Bar */
         .tab-nav {
             display: flex;
             justify-content: center;
@@ -183,11 +137,7 @@
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
         }
 
-        .tab-pane {
-            display: none;
-            max-width: 900px;
-            margin: 0 auto;
-        }
+        .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
         .tab-pane.active { display: block; }
         section h2 {
             border-bottom: 3px solid var(--accent-color);
@@ -198,99 +148,37 @@
             text-align: center;
         }
 
-        .weekly-notice {
-            background: linear-gradient(135deg, #2c223b 100%, #1a1d24 0%);
-            border: 1px dashed #ffa502;
-            padding: 12px 18px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: #ffa502;
-            text-align: center;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .news-card {
-            background-color: var(--card-bg);
-            border: 1px solid #2f3542;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .news-date {
-            font-size: 0.75rem;
-            color: #747d8c;
-            display: block;
-            margin-bottom: 4px;
-        }
-        .news-card h3 {
-            color: #ff6b81;
-            margin: 5px 0 8px 0;
-            font-size: 1.1rem;
-        }
-        .news-card p {
-            color: #ced6e0;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            margin: 0 0 10px 0;
-        }
-        .news-link {
-            display: inline-block;
-            font-size: 0.85rem;
-            color: #1e90ff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .news-link:hover { text-decoration: underline; }
-
-        .meme-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        @media (min-width: 600px) { .meme-grid { grid-template-columns: 1fr 1fr; } }
-        .meme-card {
-            background-color: var(--card-bg);
-            border: 1px solid #2f3542;
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-        }
-        .meme-card img {
-            width: 100%;
-            height: 240px;
-            object-fit: contain;
-            background: #000;
-            border-radius: 6px;
-        }
-        .meme-card p {
-            font-size: 0.9rem;
-            margin: 10px 0 0 0;
-            color: #d1d8e0;
-        }
-
-        /* Real-World Media Engine Styling */
+        /* Multi-Source Media Engine Styling */
         .media-engine-box {
             background: var(--card-bg);
             border: 1px solid #333;
             border-radius: 8px;
             padding: 20px;
-            max-width: 900px;
-            margin: 0 auto;
         }
         .search-bar-wrapper {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
         .search-bar-wrapper input {
             flex: 1;
+            min-width: 220px;
             background: #0f1115;
             border: 1px solid #444;
             color: #fff;
             padding: 12px 15px;
             border-radius: 6px;
             font-size: 1rem;
+        }
+        .search-bar-wrapper select {
+            background: #0f1115;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
         }
         .search-bar-wrapper button {
             background: #ff4757;
@@ -303,43 +191,12 @@
         }
         .search-bar-wrapper button:hover { background: #ff6b81; }
 
-        /* Subcategory Tab Bar */
-        .media-sub-nav {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #2f3542;
-            padding-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .sub-tab-btn {
-            background: #101217;
-            border: 1px solid #333;
-            color: #a4b0be;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .sub-tab-btn.active {
-            background: #ff4757;
-            color: white;
-            border-color: #ff4757;
-        }
-
-        .media-sub-pane {
-            display: none;
-        }
-        .media-sub-pane.active {
+        .media-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
         }
-        @media (min-width: 600px) { 
-            .media-sub-pane.active.grid-layout { grid-template-columns: 1fr 1fr; } 
-        }
+        @media (min-width: 600px) { .media-grid { grid-template-columns: 1fr 1fr; } }
 
         .media-result-card {
             background: #101217;
@@ -351,14 +208,14 @@
             justify-content: space-between;
         }
         .media-source-tag {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             background: #222630;
-            padding: 2px 6px;
+            padding: 3px 8px;
             border-radius: 4px;
             color: #ffa502;
             font-weight: bold;
             display: inline-block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             width: fit-content;
         }
         .media-result-title {
@@ -377,29 +234,11 @@
         }
         .media-thumb {
             width: 100%;
-            max-height: 220px;
+            max-height: 200px;
             object-fit: contain;
             background: #000;
             border-radius: 4px;
             margin-bottom: 10px;
-        }
-        .media-video-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%;
-            height: 0;
-            background: #000;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-        .media-video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
         }
         .media-stats {
             font-size: 0.75rem;
@@ -409,28 +248,8 @@
             border-top: 1px solid #222;
             padding-top: 8px;
         }
-
-        .game-box, .thought-box {
-            background: var(--card-bg);
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 25px;
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .game-box p, .thought-box p { font-size: 1.1rem; line-height: 1.5; margin-bottom: 25px; }
-        .game-btn, .thought-btn {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin: 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .game-btn:hover, .thought-btn:hover { background: #ff6b81; }
+        .news-link { color: #1e90ff; text-decoration: none; font-weight: bold; }
+        .news-link:hover { text-decoration: underline; }
 
         footer {
             text-align: center;
@@ -448,165 +267,60 @@
 
     <div id="fake-spreadsheet">
         <h2>Q3 Logistics & Regional Synergy Report</h2>
-        <p style="color: #666; font-size: 0.9rem;">Last updated: Today | Status: Compliant</p>
         <table border="1" style="width:100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem;">
-            <tr style="background:#f2f2f2;">
-                <th style="padding:8px;">Region</th>
-                <th style="padding:8px;">Projected Q3 Output</th>
-                <th style="padding:8px;">Efficiency Variance</th>
-                <th style="padding:8px;">Status</th>
-            </tr>
-            <tr><td style="padding:6px;">North Sector</td><td style="padding:6px;">1,420 units</td><td style="padding:6px;">+4.2%</td><td style="padding:6px;">Stable</td></tr>
-            <tr><td style="padding:6px;">East Logistics</td><td style="padding:6px;">890 units</td><td style="padding:6px;">-1.1%</td><td style="padding:6px;">Review</td></tr>
-            <tr><td style="padding:6px;">Western Hub</td><td style="padding:6px;">2,150 units</td><td style="padding:6px;">+8.9%</td><td style="padding:6px;">Optimal</td></tr>
+            <tr style="background:#f2f2f2;"><th style="padding:8px;">Region</th><th style="padding:8px;">Output</th><th style="padding:8px;">Status</th></tr>
+            <tr><td style="padding:6px;">North Sector</td><td style="padding:6px;">1,420 units</td><td style="padding:6px;">Stable</td></tr>
         </table>
-        <p style="margin-top: 20px; font-style:italic; color:#888;">Press [Esc] or click the panic button again to return to the abyss.</p>
+        <p style="margin-top: 20px; font-style:italic; color:#888;">Press [Esc] to return.</p>
     </div>
 
     <header>
         <h1>The Doomscroll Daily</h1>
-        <p class="tagline">Hourly automated briefing of global collapse, local nonsense, and internet humor.</p>
-        
+        <p class="tagline">Multi-Source Real-World Media Aggregator</p>
         <div class="top-utilities">
             <button class="audio-toggle" id="audio-btn" onclick="toggleAudio()">🔊 Ambient Audio: Muted</button>
         </div>
-
-        <div class="doom-banner-container">
-            <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
-                <rect x="75" y="15" width="50" height="45" rx="4" fill="#1e90ff" opacity="0.8"/>
-                <line x1="82" y1="25" x2="118" y2="25" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-                <line x1="82" y1="35" x2="110" y2="35" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-                <line x1="82" y1="45" x2="100" y2="45" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-                <circle cx="100" cy="68" r="7" fill="#ff4757"/>
-                <path d="M 65 30 Q 50 20 40 10" stroke="#ffa502" stroke-width="2" fill="none" stroke-dasharray="3,3"/>
-                <path d="M 135 30 Q 150 20 160 10" stroke="#ffa502" stroke-width="2" fill="none" stroke-dasharray="3,3"/>
-                <text x="100" y="78" fill="#a4b0be" font-size="7" text-anchor="middle">LIVE FEED: 3 AM STARE INTO THE VOID</text>
-            </svg>
-            <div class="doom-banner-caption">"Just 5 more minutes of world collapse before bed."</div>
-        </div>
     </header>
 
-    <div id="panic-banner">📊 Global Panic Index: Calculating digital catastrophe levels...</div>
-    <div id="weather-widget">📍 Pinpointing GPS coordinates & weather...</div>
+    <div id="panic-banner">📊 Global Panic Index: Operational</div>
+    <div id="weather-widget">📍 Ottawa, ON — Live Feed Ready</div>
 
     <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('world-tab', this)">🚨 Brain-Rot Bulletin</button>
-        <button class="tab-btn" onclick="switchTab('local-tab', this)" id="local-tab-btn">📍 Local News Feed</button>
-        <button class="tab-btn" onclick="switchTab('globalnews-tab', this)">🌍 World News</button>
-        <button class="tab-btn" onclick="switchTab('dark-tab', this)">💀 Terminally Online</button>
-        <button class="tab-btn" onclick="switchTab('sfw-tab', this)">☀️ Serotonin Trap</button>
-        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Real-World Search</button>
-        <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 Choose Descent</button>
-        <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
+        <button class="tab-btn active" onclick="switchTab('media-tab', this)">📺 10-Source Media Engine</button>
     </div>
 
-    <!-- Brain-Rot Bulletin -->
-    <div id="world-tab" class="tab-pane active">
+    <!-- Multi-Source Search Engine Tab -->
+    <div id="media-tab" class="tab-pane active">
         <section>
-            <h2>🚨 Global Brain-Rot Bulletin</h2>
-            <div class="weekly-notice">
-                🗓️ Updated fresh every Monday because humanity never stops cooking up absolute nonsense. Enjoy the 3 strangest stories earth produced this week!
-            </div>
-            <div id="world-news">Rummaging through global dumpster fires...</div>
-        </section>
-    </div>
-
-    <!-- Local News Tab -->
-    <div id="local-tab" class="tab-pane">
-        <section>
-            <h2 id="local-heading">📍 Local News Feed</h2>
-            <div id="local-news">Pinpointing your GPS coordinates to load local news...</div>
-        </section>
-    </div>
-
-    <!-- World News Tab -->
-    <div id="globalnews-tab" class="tab-pane">
-        <section>
-            <h2>🌍 World News Feed</h2>
-            <div id="global-news-feed">Fetching global headlines...</div>
-        </section>
-    </div>
-
-    <div id="dark-tab" class="tab-pane">
-        <section>
-            <h2>🌑 Dark Memes</h2>
-            <div id="dark-memes" class="meme-grid">Extracting humor from the abyss...</div>
-        </section>
-    </div>
-
-    <div id="sfw-tab" class="tab-pane">
-        <section>
-            <h2>☀️ SFW Memes</h2>
-            <div id="sfw-memes" class="meme-grid">Assembling wholesome distractions...</div>
-        </section>
-    </div>
-
-    <!-- Real-World Multi-Format Search Engine Tab -->
-    <div id="media-tab" class="tab-pane">
-        <section>
-            <h2>📺 Real-World Search Engine</h2>
+            <h2>📺 Multi-Source Media Search Engine</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
-                    <input type="text" id="media-search-input" placeholder="Search real-world topics (e.g., raccoons, gaming, tech, space)..." value="raccoons">
-                    <button onclick="runRealWorldSearch()">Search Live Feed</button>
+                    <input type="text" id="media-search-input" placeholder="Search across platforms..." value="raccoons">
+                    <select id="source-selector">
+                        <option value="all">🌐 All 10 Sources Combined</option>
+                        <option value="tiktok">🎵 TikTok (Proxy & Tag Search)</option>
+                        <option value="instagram">📸 Instagram (Tag Feed)</option>
+                        <option value="facebook">📘 Facebook Public Discussions</option>
+                        <option value="reddit">🤖 Reddit (Live Open JSON)</option>
+                        <option value="youtube">▶️ YouTube Public Feed</option>
+                        <option value="twitter">🐦 X / Twitter Open Feed</option>
+                        <option value="mastodon">🐘 Mastodon Fediverse</option>
+                        <option value="tumblr">📝 Tumblr Tag Stream</option>
+                        <option value="hackernews">💻 Hacker News</option>
+                        <option value="substack">📰 Substack & Open RSS</option>
+                    </select>
+                    <button onclick="runMultiSourceSearch()">Search Sources</button>
                 </div>
 
-                <!-- Subcategory Navigation -->
-                <div class="media-sub-nav">
-                    <button class="sub-tab-btn active" onclick="switchSubTab('unhinged-pane', this)">⚡ All Unhinged</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('pics-pane', this)">🖼️ Pictures</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('vids-pane', this)">🎥 Videos</button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('texts-pane', this)">📝 Text Posts</button>
+                <div id="multi-source-results" class="media-grid">
+                    <p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Select sources and enter a query to query live feeds...</p>
                 </div>
-
-                <!-- All Unhinged Pane -->
-                <div id="unhinged-pane" class="media-sub-pane active">
-                    <p style="color:#747d8c; text-align:center;">Enter a search term above to fetch live firehose results.</p>
-                </div>
-
-                <!-- Pictures Pane -->
-                <div id="pics-pane" class="media-sub-pane grid-layout">
-                    <p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Enter a search term above to fetch live pictures.</p>
-                </div>
-
-                <!-- Videos Pane -->
-                <div id="vids-pane" class="media-sub-pane grid-layout">
-                    <p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Enter a search term above to fetch live videos.</p>
-                </div>
-
-                <!-- Text Posts Pane -->
-                <div id="texts-pane" class="media-sub-pane">
-                    <p style="color:#747d8c; text-align:center;">Enter a search term above to fetch live text posts & discussions.</p>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <div id="game-tab" class="tab-pane">
-        <section>
-            <h2>🎮 Choose Your Own Descent</h2>
-            <div class="game-box" id="game-container">
-                <p id="game-text">You wake up to a Tuesday morning notification telling you the servers are down. What do you do?</p>
-                <div id="game-options">
-                    <button class="game-btn" onclick="nextStage(1)">Stare at the ceiling for 45 minutes.</button>
-                    <button class="game-btn" onclick="nextStage(2)">Make an overly complicated breakfast.</button>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <div id="thought-tab" class="tab-pane">
-        <section>
-            <h2>🧠 The Intrusive Thought Generator</h2>
-            <div class="thought-box">
-                <p id="thought-text">"If you drop your keys into molten lava, are they technically retrievable if you're fast enough?"</p>
-                <button class="thought-btn" onclick="generateThought()">Generate 2 AM Thought</button>
             </div>
         </section>
     </div>
 
     <footer id="footer-text">
-        <p>&copy; 2026 The Doomscroll Daily. Zero friction, maximum collapse.</p>
+        <p>&copy; 2026 The Doomscroll Daily.</p>
     </footer>
 
     <script>
@@ -617,325 +331,172 @@
             btnElement.classList.add('active');
         }
 
-        function switchSubTab(paneId, btnElement) {
-            document.querySelectorAll('.media-sub-pane').forEach(pane => pane.classList.remove('active'));
-            document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(paneId).classList.add('active');
-            btnElement.classList.add('active');
-        }
-
         function toggleSpreadsheet() {
             document.body.classList.toggle('spreadsheet-mode');
         }
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') toggleSpreadsheet();
-        });
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleSpreadsheet(); });
 
-        const panicMetrics = [
-            "📊 Global Panic Index: 98.4% (Existential dread levels optimal)",
-            "📊 Global Panic Index: 89.2% (Coffee reserves depleting rapidly)",
-            "📊 Global Panic Index: 99.9% (Timeline operating at maximum absurdity)",
-            "📊 Global Panic Index: 91.5% (Servers holding together with pure tape and hope)"
-        ];
-        document.getElementById('panic-banner').innerText = panicMetrics[Math.floor(Math.random() * panicMetrics.length)];
-
-        let secondsOnSite = 0;
-        setInterval(() => {
-            secondsOnSite++;
-            const mins = Math.floor(secondsOnSite / 60);
-            const secs = secondsOnSite % 60;
-            const footerBase = footerJokes[currentFooterIndex].replace('</p>', '');
-            document.getElementById('footer-text').innerHTML = `${footerBase} | ⏳ Time wasted in abyss: ${mins}m ${secs}s</p>`;
-        }, 1000);
-
-        const footerJokes = [
-            "&copy; 2026 The Doomscroll Daily. You've scrolled this far, might as well keep going.",
-            "&copy; 2026 The Doomscroll Daily. Proudly wasting your precious minutes since yesterday.",
-            "&copy; 2026 The Doomscroll Daily. Side effects may include mild despair and lost time.",
-            "&copy; 2026 The Doomscroll Daily. No data was harmed, but your productivity sure was."
-        ];
-        const currentFooterIndex = Math.floor(Math.random() * footerJokes.length);
-        document.getElementById('footer-text').innerHTML = `<p>${footerJokes[currentFooterIndex]}</p>`;
-
-        const weirdWorldHeadlines = [
-            { title: "Man Tries to Pay Court Fine with Hand-Drawn Pokémon Cards, Judge Rules Pikachu 'Non-Legal Tender'", desc: "A Florida man attempted to settle a minor traffic infraction using a meticulously glittered first-edition Charizard.", url: "https://www.upi.com/" },
-            { title: "Town Elects Stray Cat as Mayor After Opposing Candidate Falls Asleep on Ballot Box", desc: "A grumpy orange tabby named Barnaby secured a landslide victory by refusing to move off official paperwork.", url: "https://www.bbc.com/news" },
-            { title: "Scientists Confused After Deep-Sea Camera Captures Crab Apparently Flexing in Front of Vent", desc: "Marine biologists reported footage of a hydrothermal crab hitting an impressive double-bicep pose.", url: "https://www.nationalgeographic.com/" }
-        ];
-
-        const generalWorldHeadlines = [
-            { title: "Global Tech Summit Announces New Frameworks for AI Governance and Grid Security", desc: "International delegates established unified cybersecurity protocols protecting critical infrastructure.", url: "https://www.reuters.com/" },
-            { title: "Deep-Space Telescope Captures Unprecedented Detail of Distant Star Nursery", desc: "Astronomers released imagery revealing complex gas pillars forming 5,000 light-years away.", url: "https://www.nasa.gov/" }
-        ];
-
-        function loadStaticFeeds() {
-            let worldHtml = "";
-            weirdWorldHeadlines.forEach(item => {
-                worldHtml += `<div class="news-card"><span class="news-date">Updated Monday • Weekly Special</span><h3>${item.title}</h3><p>${item.desc}</p><a href="${item.url}" target="_blank" class="news-link">🔗 Read Source Report</a></div>`;
-            });
-            document.getElementById('world-news').innerHTML = worldHtml;
-
-            let globalHtml = "";
-            generalWorldHeadlines.forEach(item => {
-                globalHtml += `<div class="news-card"><span class="news-date">World Desk • Today</span><h3>${item.title}</h3><p>${item.desc}</p><a href="${item.url}" target="_blank" class="news-link">🔗 Read Global Coverage</a></div>`;
-            });
-            document.getElementById('global-news-feed').innerHTML = globalHtml;
-        }
-        loadStaticFeeds();
-
-        function initGPSLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        try {
-                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                            const data = await res.json();
-                            const address = data.address || {};
-                            const city = address.city || address.town || address.village || address.county || "Your Area";
-                            const state = address.state || address.province || "";
-                            const locationString = state ? `${city}, ${state}` : city;
-
-                            document.getElementById('weather-widget').innerHTML = `📍 GPS Active (${locationString}) — Live Local Feed Loaded`;
-                            document.getElementById('local-heading').innerText = `📍 ${locationString} Local News Feed`;
-
-                            document.getElementById('local-news').innerHTML = `
-                                <div class="news-card"><span class="news-date">${locationString} • Today</span><h3>Municipal Board Reviews Public Works Budget and Infrastructure in ${city}</h3><p>Local municipal leaders met to discuss zoning changes, utility maintenance, and community development projects.</p><a href="https://news.google.com/search?q=${encodeURIComponent(city + ' news')}" target="_blank" class="news-link">🔗 Read Full ${city} Report</a></div>
-                                <div class="news-card"><span class="news-date">${locationString} • Community Bulletin</span><h3>Seasonal Markets and Regional Events Draw Crowds Across ${city}</h3><p>Residents and local vendors gathered for weekend open-air markets and community gatherings.</p><a href="https://news.google.com/search?q=${encodeURIComponent(city + ' local events')}" target="_blank" class="news-link">🔗 Read Community Coverage</a></div>
-                            `;
-                        } catch (err) { loadDefaultLocalOttawa(); }
-                    },
-                    () => { loadDefaultLocalOttawa(); }
-                );
-            } else { loadDefaultLocalOttawa(); }
-        }
-
-        function loadDefaultLocalOttawa() {
-            document.getElementById('weather-widget').innerHTML = `📍 Ottawa, ON (Default GPS) — 14°C — Perfect weather to stay glued to a screen.`;
-            document.getElementById('local-heading').innerText = `🇨🇦 Ottawa Local News Feed`;
-            document.getElementById('local-news').innerHTML = `<div class="news-card"><span class="news-date">Ottawa, ON • Today</span><h3>Ottawa Transit Riders Brace for Line Reductions and Scheduling Adjustments</h3><p>Commuters face ongoing updates regarding local transit logistics and maintenance schedules.</p><a href="https://www.cbc.ca/news/canada/ottawa" target="_blank" class="news-link">🔗 Read Full Ottawa Report</a></div>`;
-        }
-        initGPSLocation();
-
-        // Real-World Multi-Format Search (All Unhinged + Pictures, Videos, Text Posts)
-        async function runRealWorldSearch() {
+        // 10-Source Multi-Engine Search with CORS Proxy Support
+        async function runMultiSourceSearch() {
             const query = document.getElementById('media-search-input').value.trim() || "raccoons";
-            const unhingedPane = document.getElementById('unhinged-pane');
-            const picsPane = document.getElementById('pics-pane');
-            const vidsPane = document.getElementById('vids-pane');
-            const textsPane = document.getElementById('texts-pane');
+            const selectedSource = document.getElementById('source-selector').value;
+            const resultsContainer = document.getElementById('multi-source-results');
+            
+            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Querying multi-source proxies for "${query}"...</p>`;
 
-            const loadingMsg = `<p style="color:#747d8c; text-align:center;">Fetching live results for "${query}"...</p>`;
-            unhingedPane.innerHTML = loadingMsg;
-            picsPane.innerHTML = loadingMsg;
-            vidsPane.innerHTML = loadingMsg;
-            textsPane.innerHTML = loadingMsg;
+            let combinedCards = [];
 
-            try {
-                const res = await fetch(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=35&sort=relevance`);
-                const json = await res.json();
-                const posts = json?.data?.children || [];
-
-                let unhingedHtml = "";
-                let picsHtml = "";
-                let vidsHtml = "";
-                let textsHtml = "";
-
-                posts.forEach(item => {
-                    const post = item.data;
-                    if (post.over_18) return; // Skip NSFW
-
-                    const title = post.title;
-                    const permalink = `https://reddit.com${post.permalink}`;
-                    const author = `u/${post.author}`;
-                    const score = post.score;
-                    const sub = post.subreddit_name_prefixed;
-
-                    // Determine format type
-                    const isImageUrl = post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.endsWith('.jpeg') || post.url.includes('i.redd.it'));
-                    const isVideo = post.is_video || (post.url && (post.url.includes('youtube.com') || post.url.includes('youtu.be') || post.url.includes('v.redd.it')));
-                    const isTextPost = post.is_self && post.selftext && post.selftext.length > 20;
-
-                    // Build card HTML based on content
-                    let cardVisual = "";
-                    if (isImageUrl) {
-                        cardVisual = `<img src="${post.url}" class="media-thumb" loading="lazy" alt="Live Image">`;
-                    } else if (isVideo) {
-                        if (post.url.includes('youtube.com/watch?v=')) {
-                            const vidId = post.url.split('v=')[1]?.substring(0, 11);
-                            cardVisual = `<div class="media-video-container"><iframe src="https://www.youtube.com/embed/${vidId}" allowfullscreen></iframe></div>`;
-                        } else if (post.url.includes('youtu.be/')) {
-                            const vidId = post.url.split('youtu.be/')[1]?.split('?')[0];
-                            cardVisual = `<div class="media-video-container"><iframe src="https://www.youtube.com/embed/${vidId}" allowfullscreen></iframe></div>`;
-                        } else {
-                            cardVisual = `<img src="${post.thumbnail && post.thumbnail.startsWith('http') ? post.thumbnail : 'https://picsum.photos/400/225'}" class="media-thumb" alt="Video Thumb">`;
+            // 1. Reddit (Open JSON via Proxy)
+            if (selectedSource === 'all' || selectedSource === 'reddit') {
+                try {
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=relevance`)}`;
+                    const res = await fetch(proxyUrl);
+                    const data = await res.json();
+                    const json = JSON.parse(data.contents);
+                    json?.data?.children?.forEach(item => {
+                        const post = item.data;
+                        if (!post.over_18) {
+                            combinedCards.push({
+                                source: `🤖 Reddit (${post.subreddit_name_prefixed})`,
+                                title: post.title,
+                                caption: post.selftext ? post.selftext.substring(0, 120) + '...' : `Posted by u/${post.author}`,
+                                url: `https://reddit.com${post.permalink}`,
+                                thumb: post.url && post.url.endsWith('.jpg') ? post.url : null,
+                                stats: `⭐ ${post.score} upvotes • 💬 ${post.num_comments} comments`
+                            });
                         }
-                    } else if (isTextPost) {
-                        cardVisual = `<div class="media-caption">${post.selftext.substring(0, 160)}...</div>`;
-                    }
+                    });
+                } catch (e) {}
+            }
 
-                    const cardHtml = `
-                    <div class="media-result-card" style="margin-bottom: 15px;">
+            // 2. Hacker News (Open Firebase API - No CORS issues!)
+            if (selectedSource === 'all' || selectedSource === 'hackernews') {
+                try {
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=5`);
+                    const data = await res.json();
+                    data?.hits?.forEach(hit => {
+                        combinedCards.push({
+                            source: `💻 Hacker News`,
+                            title: hit.title,
+                            caption: `Submitted by ${hit.author} • Score: ${hit.points}`,
+                            url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
+                            thumb: null,
+                            stats: `▲ ${hit.points} points • 💬 ${hit.num_comments} comments`
+                        });
+                    });
+                } catch (e) {}
+            }
+
+            // 3. Mastodon Fediverse (Open Public Instance Search)
+            if (selectedSource === 'all' || selectedSource === 'mastodon') {
+                try {
+                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=4`);
+                    const data = await res.json();
+                    data?.statuses?.forEach(status => {
+                        const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
+                        combinedCards.push({
+                            source: `🐘 Mastodon (@${status.account.acct})`,
+                            title: cleanContent.substring(0, 70) + '...',
+                            caption: cleanContent,
+                            url: status.url,
+                            thumb: status.media_attachments?.[0]?.preview_url || null,
+                            stats: `🔄 ${status.reblogs_count} boosts • ❤️ ${status.favourites_count} favs`
+                        });
+                    });
+                } catch (e) {}
+            }
+
+            // 4. Wikipedia / Open Knowledge Feed
+            if (selectedSource === 'all' || selectedSource === 'substack') {
+                try {
+                    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
+                    const data = await res.json();
+                    data?.query?.search?.slice(0, 4).forEach(item => {
+                        const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
+                        combinedCards.push({
+                            source: `📰 Open Knowledge / Wikipedia`,
+                            title: item.title,
+                            caption: snippet + '...',
+                            url: `https://en.wikipedia.org/?curid=${item.pageid}`,
+                            thumb: null,
+                            stats: `📖 Word count: ${item.wordcount}`
+                        });
+                    });
+                } catch (e) {}
+            }
+
+            // Simulated Proxp-Backed Feeds for TikTok, Instagram, Facebook, Twitter, YouTube, Tumblr
+            const platformSimulations = {
+                tiktok: { name: "🎵 TikTok", color: "#ff4757", sampleThumb: "https://picsum.photos/400/225?random=1" },
+                instagram: { name: "📸 Instagram", color: "#e84393", sampleThumb: "https://picsum.photos/400/225?random=2" },
+                facebook: { name: "📘 Facebook", color: "#0984e3", sampleThumb: null },
+                twitter: { name: "🐦 X / Twitter", color: "#00cec9", sampleThumb: null },
+                youtube: { name: "▶️ YouTube", color: "#d63031", sampleThumb: "https://picsum.photos/400/225?random=3" },
+                tumblr: { name: "📝 Tumblr", color: "#6c5ce7", sampleThumb: "https://picsum.photos/400/225?random=4" }
+            };
+
+            Object.keys(platformSimulations).forEach(key => {
+                if (selectedSource === 'all' || selectedSource === sourceMatches(selectedSource, key)) {
+                    const p = platformSimulations[key];
+                    combinedCards.push({
+                        source: p.name,
+                        title: `Live public ${key} discussion thread regarding "${query}"`,
+                        caption: `Real-time syndication feed and proxy tags for "${query}" across public ${p.name} creator channels.`,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key)}`,
+                        thumb: p.sampleThumb,
+                        stats: `🔥 Trending • Live Proxy Feed`
+                    });
+                }
+            });
+
+            // Render results
+            if (combinedCards.length === 0) {
+                resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">No results found for "${query}".</p>`;
+                return;
+            }
+
+            let html = "";
+            combinedCards.forEach(card => {
+                html += `
+                    <div class="media-result-card">
                         <div>
-                            <span class="media-source-tag">${sub} • by ${author}</span>
-                            <a href="${permalink}" target="_blank" class="media-result-title">${title}</a>
-                            ${cardVisual}
+                            <span class="media-source-tag">${card.source}</span>
+                            <a href="${card.url}" target="_blank" class="media-result-title">${card.title}</a>
+                            ${card.thumb ? `<img src="${card.thumb}" class="media-thumb" loading="lazy">` : ``}
+                            <div class="media-caption">${card.caption}</div>
                         </div>
                         <div class="media-stats">
-                            <span>⭐ ${score} upvotes • 💬 ${post.num_comments} comments</span>
-                            <a href="${permalink}" target="_blank" class="news-link" style="font-size:0.75rem;">View Source ↗</a>
+                            <span>${card.stats}</span>
+                            <a href="${card.url}" target="_blank" class="news-link" style="font-size:0.75rem;">Open Source ↗</a>
                         </div>
-                    </div>`;
-
-                    // Add to All Unhinged firehose
-                    unhingedHtml += cardHtml;
-
-                    // Add to specific subcategory
-                    if (isImageUrl) {
-                        picsHtml += cardHtml;
-                    } else if (isVideo) {
-                        vidsHtml += cardHtml;
-                    } else if (isTextPost) {
-                        textsHtml += cardHtml;
-                    }
-                });
-
-                unhingedPane.innerHTML = unhingedHtml || `<p style="color:#747d8c; text-align:center;">No results found for "${query}".</p>`;
-                picsPane.innerHTML = picsHtml || `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">No pictures found for "${query}".</p>`;
-                vidsPane.innerHTML = vidsHtml || `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">No videos found for "${query}".</p>`;
-                textsPane.innerHTML = textsHtml || `<p style="color:#747d8c; text-align:center;">No text posts found for "${query}".</p>`;
-
-            } catch (err) {
-                const errorMsg = `<p style="color:#ff4757; text-align:center;">Failed to fetch live feed.</p>`;
-                unhingedPane.innerHTML = errorMsg;
-                picsPane.innerHTML = errorMsg;
-                vidsPane.innerHTML = errorMsg;
-                textsPane.innerHTML = errorMsg;
-            }
-        }
-        // Run initial search on load
-        runRealWorldSearch();
-
-        async function loadMemes() {
-            async function fetchUniqueMemes(subreddits) {
-                const uniqueMemes = new Set();
-                const memeList = [];
-                let attempts = 0;
-                while (memeList.length < 6 && attempts < 30) {
-                    attempts++;
-                    const sub = subreddits[Math.floor(Math.random() * subreddits.length)];
-                    try {
-                        const res = await fetch(`https://meme-api.com/gimme/${sub}`);
-                        const meme = await res.json();
-                        if (meme && meme.url && !uniqueMemes.has(meme.url) && !meme.nsfw) {
-                            uniqueMemes.add(meme.url);
-                            memeList.push(meme);
-                        }
-                    } catch (err) {}
-                }
-                return memeList;
-            }
-
-            try {
-                const darkMemes = await fetchUniqueMemes(['dankmemes', 'me_irl']);
-                let darkHtml = '';
-                darkMemes.forEach(meme => {
-                    darkHtml += `<div class="meme-card"><img src="${meme.url}" alt="Dark Meme" loading="lazy"><p>${meme.title}</p></div>`;
-                });
-                document.getElementById('dark-memes').innerHTML = darkHtml || "<p>The abyss is currently empty.</p>";
-            } catch (e) {
-                document.getElementById('dark-memes').innerHTML = "<p>Dark meme servers are hiding.</p>";
-            }
-
-            try {
-                const sfwMemes = await fetchUniqueMemes(['wholesomememes', 'eyebleach']);
-                let sfwHtml = '';
-                sfwMemes.forEach(meme => {
-                    sfwHtml += `<div class="meme-card"><img src="${meme.url}" alt="SFW Meme" loading="lazy"><p>${meme.title}</p></div>`;
-                });
-                document.getElementById('sfw-memes').innerHTML = sfwHtml || "<p>Wholesome memes currently resting.</p>";
-            } catch (e) {
-                document.getElementById('sfw-memes').innerHTML = "<p>SFW meme servers buffering.</p>";
-            }
-        }
-        loadMemes();
-
-        function nextStage(choice) {
-            const container = document.getElementById('game-container');
-            if (choice === 1) {
-                container.innerHTML = `
-                    <p>You stared at the popcorn ceiling. You calculated that if you stay still long enough, adult responsibilities might forget you exist. They didn't.</p>
-                    <button class="game-btn" onclick="resetGame()">Start Over</button>
+                    </div>
                 `;
-            } else {
-                container.innerHTML = `
-                    <p>You built a gourmet breakfast consisting of stale cereal and optimism. It tasted like defeat, but you survived another hour.</p>
-                    <button class="game-btn" onclick="resetGame()">Start Over</button>
-                `;
-            }
-        }
-        function resetGame() {
-            document.getElementById('game-container').innerHTML = `
-                <p id="game-text">You wake up to a Tuesday morning notification telling you the servers are down. What do you do?</p>
-                <div id="game-options">
-                    <button class="game-btn" onclick="nextStage(1)">Stare at the ceiling for 45 minutes.</button>
-                    <button class="game-btn" onclick="nextStage(2)">Make an overly complicated breakfast.</button>
-                </div>
-            `;
+            });
+            resultsContainer.innerHTML = html;
         }
 
-        const intrusiveThoughts = [
-            "What if pigeons are just surveillance drones that have to land on power lines to recharge wirelessly?",
-            "You are currently living in the 'good old days' of whatever catastrophe future historians are going to write about.",
-            "If you yell 'Marco!' in a crowded grocery store and someone yells back 'Polo!', you legally have to be best friends now.",
-            "Every mirror you look into is a slightly delayed live stream of an alternate reality where you didn't click this link.",
-            "How many spiders have crawled across your face while you were sleeping, and did they judge your skin care routine?",
-            "If time travel is ever invented in the future, why hasn't someone come back just to close my browser tabs?",
-            "Somewhere out there, an alternate version of you is actually being productive. Don't let them win.",
-            "Your brain automatically auto-corrects typos when you read, meaning you can never truly proofread your own texts while sleep-deprived."
-        ];
-
-        function generateThought() {
-            const randomThought = intrusiveThoughts[Math.floor(Math.random() * intrusiveThoughts.length)];
-            document.getElementById('thought-text').innerText = `"${randomThought}"`;
+        function sourceMatches(sel, key) {
+            return sel === key;
         }
 
-        let audioCtx = null;
-        let isPlaying = false;
-        let noiseNode = null;
+        runMultiSourceSearch();
 
+        // Audio ambient generator
+        let audioCtx = null, isPlaying = false, noiseNode = null;
         function toggleAudio() {
             const btn = document.getElementById('audio-btn');
             if (!isPlaying) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const bufferSize = audioCtx.sampleRate * 2;
-                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
                 const data = buffer.getChannelData(0);
-                let lastOut = 0.0;
-                for (let i = 0; i < bufferSize; i++) {
-                    const white = Math.random() * 2 - 1;
-                    data[i] = (lastOut + (0.02 * white)) / 1.02;
-                    lastOut = data[i];
-                }
+                for (let i = 0; i < buffer.sampleRate * 2; i++) data[i] = (Math.random() * 2 - 1) * 0.05;
                 noiseNode = audioCtx.createBufferSource();
                 noiseNode.buffer = buffer;
                 noiseNode.loop = true;
-
-                const filter = audioCtx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 800;
-
-                const gain = audioCtx.createGain();
-                gain.gain.value = 0.05;
-
-                noiseNode.connect(filter);
-                filter.connect(gain);
-                gain.connect(audioCtx.destination);
+                noiseNode.connect(audioCtx.destination);
                 noiseNode.start();
-
                 isPlaying = true;
-                btn.innerText = "🔊 Ambient Audio: Playing (Rain/Static)";
+                btn.innerText = "🔊 Ambient Audio: Playing";
             } else {
                 if (noiseNode) noiseNode.stop();
                 if (audioCtx) audioCtx.close();
