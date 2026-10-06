@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from google import genai
 
-# Initialize the Gemini client (It reads your free API key from GitHub Secrets automatically)
+# Initialize the Gemini client
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 WORLD_FEEDS = [
@@ -18,7 +18,7 @@ LOCAL_FEEDS = [
 ]
 
 def make_funny_and_snarky(title, original_summary):
-    """Uses free Gemini model to add a funny, sarcastic twist to the news."""
+    """Uses Gemini to add a funny, sarcastic twist to the news."""
     prompt = f"""
     You are a cynical, darkly funny, sarcastic internet comedian writing for a satirical automated news site called 'The Doomscroll Daily'.
     
@@ -30,15 +30,14 @@ def make_funny_and_snarky(title, original_summary):
     Funny Rewrite:
     """
     try:
-        # Using gemini-3.8-flash which is fast and supports the free tier
-        response = client.interactions.create(
-            model="gemini-3.8-flash",
-            input=prompt,
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
         )
         return response.text.strip()
     except Exception as e:
         print(f"AI Humor Error: {e}")
-        return original_summary # Fallback if API fails
+        return original_summary
 
 def fetch_and_roast_feeds(feed_urls, limit=3):
     items = []
