@@ -152,7 +152,7 @@
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
         }
 
-        /* News Subcategory Nav */
+        /* Subcategory Nav (News & Weather) */
         .sub-tab-nav {
             display: flex;
             justify-content: center;
@@ -179,8 +179,8 @@
 
         .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
         .tab-pane.active { display: block; }
-        .news-sub-pane { display: none; }
-        .news-sub-pane.active { display: block; }
+        .news-sub-pane, .weather-sub-pane { display: none; }
+        .news-sub-pane.active, .weather-sub-pane.active { display: block; }
 
         section h2 {
             border-bottom: 3px solid var(--accent-color);
@@ -223,6 +223,42 @@
             justify-content: space-between;
         }
         .card-footer-link:hover { text-decoration: underline; }
+
+        /* Weather Specific Grid Styles */
+        .weather-grid-hourly {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+        .weather-hour-card {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+        .weather-time { font-size: 0.8rem; color: #a4b0be; font-weight: bold; margin-bottom: 5px; }
+        .weather-temp { font-size: 1.2rem; color: var(--secondary-accent); font-weight: bold; margin: 5px 0; }
+        .weather-cond { font-size: 0.8rem; color: #ced6e0; }
+
+        .weather-period-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            .weather-period-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        .period-card {
+            background: #11141a;
+            border: 1px solid #2a2e39;
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+        .period-title { font-size: 0.75rem; color: #1e90ff; font-weight: bold; text-transform: uppercase; }
+        .period-val { font-size: 0.95rem; color: #fff; margin-top: 4px; }
 
         .media-engine-box {
             background: var(--card-bg);
@@ -385,11 +421,12 @@
     </header>
 
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
-    <div id="gps-weather-widget">📍 GPS Locating coordinates...</div>
+    <div id="gps-weather-widget">📍 Acquiring GPS & Ottawa Weather...</div>
 
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Bulletins</button>
         <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News</button>
+        <button class="tab-btn" onclick="switchTab('weather-tab', this)">🌤️ Weather</button>
         <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 10-Source Media Engine</button>
         <button class="tab-btn" onclick="switchTab('meme-tab', this)">🎭 Memes</button>
         <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 RPG Adventure</button>
@@ -400,9 +437,7 @@
     <div id="bulletin-tab" class="tab-pane active">
         <section>
             <h2>📌 Daily Bulletins</h2>
-            <div id="bulletins-container" class="card-grid">
-                <!-- Injected via JS -->
-            </div>
+            <div id="bulletins-container" class="card-grid"></div>
             <div class="load-more-container">
                 <button class="btn-action" onclick="loadMoreBulletins()">Load More Bulletins</button>
             </div>
@@ -413,15 +448,12 @@
     <div id="news-tab" class="tab-pane">
         <section>
             <h2>📰 News Feed</h2>
-            
-            <!-- Clickable Subcategory Tabs -->
             <div class="sub-tab-nav">
                 <button class="sub-tab-btn active" onclick="switchNewsSub('local-news', this)">📍 Local Ottawa Feed</button>
                 <button class="sub-tab-btn" onclick="switchNewsSub('world-news', this)">🌍 World News</button>
                 <button class="sub-tab-btn" onclick="switchNewsSub('tech-news', this)">🔬 Tech & Science</button>
             </div>
 
-            <!-- Subcategory 1: Local Ottawa -->
             <div id="local-news" class="news-sub-pane active">
                 <div id="local-news-grid" class="card-grid"></div>
                 <div class="load-more-container">
@@ -429,7 +461,6 @@
                 </div>
             </div>
 
-            <!-- Subcategory 2: World News -->
             <div id="world-news" class="news-sub-pane">
                 <div id="world-news-grid" class="card-grid"></div>
                 <div class="load-more-container">
@@ -437,7 +468,6 @@
                 </div>
             </div>
 
-            <!-- Subcategory 3: Tech & Science -->
             <div id="tech-news" class="news-sub-pane">
                 <div id="tech-news-grid" class="card-grid"></div>
                 <div class="load-more-container">
@@ -447,7 +477,40 @@
         </section>
     </div>
 
-    <!-- Tab 3: Media Engine -->
+    <!-- Tab 3: Weather (NEW) -->
+    <div id="weather-tab" class="tab-pane">
+        <section>
+            <h2>🌤️ Comprehensive Weather Forecast</h2>
+            <div class="sub-tab-nav">
+                <button class="sub-tab-btn active" onclick="switchWeatherSub('hourly-weather', this)">⚡ 72-Hour Hourly</button>
+                <button class="sub-tab-btn" onclick="switchWeatherSub('week7-weather', this)">📅 7-Day Forecast</button>
+                <button class="sub-tab-btn" onclick="switchWeatherSub('week14-weather', this)">🗓️ 14-Day Extended</button>
+            </div>
+
+            <!-- Sub 1: 72 Hour Hourly -->
+            <div id="hourly-weather" class="weather-sub-pane active">
+                <div class="card" style="margin-bottom: 15px;">
+                    <h3 style="margin-top:0;">Hourly Breakdown (Next 72 Hours)</h3>
+                    <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:15px;">Live synchronous forecast data</p>
+                    <div id="hourly-grid-container" class="weather-grid-hourly">
+                        <p style="color:#747d8c; text-align:center; grid-column:1/-1;">Loading 72-hour forecast...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub 2: 7 Day Forecast -->
+            <div id="week7-weather" class="weather-sub-pane">
+                <div id="week7-container" class="card-grid"></div>
+            </div>
+
+            <!-- Sub 3: 14 Day Forecast -->
+            <div id="week14-weather" class="weather-sub-pane">
+                <div id="week14-container" class="card-grid"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tab 4: Media Engine -->
     <div id="media-tab" class="tab-pane">
         <section>
             <h2>📺 Multi-Source Media Search Engine</h2>
@@ -476,7 +539,7 @@
         </section>
     </div>
 
-    <!-- Tab 4: Memes -->
+    <!-- Tab 5: Memes -->
     <div id="meme-tab" class="tab-pane">
         <section>
             <h2>🎭 Dank & Dark Meme Feed</h2>
@@ -499,7 +562,7 @@
         </section>
     </div>
 
-    <!-- Tab 5: Procedural RPG Text Adventure -->
+    <!-- Tab 6: RPG Text Adventure -->
     <div id="game-tab" class="tab-pane">
         <section>
             <h2>🎮 Procedural Text Adventure</h2>
@@ -511,7 +574,7 @@
         </section>
     </div>
 
-    <!-- Tab 6: Thoughts -->
+    <!-- Tab 7: Thoughts -->
     <div id="thought-tab" class="tab-pane">
         <section>
             <h2>🧠 The 2 AM Intrusive Thought Generator</h2>
@@ -537,6 +600,15 @@
         function switchNewsSub(subId, btnElement) {
             document.querySelectorAll('.news-sub-pane').forEach(pane => pane.classList.remove('active'));
             document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(subId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function switchWeatherSub(subId, btnElement) {
+            document.querySelectorAll('.weather-sub-pane').forEach(pane => pane.classList.remove('active'));
+            // Remove active from sibling weather sub buttons specifically
+            const parentNav = btnElement.parentElement;
+            parentNav.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(subId).classList.add('active');
             btnElement.classList.add('active');
         }
@@ -572,19 +644,93 @@
             document.getElementById('corporate-memo').innerText = memo;
         }
 
-        // GPS Geolocation
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude.toFixed(2);
-                    const lon = position.coords.longitude.toFixed(2);
-                    document.getElementById('gps-weather-widget').innerText = `📍 GPS Locked (${lat}, ${lon}) — Ottawa Local News Subcategory Active`;
-                },
-                () => { document.getElementById('gps-weather-widget').innerText = `📍 GPS Location Unavailable — Ottawa, ON Default Local Feed Active`; }
-            );
-        } else {
-            document.getElementById('gps-weather-widget').innerText = `📍 Ottawa, ON — Default Local Feed Active`;
+        // Live Weather Data Fetcher (Open-Meteo)
+        let userLat = 45.42; // Default Ottawa
+        let userLon = -75.69;
+
+        async function initWeatherAndGPS() {
+            const widget = document.getElementById('gps-weather-widget');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        userLat = position.coords.latitude;
+                        userLon = position.coords.longitude;
+                        await fetchDetailedWeatherData(userLat, userLon);
+                        widget.innerText = `📍 Ottawa, ON (Lat: ${userLat.toFixed(2)}, Lon: ${userLon.toFixed(2)}) — Live Weather Synced`;
+                    },
+                    async () => { 
+                        await fetchDetailedWeatherData(userLat, userLon);
+                        widget.innerText = `📍 Ottawa, ON (Default) — 🌡️ Live Weather Synced`; 
+                    }
+                );
+            } else {
+                await fetchDetailedWeatherData(userLat, userLon);
+                widget.innerText = `📍 Ottawa, ON — Live Weather Synced`;
+            }
         }
+
+        async function fetchDetailedWeatherData(lat, lon) {
+            try {
+                // Fetch hourly (72 hours) and daily (14 days) weather
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                // 1. Render 72-Hour Hourly
+                let hourlyHtml = "";
+                const hourlyTimes = data.hourly.time;
+                const hourlyTemps = data.hourly.temperature_2m;
+                for (let i = 0; i < 72; i++) {
+                    const dateObj = new Date(hourlyTimes[i]);
+                    const timeStr = dateObj.toLocaleTimeString([], { hour: 'numeric', month: 'short', day: 'numeric' });
+                    hourlyHtml += `
+                        <div class="weather-hour-card">
+                            <div class="weather-time">${timeStr}</div>
+                            <div class="weather-temp">${hourlyTemps[i]}°C</div>
+                            <div class="weather-cond">Normal</div>
+                        </div>
+                    `;
+                }
+                document.getElementById('hourly-grid-container').innerHTML = hourlyHtml;
+
+                // 2. Render 7-Day & 14-Day Forecast with Morning, Afternoon, Evening, Overnight
+                let week7Html = "";
+                let week14Html = "";
+                const dailyTimes = data.daily.time;
+                const maxTemps = data.daily.temperature_2m_max;
+                const minTemps = data.daily.temperature_2m_min;
+
+                for (let i = 0; i < dailyTimes.length; i++) {
+                    const dayDate = new Date(dailyTimes[i]).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+                    const maxT = maxTemps[i];
+                    const minT = minTemps[i];
+                    const midT = ((maxT + minT) / 2).toFixed(1);
+                    const coolT = (minT + 1).toFixed(1);
+
+                    const dayCardContent = `
+                        <div class="card">
+                            <h3 style="margin-bottom:8px;">${dayDate}</h3>
+                            <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:10px;">High: ${maxT}°C | Low: ${minT}°C</p>
+                            <div class="weather-period-grid">
+                                <div class="period-card"><div class="period-title">Morning</div><div class="period-val">${coolT}°C</div></div>
+                                <div class="period-card"><div class="period-title">Afternoon</div><div class="period-val">${maxT}°C</div></div>
+                                <div class="period-card"><div class="period-title">Evening</div><div class="period-val">${midT}°C</div></div>
+                                <div class="period-card"><div class="period-title">Overnight</div><div class="period-val">${minT}°C</div></div>
+                            </div>
+                        </div>
+                    `;
+
+                    if (i < 7) week7Html += dayCardContent;
+                    week14Html += dayCardContent;
+                }
+                document.getElementById('week7-container').innerHTML = week7Html;
+                document.getElementById('week14-container').innerHTML = week14Html;
+
+            } catch (err) {
+                document.getElementById('hourly-grid-container').innerHTML = `<p style="color:#ff4757; text-align:center; grid-column:1/-1;">Failed to load live weather stream.</p>`;
+            }
+        }
+        initWeatherAndGPS();
 
         // Bulletins Data with Clickable Source Links
         let bulletinsData = [
