@@ -15,6 +15,15 @@
             --border-color: #2d3748;
         }
 
+        /* Raccoon Mode Theme Overrides */
+        body.raccoon-mode {
+            --bg-color: #1c140f;
+            --card-bg: #2b1f17;
+            --accent-color: #f97316;
+            --accent-hover: #ea580c;
+            --border-color: #452c1e;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -28,6 +37,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background 0.3s;
         }
 
         header {
@@ -53,6 +63,7 @@
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .nav-btn {
@@ -78,6 +89,13 @@
             border: 1px solid #38bdf8;
         }
 
+        .raccoon-btn {
+            background-color: #7c2d12;
+            color: #ffedd5;
+            border: 1px solid #f97316;
+            font-weight: bold;
+        }
+
         main {
             flex: 1;
             max-width: 1200px;
@@ -91,6 +109,38 @@
         }
 
         .tab-content.active {
+            display: block;
+        }
+
+        /* Subtabs Navigation */
+        .sub-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .sub-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            cursor: pointer;
+            padding-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .sub-btn.active {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .sub-content {
+            display: none;
+        }
+
+        .sub-content.active {
             display: block;
         }
 
@@ -300,21 +350,24 @@
 <body>
 
     <header>
-        <div class="logo">Doomscroll Daily</div>
+        <div class="logo" id="app-logo">Doomscroll Daily</div>
         <nav>
-            <button class="nav-btn active" onclick="switchTab('feed', this)">Feed & Weather</button>
+            <button class="nav-btn active" onclick="switchTab('news', this)">News & Weather</button>
+            <button class="nav-btn" onclick="switchTab('search', this)">10-Platform Search</button>
             <button class="nav-btn" onclick="switchTab('memes', this)">Memes</button>
             <button class="nav-btn" onclick="switchTab('existential', this)">Existential</button>
             <button class="nav-btn" onclick="switchTab('rpg', this)">RPG Adventure</button>
+            <button class="nav-btn raccoon-btn" onclick="toggleRaccoonMode()">🦝 Raccoon Mode</button>
             <button class="nav-btn secret-btn" onclick="toggleSecretMode()">Stealth Mode</button>
         </nav>
     </header>
 
     <main id="normal-view">
-        <!-- Feed & Weather Tab -->
-        <div id="tab-feed" class="tab-content active">
+        
+        <!-- News & Weather Tab -->
+        <div id="tab-news" class="tab-content active">
             
-            <!-- Rolling GPS Weather Widget -->
+            <!-- Weather Section with Rolling 24-hr GPS Clock -->
             <div class="weather-section">
                 <div class="weather-header">
                     <h2 id="location-title">Loading Local Weather...</h2>
@@ -325,11 +378,92 @@
                 </div>
             </div>
 
-            <!-- Multi-Source Search & Aggregator Engine -->
+            <!-- News Subtabs: GPS Feed / Global News / Bulletin -->
+            <div class="sub-nav">
+                <button class="sub-btn active" onclick="switchNewsSub('gps', this)">Local GPS Feed</button>
+                <button class="sub-btn" onclick="switchNewsSub('global', this)">Global News</button>
+                <button class="sub-btn" onclick="switchNewsSub('bulletin', this)">Bulletin (3 Wildest Articles)</button>
+            </div>
+
+            <!-- Local GPS Feed Sub-content -->
+            <div id="sub-news-gps" class="sub-content active">
+                <h3 style="margin-bottom: 1rem;">Regional Dispatches</h3>
+                <div class="grid-cards">
+                    <div class="feed-card">
+                        <div>
+                            <h3>Municipal Transit Expansion Approved</h3>
+                            <p>Local committees ratify budget adjustments for rapid transit upgrades across the metropolitan grid.</p>
+                        </div>
+                        <div class="feed-meta">GPS-Sourced Feed</div>
+                    </div>
+                    <div class="feed-card">
+                        <div>
+                            <h3>Downtown Infrastructure Overhaul</h3>
+                            <p>Crews break ground on urban core restructuring to support increased regional commuter flow.</p>
+                        </div>
+                        <div class="feed-meta">GPS-Sourced Feed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global News Sub-content -->
+            <div id="sub-news-global" class="sub-content">
+                <h3 style="margin-bottom: 1rem;">International Wire</h3>
+                <div class="grid-cards">
+                    <div class="feed-card">
+                        <div>
+                            <h3>Orbital Telescope Captures Deep-Field Anomaly</h3>
+                            <p>Astronomers analyze high-resolution telemetry data returned from deep space arrays.</p>
+                        </div>
+                        <div class="feed-meta">Global Wire</div>
+                    </div>
+                    <div class="feed-card">
+                        <div>
+                            <h3>Global Energy Grid Shift Accelerates</h3>
+                            <p>New efficiency benchmarks recorded across decentralized renewable microgrids worldwide.</p>
+                        </div>
+                        <div class="feed-meta">Global Wire</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulletin Sub-content (3 Wildest Articles) -->
+            <div id="sub-news-bulletin" class="sub-content">
+                <h3 style="margin-bottom: 1rem;">The Weekly Bulletin: 3 Most Ridiculous Stories</h3>
+                <div class="grid-cards">
+                    <div class="feed-card">
+                        <div>
+                            <h3>01. Raccoon Syndicate Hijacks Local Bakery</h3>
+                            <p>An organized band of trash-pandas successfully breached a sourdough vault, held staff hostage with intense staring, and escaped into the sewer system.</p>
+                        </div>
+                        <div class="feed-meta">Weekly Bulletin #1</div>
+                    </div>
+                    <div class="feed-card">
+                        <div>
+                            <h3>02. Man Tries to Pay Traffic Fine in Live Crickets</h3>
+                            <p>Court officials decline briefcase containing 14,000 chirping insects as legal tender, citing municipal code violations.</p>
+                        </div>
+                        <div class="feed-meta">Weekly Bulletin #2</div>
+                    </div>
+                    <div class="feed-card">
+                        <div>
+                            <h3>03. Pigeon Declared Unofficial Mayor After Landing on Ballot Box</h3>
+                            <p>Town council faces legal crisis after a stubborn rock pigeon refuses to leave the mayoral podium for three consecutive business days.</p>
+                        </div>
+                        <div class="feed-meta">Weekly Bulletin #3</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 10-Platform Search Tab -->
+        <div id="tab-search" class="tab-content">
+            <h2 style="margin-bottom: 1rem;">Multi-Platform Media Search Engine</h2>
             <div class="search-container">
                 <div class="search-bar">
-                    <input type="text" id="search-input" placeholder="Search across 10 active platforms..." onkeydown="if(event.key === 'Enter') triggerMultiSearch()">
-                    <button onclick="triggerMultiSearch()">Query Engine</button>
+                    <input type="text" id="search-input" placeholder="Search across all 10 platform streams..." onkeydown="if(event.key === 'Enter') triggerMultiSearch()">
+                    <button onclick="triggerMultiSearch()">Query 10 Nodes</button>
                 </div>
                 <div class="platform-toggles">
                     <span class="platform-chip active" onclick="togglePlatform(this)">Platform Alpha</span>
@@ -338,54 +472,73 @@
                     <span class="platform-chip active" onclick="togglePlatform(this)">Dev Notes</span>
                     <span class="platform-chip active" onclick="togglePlatform(this)">Meme Node</span>
                     <span class="platform-chip active" onclick="togglePlatform(this)">Open Feeds</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Dark Archive</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Wire Service</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Local Dispatch</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Void Echo</span>
                 </div>
             </div>
 
-            <!-- Feed Results Grid -->
             <div class="grid-cards" id="feed-results-grid">
                 <div class="feed-card">
                     <div>
-                        <h3>Platform Alpha Stream</h3>
-                        <p>Live proxy routing active across target channels. Ready for keyword queries.</p>
+                        <h3>Engine Standing By</h3>
+                        <p>Enter a keyword query above to parse live indices across all 10 integrated channels simultaneously.</p>
                     </div>
-                    <div class="feed-meta">Channel 01</div>
-                </div>
-                <div class="feed-card">
-                    <div>
-                        <h3>Localized RSS Dispatch</h3>
-                        <p>Pulling regional dispatches matching current geolocation vectors.</p>
-                    </div>
-                    <div class="feed-meta">Channel 02</div>
-                </div>
-                <div class="feed-card">
-                    <div>
-                        <h3>Global Media Node</h3>
-                        <p>Cross-origin pipeline open, maintaining low-latency state checks.</p>
-                    </div>
-                    <div class="feed-meta">Channel 03</div>
+                    <div class="feed-meta">System Ready</div>
                 </div>
             </div>
         </div>
 
-        <!-- Memes Tab -->
+        <!-- Memes Tab (Dark Memes & SFW Memes Subcategories) -->
         <div id="tab-memes" class="tab-content">
-            <h2 style="margin-bottom: 1rem;">Meme Stream</h2>
-            <div class="grid-cards">
-                <div class="feed-card">
-                    <div>
-                        <h3>Error 404: Motivation Not Found</h3>
-                        <p>Attempting system reboot via high-caffeine protocol injection...</p>
+            <h2 style="margin-bottom: 1rem;">Meme Vault</h2>
+            
+            <div class="sub-nav">
+                <button class="sub-btn active" onclick="switchMemeSub('dark', this)">Dark Memes (Unhinged)</button>
+                <button class="sub-btn" onclick="switchMemeSub('sfw', this)">Safe For Work (SFW)</button>
+            </div>
+
+            <!-- Dark Memes Sub-content -->
+            <div id="sub-meme-dark" class="sub-content active">
+                <div class="grid-cards">
+                    <div class="feed-card">
+                        <div>
+                            <h3>Error 404: Will to Function</h3>
+                            <p>Running entirely on sarcasm, low-grade panic, and three day old energy drinks.</p>
+                        </div>
+                        <div class="feed-meta">Dark Humor Node</div>
                     </div>
-                    <div class="feed-meta">Humor Node</div>
-                </div>
-                <div class="feed-card">
-                    <div>
-                        <h3>The Infinite Scroll</h3>
-                        <p>Staring into the digital abyss and realizing the algorithm is staring back.</p>
+                    <div class="feed-card">
+                        <div>
+                            <h3>Staring Into The Void</h3>
+                            <p>The void whispered back: "Bro, check your inbox, you have 4,000 unread emails."</p>
+                        </div>
+                        <div class="feed-meta">Dark Humor Node</div>
                     </div>
-                    <div class="feed-meta">Humor Node</div>
                 </div>
             </div>
+
+            <!-- SFW Memes Sub-content -->
+            <div id="sub-meme-sfw" class="sub-content">
+                <div class="grid-cards">
+                    <div class="feed-card">
+                        <div>
+                            <h3>The Perfect Coffee Cup</h3>
+                            <p>When you take that first sip of morning coffee and all your life problems vanish for precisely 4 seconds.</p>
+                        </div>
+                        <div class="feed-meta">SFW Humor</div>
+                    </div>
+                    <div class="feed-card">
+                        <div>
+                            <h3>Dog Logic</h3>
+                            <p>Barking at a leaf blowing across the yard as if it personally insulted your entire bloodline.</p>
+                        </div>
+                        <div class="feed-meta">SFW Humor</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Existential Tab -->
@@ -424,14 +577,34 @@
     </table>
 
     <script>
-        // Tab Switching Logic
+        // Main Tab Switching Logic
         function switchTab(tabName, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => {
-                if(!el.classList.contains('secret-btn')) el.classList.remove('active');
+                if(!el.classList.contains('secret-btn') && !el.classList.contains('raccoon-btn')) {
+                    el.classList.remove('active');
+                }
             });
             
             document.getElementById('tab-' + tabName).classList.add('active');
+            if(btnElement) btnElement.classList.add('active');
+        }
+
+        // News Sub-tab Switching
+        function switchNewsSub(subName, btnElement) {
+            document.querySelectorAll('#tab-news .sub-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('#tab-news .sub-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('sub-news-' + subName).classList.add('active');
+            if(btnElement) btnElement.classList.add('active');
+        }
+
+        // Meme Sub-tab Switching
+        function switchMemeSub(subName, btnElement) {
+            document.querySelectorAll('#tab-memes .sub-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('#tab-memes .sub-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('sub-meme-' + subName).classList.add('active');
             if(btnElement) btnElement.classList.add('active');
         }
 
@@ -448,6 +621,15 @@
                 mainView.style.display = 'block';
                 sheetView.style.display = 'none';
             }
+        }
+
+        // Raccoon Mode Toggle
+        let isRaccoonActive = false;
+        function toggleRaccoonMode() {
+            isRaccoonActive = !isRaccoonActive;
+            document.body.classList.toggle('raccoon-mode', isRaccoonActive);
+            const logo = document.getElementById('app-logo');
+            logo.innerText = isRaccoonActive ? "🦝 Trash-Panda Daily 🦝" : "Doomscroll Daily";
         }
 
         // Platform Filter Chip Toggles
@@ -530,7 +712,7 @@
             }
         }
 
-        // Multi-Source Search Aggregator simulation
+        // Multi-Source Search Aggregator
         function triggerMultiSearch() {
             const query = document.getElementById('search-input').value;
             const grid = document.getElementById('feed-results-grid');
@@ -545,10 +727,10 @@
             grid.innerHTML = `
                 <div class="feed-card" style="grid-column: 1 / -1;">
                     <div>
-                        <h3>Aggregated Results for: "${query}"</h3>
-                        <p style="margin-top: 0.5rem; color: var(--text-main);">Parsed across active proxy feeds and regional endpoints. Data synchronization complete.</p>
+                        <h3>Aggregated Results across 10 Nodes for: "${query}"</h3>
+                        <p style="margin-top: 0.5rem; color: var(--text-main);">Successfully parsed indices across active proxy streams, wire feeds, and regional endpoints.</p>
                     </div>
-                    <div class="feed-meta" style="margin-top: 1rem;">Multi-Node Stream Active</div>
+                    <div class="feed-meta" style="margin-top: 1rem;">Multi-Node Stream Complete</div>
                 </div>
             `;
         }
