@@ -23,13 +23,11 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir feedparser beautifulsoup4 google-genai
+          pip install --no-cache-dir feedparser beautifulsoup4
 
       - name: Run Sarcastic News Script
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          python update_news.py
+          python -u update_news.py
 
       - name: Commit and Push Changes to Live Site
         run: |
