@@ -52,22 +52,30 @@
         nav {
             display: flex;
             gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .nav-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.75rem;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
+            font-size: 0.9rem;
             transition: all 0.2s;
         }
 
         .nav-btn.active, .nav-btn:hover {
             background-color: var(--accent-color);
             color: white;
+        }
+
+        .secret-btn {
+            background-color: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #38bdf8;
         }
 
         main {
@@ -86,7 +94,7 @@
             display: block;
         }
 
-        /* Weather Styles */
+        /* Weather Section */
         .weather-section {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -136,16 +144,24 @@
             color: var(--text-muted);
         }
 
-        /* Feed & Search */
+        /* Search & Aggregator Engine */
+        .search-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
         .search-bar {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         .search-bar input {
             flex: 1;
-            background: var(--card-bg);
+            background: var(--bg-color);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 0.75rem 1rem;
@@ -161,21 +177,69 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            transition: background 0.2s;
         }
 
-        /* Utility / Secret Mode */
-        .spreadsheet-view {
-            display: none;
-            background: white;
-            color: black;
-            width: 100%;
-            height: 80vh;
-            border-collapse: collapse;
+        .search-bar button:hover {
+            background: var(--accent-hover);
         }
-        .spreadsheet-view th, .spreadsheet-view td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
+
+        .platform-toggles {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .platform-chip {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .platform-chip.active {
+            border-color: var(--accent-color);
+            color: white;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .feed-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .feed-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .feed-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .feed-meta {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* RPG Box */
@@ -205,9 +269,31 @@
             padding: 0.5rem 1rem;
             border-radius: 6px;
             cursor: pointer;
+            transition: background 0.2s;
         }
         .rpg-btn:hover {
             background: var(--accent-color);
+        }
+
+        /* Stealth Spreadsheet View */
+        .spreadsheet-view {
+            display: none;
+            background: white;
+            color: black;
+            width: 100%;
+            height: 85vh;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        .spreadsheet-view th, .spreadsheet-view td {
+            border: 1px solid #d1d5db;
+            padding: 10px;
+            text-align: left;
+        }
+        .spreadsheet-view th {
+            background-color: #f3f4f6;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -216,35 +302,101 @@
     <header>
         <div class="logo">Doomscroll Daily</div>
         <nav>
-            <button class="nav-btn active" onclick="switchTab('feed')">Feed & Weather</button>
-            <button class="nav-btn" onclick="switchTab('rpg')">RPG Adventure</button>
-            <button class="nav-btn" onclick="toggleSecretMode()">Stealth Mode</button>
+            <button class="nav-btn active" onclick="switchTab('feed', this)">Feed & Weather</button>
+            <button class="nav-btn" onclick="switchTab('memes', this)">Memes</button>
+            <button class="nav-btn" onclick="switchTab('existential', this)">Existential</button>
+            <button class="nav-btn" onclick="switchTab('rpg', this)">RPG Adventure</button>
+            <button class="nav-btn secret-btn" onclick="toggleSecretMode()">Stealth Mode</button>
         </nav>
     </header>
 
     <main id="normal-view">
-        <!-- Feed Tab -->
+        <!-- Feed & Weather Tab -->
         <div id="tab-feed" class="tab-content active">
             
-            <!-- Dynamic GPS Weather Widget -->
+            <!-- Rolling GPS Weather Widget -->
             <div class="weather-section">
                 <div class="weather-header">
                     <h2 id="location-title">Loading Local Weather...</h2>
                     <span id="gps-status" style="font-size: 0.85rem; color: var(--text-muted);">Syncing GPS...</span>
                 </div>
                 <div class="hourly-scroll" id="hourly-weather-container">
-                    <!-- Hourly cards injected dynamically starting from current hour -->
+                    <!-- Dynamic hourly cards injected here -->
                 </div>
             </div>
 
-            <!-- Multi-Source Search Engine -->
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Search across 10 platforms (memes, news, feeds)...">
-                <button onclick="triggerSearch()">Search</button>
+            <!-- Multi-Source Search & Aggregator Engine -->
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Search across 10 active platforms..." onkeydown="if(event.key === 'Enter') triggerMultiSearch()">
+                    <button onclick="triggerMultiSearch()">Query Engine</button>
+                </div>
+                <div class="platform-toggles">
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Platform Alpha</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">RSS Dispatch</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Global Stream</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Dev Notes</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Meme Node</span>
+                    <span class="platform-chip active" onclick="togglePlatform(this)">Open Feeds</span>
+                </div>
             </div>
 
-            <div id="feed-results" style="color: var(--text-muted); text-align: center; padding: 2rem;">
-                Enter a query or browse live localized updates above.
+            <!-- Feed Results Grid -->
+            <div class="grid-cards" id="feed-results-grid">
+                <div class="feed-card">
+                    <div>
+                        <h3>Platform Alpha Stream</h3>
+                        <p>Live proxy routing active across target channels. Ready for keyword queries.</p>
+                    </div>
+                    <div class="feed-meta">Channel 01</div>
+                </div>
+                <div class="feed-card">
+                    <div>
+                        <h3>Localized RSS Dispatch</h3>
+                        <p>Pulling regional dispatches matching current geolocation vectors.</p>
+                    </div>
+                    <div class="feed-meta">Channel 02</div>
+                </div>
+                <div class="feed-card">
+                    <div>
+                        <h3>Global Media Node</h3>
+                        <p>Cross-origin pipeline open, maintaining low-latency state checks.</p>
+                    </div>
+                    <div class="feed-meta">Channel 03</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Memes Tab -->
+        <div id="tab-memes" class="tab-content">
+            <h2 style="margin-bottom: 1rem;">Meme Stream</h2>
+            <div class="grid-cards">
+                <div class="feed-card">
+                    <div>
+                        <h3>Error 404: Motivation Not Found</h3>
+                        <p>Attempting system reboot via high-caffeine protocol injection...</p>
+                    </div>
+                    <div class="feed-meta">Humor Node</div>
+                </div>
+                <div class="feed-card">
+                    <div>
+                        <h3>The Infinite Scroll</h3>
+                        <p>Staring into the digital abyss and realizing the algorithm is staring back.</p>
+                    </div>
+                    <div class="feed-meta">Humor Node</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existential Tab -->
+        <div id="tab-existential" class="tab-content">
+            <h2 style="margin-bottom: 1rem;">Existential Thoughts</h2>
+            <div class="feed-card" style="max-width: 600px;">
+                <div>
+                    <h3>Random Universe Check</h3>
+                    <p style="margin-top: 0.5rem;">Nothing inherently matters, which means you have absolute creative license to build cool tools, write code, and dictate your own narrative.</p>
+                </div>
+                <div class="feed-meta" style="margin-top: 1rem;">Deep Thought Stream</div>
             </div>
         </div>
 
@@ -260,31 +412,30 @@
         </div>
     </main>
 
-    <!-- Stealth Spreadsheet Mode Container -->
+    <!-- Stealth Spreadsheet Mode View -->
     <table id="spreadsheet-view" class="spreadsheet-view">
-        <tr><th>A</th><th>B</th><th>C</th><th>D</th></tr>
-        <tr><td>Q1 Revenue</td><td>$45,200</td><td>$12,400</td><td>+14%</td></tr>
-        <tr><td>Q2 Forecast</td><td>$52,100</td><td>$15,100</td><td>+22%</td></tr>
-        <tr><td>Operational Cost</td><td>$11,000</td><td>$9,800</td><td>-4%</td></tr>
-        <tr><td>Net Efficiency</td><td>94.2%</td><td>96.8%</td><td>+2.6%</td></tr>
+        <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>ID</td><td>Metric Name</td><td>Q1 Actual</td><td>Q2 Target</td><td>Variance</td></tr>
+        <tr><td>101</td><td>Operational Overhead</td><td>$45,200</td><td>$42,000</td><td>+7.6%</td></tr>
+        <tr><td>102</td><td>Regional Output</td><td>$112,400</td><td>$105,000</td><td>+7.0%</td></tr>
+        <tr><td>103</td><td>Network Latency Factor</td><td>14ms</td><td>12ms</td><td>-16%</td></tr>
+        <tr><td>104</td><td>Resource Utilization</td><td>94.2%</td><td>90.0%</td><td>+4.6%</td></tr>
+        <tr><td>105</td><td>Pipeline Throughput</td><td>1,240 req/s</td><td>1,100 req/s</td><td>+12.7%</td></tr>
     </table>
 
     <script>
-        // Tab switching utility
-        function switchTab(tabName) {
+        // Tab Switching Logic
+        function switchTab(tabName, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                if(!el.classList.contains('secret-btn')) el.classList.remove('active');
+            });
             
-            if(tabName === 'feed') {
-                document.getElementById('tab-feed').classList.add('active');
-                event.target.classList.add('active');
-            } else if(tabName === 'rpg') {
-                document.getElementById('tab-rpg').classList.add('active');
-                event.target.classList.add('active');
-            }
+            document.getElementById('tab-' + tabName).classList.add('active');
+            if(btnElement) btnElement.classList.add('active');
         }
 
-        // Stealth spreadsheet mode toggle
+        // Stealth Mode Toggle
         let isSecretActive = false;
         function toggleSecretMode() {
             isSecretActive = !isSecretActive;
@@ -299,11 +450,123 @@
             }
         }
 
-        // Geolocation & Weather Data Fetcher with Rolling Current Hour Index
+        // Platform Filter Chip Toggles
+        function togglePlatform(chip) {
+            chip.classList.toggle('active');
+        }
+
+        // GPS & Weather Fetcher (Rolling Current Hour Index)
         function initGPSWeather() {
             if (!navigator.geolocation) {
-                document.getElementById('location-title').innerText = "Geolocation not supported";
+                document.getElementById('location-title').innerText = "Local Feed (GPS Unavailable)";
                 return;
             }
 
-            navigator.geolocation.getCurrentPosition
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    document.getElementById('gps-status').innerText = "GPS Synced";
+                    await fetchLocalWeather(lat, lon);
+                }, 
+                (error) => {
+                    console.warn("GPS lookup denied or failed, using Ottawa default:", error);
+                    document.getElementById('gps-status').innerText = "Default Location (Ottawa)";
+                    fetchLocalWeather(45.4215, -75.6972, "Ottawa");
+                }
+            );
+        }
+
+        async function fetchLocalWeather(lat, lon, overrideName = null) {
+            try {
+                if(overrideName) {
+                    document.getElementById('location-title').innerText = `Local ${overrideName} Feed`;
+                } else {
+                    document.getElementById('location-title').innerText = `Local GPS Feed`;
+                }
+
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto`);
+                const data = await response.json();
+
+                if (!data || !data.hourly) return;
+
+                const times = data.hourly.time;
+                const temps = data.hourly.temperature_2m;
+
+                // Match current local time hour index
+                const now = new Date();
+                let currentIndex = 0;
+                for (let i = 0; i < times.length; i++) {
+                    const forecastTime = new Date(times[i]);
+                    if (forecastTime >= now) {
+                        currentIndex = i;
+                        break;
+                    }
+                }
+
+                const container = document.getElementById('hourly-weather-container');
+                container.innerHTML = '';
+
+                // Loop through the next 24 hours starting precisely from current hour
+                for (let i = currentIndex; i < currentIndex + 24; i++) {
+                    if (!times[i]) break;
+
+                    const tDate = new Date(times[i]);
+                    const hourLabel = tDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+                    const tempVal = temps[i];
+
+                    const card = document.createElement('div');
+                    card.className = 'weather-hour-card';
+                    card.innerHTML = `
+                        <div class="weather-temp">${tempVal}°C</div>
+                        <div class="weather-time">${hourLabel}</div>
+                    `;
+                    container.appendChild(card);
+                }
+
+            } catch (err) {
+                console.error("Failed to fetch weather forecast:", err);
+                document.getElementById('location-title').innerText = "Weather Feed Unavailable";
+            }
+        }
+
+        // Multi-Source Search Aggregator simulation
+        function triggerMultiSearch() {
+            const query = document.getElementById('search-input').value;
+            const grid = document.getElementById('feed-results-grid');
+            
+            if(!query.trim()) {
+                grid.innerHTML = `
+                    <div class="feed-card"><div><h3>Empty Query</h3><p>Please enter keywords to query active platform channels.</p></div><div class="feed-meta">System</div></div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = `
+                <div class="feed-card" style="grid-column: 1 / -1;">
+                    <div>
+                        <h3>Aggregated Results for: "${query}"</h3>
+                        <p style="margin-top: 0.5rem; color: var(--text-main);">Parsed across active proxy feeds and regional endpoints. Data synchronization complete.</p>
+                    </div>
+                    <div class="feed-meta" style="margin-top: 1rem;">Multi-Node Stream Active</div>
+                </div>
+            `;
+        }
+
+        // RPG Story Logic
+        function progressRpg(choice) {
+            const story = document.getElementById('rpg-story');
+            if(choice === 1) {
+                story.innerText = "You venture deeper into the feed. Algorithms shift around you, revealing hidden data nodes and unexpected localized news updates.";
+            } else {
+                story.innerText = "You toggle the spreadsheet mode. The corporate entities lose track of your digital footprint completely.";
+            }
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            initGPSWeather();
+        };
+    </script>
+</body>
+</html>
