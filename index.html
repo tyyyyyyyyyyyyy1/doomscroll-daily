@@ -3,1130 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Doomscroll Daily - Multi-Source Media Engine</title>
+    <title>Doomscroll Daily</title>
     <style>
         :root {
             --bg-color: #0f1115;
-            --card-bg: #1a1d24;
-            --text-color: #e1e4e8;
-            --accent-color: #ff4757;
-            --secondary-accent: #ffa502;
-            --tab-bg: #222630;
-            --tab-active: #ff4757;
+            --card-bg: #181c24;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #2d3748;
         }
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 10px;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        @media (min-width: 768px) { body { padding: 20px; } }
-        
-        .panic-controls {
-            position: fixed;
-            top: 15px;
-            right: 15px;
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
-            gap: 8px;
-            z-index: 9999;
-        }
-        .panic-btn {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
-        }
-        .panic-btn.raccoon { background: #ffa502; color: #000; }
-        .panic-btn:hover { transform: scale(1.05); }
-
-        /* Corporate Bullsh!t Panic Mode */
-        body.panic-mode header, 
-        body.panic-mode .tab-nav, 
-        body.panic-mode .tab-pane, 
-        body.panic-mode footer, 
-        body.panic-mode #gps-weather-widget, 
-        body.panic-mode #frontpage-weather-banner,
-        body.panic-mode .panic-controls,
-        body.panic-mode #panic-banner,
-        body.panic-mode #raccoon-chaos {
-            display: none !important;
-        }
-        #corporate-panic {
-            display: none;
-            padding: 40px;
-            background: #ffffff;
-            color: #111;
-            font-family: 'Arial', sans-serif;
-            min-height: 100vh;
-        }
-        body.panic-mode #corporate-panic {
-            display: block !important;
-        }
-
-        /* Raccoon Chaos Mode */
-        body.raccoon-mode header, 
-        body.raccoon-mode .tab-nav, 
-        body.raccoon-mode .tab-pane, 
-        body.raccoon-mode footer, 
-        body.raccoon-mode #gps-weather-widget, 
-        body.raccoon-mode #frontpage-weather-banner,
-        body.raccoon-mode .panic-controls,
-        body.raccoon-mode #panic-banner,
-        body.raccoon-mode #corporate-panic {
-            display: none !important;
-        }
-        #raccoon-chaos {
-            display: none;
-            padding: 40px;
-            background: #000;
-            color: #ff4757;
-            text-align: center;
-            min-height: 100vh;
-        }
-        body.raccoon-mode #raccoon-chaos {
-            display: flex !important;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
 
         header {
-            text-align: center;
-            padding: 25px 10px;
-            border-bottom: 2px dashed #333;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #1a1d24 0%, #2f1b25 100%);
-            border-radius: 12px;
-        }
-        h1 {
-            font-size: 2.2rem;
-            margin: 0;
-            color: var(--accent-color);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        @media (min-width: 768px) { h1 { font-size: 3rem; } }
-        .tagline { font-size: 1rem; color: #a4b0be; margin-top: 8px; }
-
-        #panic-banner, #gps-weather-widget, #frontpage-weather-banner {
-            background: var(--card-bg);
-            border: 1px solid #333;
-            padding: 10px 15px;
-            border-radius: 8px;
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto 15px auto;
-            font-size: 0.9rem;
-            color: var(--secondary-accent);
-            font-weight: bold;
-        }
-        #frontpage-weather-banner {
-            background: linear-gradient(135deg, #1a1d24 0%, #1e272c 100%);
-            border-color: #1e90ff44;
-            color: #fff;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .tab-nav {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        .tab-btn {
-            background-color: var(--tab-bg);
-            color: var(--text-color);
-            border: 1px solid #333;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-        }
-        .tab-btn:hover { background-color: #2f3542; }
-        .tab-btn.active {
-            background-color: var(--tab-active);
-            color: #fff;
-            border-color: var(--tab-active);
-            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
-        }
-
-        /* Subcategory Nav (News & Weather) */
-        .sub-tab-nav {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .sub-tab-btn {
-            background: #15181e;
-            color: #a4b0be;
-            border: 1px solid #333;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-        .sub-tab-btn:hover { background: #222630; color: #fff; }
-        .sub-tab-btn.active {
-            background: #1e90ff;
-            color: #fff;
-            border-color: #1e90ff;
-        }
-
-        .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
-        .tab-pane.active { display: block; }
-        .news-sub-pane, .weather-sub-pane { display: none; }
-        .news-sub-pane.active, .weather-sub-pane.active { display: block; }
-
-        section h2 {
-            border-bottom: 3px solid var(--accent-color);
-            padding-bottom: 8px;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
-            text-align: center;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        @media (min-width: 600px) { .card-grid { grid-template-columns: 1fr 1fr; } }
-
-        .card {
             background-color: var(--card-bg);
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .card h3 { margin-top: 0; color: var(--secondary-accent); font-size: 1.1rem; }
-        .card p { font-size: 0.95rem; line-height: 1.4; color: #ced6e0; margin-bottom: 15px; }
-        
-        .card-footer-link {
-            font-size: 0.8rem;
-            color: #1e90ff;
-            text-decoration: none;
-            font-weight: bold;
-            align-self: flex-start;
-            border-top: 1px solid #2a2e39;
-            padding-top: 8px;
-            width: 100%;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .card-footer-link:hover { text-decoration: underline; }
 
-        /* Weather Specific Grid Styles */
-        .weather-grid-hourly {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            letter-spacing: -0.5px;
         }
-        .weather-hour-card {
-            background: var(--card-bg);
-            border: 1px solid #333;
-            border-radius: 6px;
-            padding: 10px;
-            text-align: center;
-        }
-        .weather-time { font-size: 0.8rem; color: #1e90ff; font-weight: bold; margin-bottom: 5px; }
-        .weather-temp { font-size: 1.2rem; color: var(--secondary-accent); font-weight: bold; margin: 5px 0; }
-        .weather-cond { font-size: 0.8rem; color: #ced6e0; }
 
-        .weather-period-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 10px;
-        }
-        @media (max-width: 768px) {
-            .weather-period-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        .period-card {
-            background: #11141a;
-            border: 1px solid #2a2e39;
-            border-radius: 6px;
-            padding: 8px;
-            text-align: center;
-        }
-        .period-title { font-size: 0.75rem; color: #1e90ff; font-weight: bold; text-transform: uppercase; }
-        .period-val { font-size: 0.95rem; color: #fff; margin-top: 4px; }
-
-        .media-engine-box {
-            background: var(--card-bg);
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .search-bar-wrapper {
+        nav {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            gap: 0.5rem;
         }
-        .search-bar-wrapper input {
-            flex: 1;
-            min-width: 220px;
-            background: #0f1115;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 12px 15px;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-        .search-bar-wrapper select {
-            background: #0f1115;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 12px 15px;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-        .search-bar-wrapper button {
-            background: #ff4757;
-            color: white;
+
+        .nav-btn {
+            background: transparent;
             border: none;
-            padding: 0 20px;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
             border-radius: 6px;
-            font-weight: bold;
             cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
         }
-        .search-bar-wrapper button:hover { background: #ff6b81; }
 
-        .media-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        @media (min-width: 600px) { .media-grid { grid-template-columns: 1fr 1fr; } }
-
-        .media-result-card {
-            background: #101217;
-            border: 1px solid #2f3542;
-            border-radius: 6px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .media-source-tag {
-            font-size: 0.75rem;
-            background: #222630;
-            padding: 3px 8px;
-            border-radius: 4px;
-            color: #ffa502;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 8px;
-            width: fit-content;
-        }
-        .media-result-title {
-            font-size: 1.05rem;
-            color: #ff6b81;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-decoration: none;
-        }
-        .media-result-title:hover { text-decoration: underline; }
-        .media-caption {
-            font-size: 0.9rem;
-            color: #ced6e0;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
-        .media-thumb {
-            width: 100%;
-            max-height: 200px;
-            object-fit: contain;
-            background: #000;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        .media-stats {
-            font-size: 0.75rem;
-            color: #747d8c;
-            display: flex;
-            justify-content: space-between;
-            border-top: 1px solid #222;
-            padding-top: 8px;
-        }
-        .news-link { color: #1e90ff; text-decoration: none; font-weight: bold; }
-        .news-link:hover { text-decoration: underline; }
-
-        .btn-action {
+        .nav-btn.active, .nav-btn:hover {
             background-color: var(--accent-color);
             color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Weather Styles */
+        .weather-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .weather-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .weather-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .hourly-scroll {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) var(--card-bg);
+        }
+
+        .weather-hour-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            min-width: 90px;
+            padding: 1rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .weather-temp {
+            font-size: 1.2rem;
             font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .weather-time {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Feed & Search */
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .search-bar button {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 0 1.5rem;
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 10px;
-        }
-        .btn-action:hover { background-color: #ff6b81; }
-
-        .load-more-container {
-            text-align: center;
-            margin-top: 25px;
+            font-weight: 600;
         }
 
-        footer {
+        /* Utility / Secret Mode */
+        .spreadsheet-view {
+            display: none;
+            background: white;
+            color: black;
+            width: 100%;
+            height: 80vh;
+            border-collapse: collapse;
+        }
+        .spreadsheet-view th, .spreadsheet-view td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        /* RPG Box */
+        .rpg-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
             text-align: center;
-            padding: 30px 10px;
-            color: #747d8c;
-            border-top: 1px solid #222;
-            margin-top: 50px;
-            font-size: 0.9rem;
+        }
+        .rpg-text {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        .rpg-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .rpg-btn {
+            background: var(--border-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .rpg-btn:hover {
+            background: var(--accent-color);
         }
     </style>
 </head>
 <body>
 
-    <div class="panic-controls">
-        <button class="panic-btn raccoon" onclick="toggleRaccoonChaos()">🦝 Trash Panda Mode</button>
-        <button class="panic-btn" onclick="toggleCorporatePanic()">📈 Corporate BS (Esc)</button>
-    </div>
-
-    <!-- Corporate Bullsh!t Generator Panic Screen -->
-    <div id="corporate-panic">
-        <h2 style="color: #0056b3; margin-top:0;">📊 Executive Synergy & Paradigm Strategy Memorandum</h2>
-        <p id="corporate-memo" style="font-size: 1.2rem; line-height: 1.6; background: #f8f9fa; padding: 20px; border-left: 5px solid #0056b3; border-radius: 4px;">
-            Loading executive bullshit stream...
-        </p>
-        <div style="display:flex; gap: 15px; margin-top: 20px;">
-            <button class="btn-action" style="background:#0056b3;" onclick="generateCorporateBS()">Generate New Corporate Word Salad</button>
-            <button class="btn-action" style="background:#6c757d;" onclick="toggleCorporatePanic()">Return to Dashboard (Esc)</button>
-        </div>
-    </div>
-
-    <!-- Trash Panda Chaos Mode -->
-    <div id="raccoon-chaos">
-        <h1 style="color: #ffa502; font-size: 3.5rem; margin-bottom: 10px;">🦝 THE GARBAGE GOBLINS HAVE AWOKEN 🦝</h1>
-        <p style="font-size: 1.3rem; color: #ced6e0; max-width: 600px; line-height: 1.5;">You clicked the forbidden trash button. The local raccoon syndicate demands all leftover pizza crusts immediately or your Wi-Fi router gets chewed through.</p>
-        <button class="btn-action" style="background: #ffa502; color: #000; margin-top: 25px;" onclick="toggleRaccoonChaos()">Appease the Raccoons & Escape</button>
-    </div>
-
     <header>
-        <h1>The Doomscroll Daily</h1>
-        <p class="tagline">Your Daily Dose of Brain-Rot & Global Reality</p>
+        <div class="logo">Doomscroll Daily</div>
+        <nav>
+            <button class="nav-btn active" onclick="switchTab('feed')">Feed & Weather</button>
+            <button class="nav-btn" onclick="switchTab('rpg')">RPG Adventure</button>
+            <button class="nav-btn" onclick="toggleSecretMode()">Stealth Mode</button>
+        </nav>
     </header>
 
-    <div id="panic-banner">📊 Global Panic Index: Operational</div>
-    
-    <!-- Front Page Quick Weather Summary Banner -->
-    <div id="frontpage-weather-banner">
-        <span>📍 Locating GPS...</span>
-        <span>🌡️️ Loading live temp...</span>
-        <span>🌤️ Synced Local Time</span>
-    </div>
-
-    <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Bulletins</button>
-        <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News</button>
-        <button class="tab-btn" onclick="switchTab('weather-tab', this)">🌤️ Weather</button>
-        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 10-Source Media Engine</button>
-        <button class="tab-btn" onclick="switchTab('meme-tab', this)">🎭 Memes</button>
-        <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 RPG Adventure</button>
-        <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
-    </div>
-
-    <!-- Tab 1: Bulletins -->
-    <div id="bulletin-tab" class="tab-pane active">
-        <section>
-            <h2>📌 Daily Bulletins</h2>
-            <div id="bulletins-container" class="card-grid"></div>
-            <div class="load-more-container">
-                <button class="btn-action" onclick="loadMoreBulletins()">Load More Bulletins</button>
-            </div>
-        </section>
-    </div>
-
-    <!-- Tab 2: News -->
-    <div id="news-tab" class="tab-pane">
-        <section>
-            <h2>📰 News Feed</h2>
-            <div class="sub-tab-nav">
-                <button class="sub-tab-btn active" onclick="switchNewsSub('local-news', this)">📍 Local Ottawa Feed</button>
-                <button class="sub-tab-btn" onclick="switchNewsSub('world-news', this)">🌍 World News</button>
-                <button class="sub-tab-btn" onclick="switchNewsSub('tech-news', this)">🔬 Tech & Science</button>
-            </div>
-
-            <div id="local-news" class="news-sub-pane active">
-                <div id="local-news-grid" class="card-grid"></div>
-                <div class="load-more-container">
-                    <button class="btn-action" onclick="loadMoreNews('local')">View More Local Results</button>
+    <main id="normal-view">
+        <!-- Feed Tab -->
+        <div id="tab-feed" class="tab-content active">
+            
+            <!-- Dynamic GPS Weather Widget -->
+            <div class="weather-section">
+                <div class="weather-header">
+                    <h2 id="location-title">Loading Local Weather...</h2>
+                    <span id="gps-status" style="font-size: 0.85rem; color: var(--text-muted);">Syncing GPS...</span>
+                </div>
+                <div class="hourly-scroll" id="hourly-weather-container">
+                    <!-- Hourly cards injected dynamically starting from current hour -->
                 </div>
             </div>
 
-            <div id="world-news" class="news-sub-pane">
-                <div id="world-news-grid" class="card-grid"></div>
-                <div class="load-more-container">
-                    <button class="btn-action" onclick="loadMoreNews('world')">View More World Results</button>
+            <!-- Multi-Source Search Engine -->
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search across 10 platforms (memes, news, feeds)...">
+                <button onclick="triggerSearch()">Search</button>
+            </div>
+
+            <div id="feed-results" style="color: var(--text-muted); text-align: center; padding: 2rem;">
+                Enter a query or browse live localized updates above.
+            </div>
+        </div>
+
+        <!-- RPG Tab -->
+        <div id="tab-rpg" class="tab-content">
+            <div class="rpg-box">
+                <div class="rpg-text" id="rpg-story">You stand at the edge of an infinite digital void. Streams of endless notifications cascade into the dark. What do you do?</div>
+                <div class="rpg-actions">
+                    <button class="rpg-btn" onclick="progressRpg(1)">Venture Deeper</button>
+                    <button class="rpg-btn" onclick="progressRpg(2)">Check Spreadsheets</button>
                 </div>
             </div>
+        </div>
+    </main>
 
-            <div id="tech-news" class="news-sub-pane">
-                <div id="tech-news-grid" class="card-grid"></div>
-                <div class="load-more-container">
-                    <button class="btn-action" onclick="loadMoreNews('tech')">View More Tech Results</button>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Tab 3: Weather -->
-    <div id="weather-tab" class="tab-pane">
-        <section>
-            <h2>🌤️ Comprehensive Weather Forecast</h2>
-            <div class="sub-tab-nav">
-                <button class="sub-tab-btn active" onclick="switchWeatherSub('hourly-weather', this)">⚡ 72-Hour Hourly (Local Time)</button>
-                <button class="sub-tab-btn" onclick="switchWeatherSub('week7-weather', this)">📅 7-Day Forecast</button>
-                <button class="sub-tab-btn" onclick="switchWeatherSub('week14-weather', this)">🗓️ 14-Day Extended</button>
-            </div>
-
-            <!-- Sub 1: 72 Hour Hourly -->
-            <div id="hourly-weather" class="weather-sub-pane active">
-                <div class="card" style="margin-bottom: 15px;">
-                    <h3 style="margin-top:0;">Hourly Breakdown (Next 72 Hours - Local Time Synced)</h3>
-                    <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:15px;">Synchronized with local time zone timestamps</p>
-                    <div id="hourly-grid-container" class="weather-grid-hourly">
-                        <p style="color:#747d8c; text-align:center; grid-column:1/-1;">Loading local time hourly forecast...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sub 2: 7 Day Forecast -->
-            <div id="week7-weather" class="weather-sub-pane">
-                <div id="week7-container" class="card-grid"></div>
-            </div>
-
-            <!-- Sub 3: 14 Day Forecast -->
-            <div id="week14-weather" class="weather-sub-pane">
-                <div id="week14-container" class="card-grid"></div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Tab 4: Media Engine -->
-    <div id="media-tab" class="tab-pane">
-        <section>
-            <h2>📺 Multi-Source Media Search Engine</h2>
-            <div class="media-engine-box">
-                <div class="search-bar-wrapper">
-                    <input type="text" id="media-search-input" placeholder="Search across platforms..." value="Ottawa">
-                    <select id="source-selector">
-                        <option value="all">🌐 All 10 Sources Combined</option>
-                        <option value="tiktok">🎵 TikTok (Proxy & Tag Search)</option>
-                        <option value="instagram">📸 Instagram (Tag Feed)</option>
-                        <option value="facebook">📘 Facebook Public Discussions</option>
-                        <option value="reddit">🤖 Reddit (Live Open JSON)</option>
-                        <option value="youtube">▶️ YouTube Public Feed</option>
-                        <option value="twitter">🐦 X / Twitter Open Feed</option>
-                        <option value="mastodon">🐘 Mastodon Fediverse</option>
-                        <option value="tumblr">📝 Tumblr Tag Stream</option>
-                        <option value="hackernews">💻 Hacker News</option>
-                        <option value="substack">📰 Substack & Open RSS</option>
-                    </select>
-                    <button onclick="runMultiSourceSearch()">Search Sources</button>
-                </div>
-                <div id="multi-source-results" class="media-grid">
-                    <p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Select sources and enter a query to query live feeds...</p>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Tab 5: Memes -->
-    <div id="meme-tab" class="tab-pane">
-        <section>
-            <h2>🎭 Dank & Dark Meme Feed</h2>
-            <div class="card-grid">
-                <div class="card" style="text-align: center;">
-                    <h3 id="meme-title">Loading Wholesome Meme...</h3>
-                    <div id="meme-container" style="min-height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-                        <p style="color:#747d8c;">Fetching...</p>
-                    </div>
-                    <button class="btn-action" onclick="fetchMeme('wholesomememes')">New Wholesome Meme</button>
-                </div>
-                <div class="card" style="text-align: center; border-color: #ff475733;">
-                    <h3 id="dark-meme-title" style="color: var(--accent-color);">Loading Dark Meme...</h3>
-                    <div id="dark-meme-container" style="min-height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-                        <p style="color:#747d8c;">Fetching...</p>
-                    </div>
-                    <button class="btn-action" style="background: #333;" onclick="fetchMeme('dankmemes')">New Dark/Dank Meme</button>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Tab 6: RPG Text Adventure -->
-    <div id="game-tab" class="tab-pane">
-        <section>
-            <h2>🎮 Procedural Text Adventure</h2>
-            <div class="card">
-                <h3 id="game-title">Loading Adventure...</h3>
-                <p id="game-text" style="font-size: 1.05rem; line-height: 1.5; min-height: 80px;">Generating randomized scenario...</p>
-                <div id="game-choices" style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;"></div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Tab 7: Thoughts -->
-    <div id="thought-tab" class="tab-pane">
-        <section>
-            <h2>🧠 The 2 AM Intrusive Thought Generator</h2>
-            <div class="card" style="text-align: center;">
-                <p id="thought-text" style="font-size: 1.1rem; font-style: italic; margin: 20px 0;">"If animals could talk, which one would be the most obnoxious to sit next to on a long flight?"</p>
-                <button class="btn-action" onclick="generateThought()">Give Me Another Thought</button>
-            </div>
-        </section>
-    </div>
-
-    <footer>
-        <p>&copy; 2026 The Doomscroll Daily. All rights reserved. | Press [Esc] for Corporate BS Mode.</p>
-    </footer>
+    <!-- Stealth Spreadsheet Mode Container -->
+    <table id="spreadsheet-view" class="spreadsheet-view">
+        <tr><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+        <tr><td>Q1 Revenue</td><td>$45,200</td><td>$12,400</td><td>+14%</td></tr>
+        <tr><td>Q2 Forecast</td><td>$52,100</td><td>$15,100</td><td>+22%</td></tr>
+        <tr><td>Operational Cost</td><td>$11,000</td><td>$9,800</td><td>-4%</td></tr>
+        <tr><td>Net Efficiency</td><td>94.2%</td><td>96.8%</td><td>+2.6%</td></tr>
+    </table>
 
     <script>
-        function switchTab(tabId, btnElement) {
-            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            btnElement.classList.add('active');
-        }
-
-        function switchNewsSub(subId, btnElement) {
-            document.querySelectorAll('.news-sub-pane').forEach(pane => pane.classList.remove('active'));
-            document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(subId).classList.add('active');
-            btnElement.classList.add('active');
-        }
-
-        function switchWeatherSub(subId, btnElement) {
-            document.querySelectorAll('.weather-sub-pane').forEach(pane => pane.classList.remove('active'));
-            const parentNav = btnElement.parentElement;
-            parentNav.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(subId).classList.add('active');
-            btnElement.classList.add('active');
-        }
-
-        // Fun Panic Modes
-        function toggleCorporatePanic() {
-            document.body.classList.toggle('panic-mode');
-            if(document.body.classList.contains('panic-mode')) generateCorporateBS();
-        }
-        function toggleRaccoonChaos() {
-            document.body.classList.toggle('raccoon-mode');
-        }
-        window.addEventListener('keydown', (e) => { 
-            if (e.key === 'Escape') {
-                document.body.classList.remove('panic-mode');
-                document.body.classList.remove('raccoon-mode');
+        // Tab switching utility
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            if(tabName === 'feed') {
+                document.getElementById('tab-feed').classList.add('active');
+                event.target.classList.add('active');
+            } else if(tabName === 'rpg') {
+                document.getElementById('tab-rpg').classList.add('active');
+                event.target.classList.add('active');
             }
-        });
-
-        // Corporate Bullsh!t Generator
-        const bsVerbs = ["leveraging", "synergizing", "disrupting", "optimizing", "pivoting", "streamlining", "reimagining"];
-        const bsAdjectives = ["cross-platform", "holistic", "scalable", "paradigm-shifting", "quantum-grade", "low-friction", "agile"];
-        const bsNouns = ["touchpoints", "deliverables", "bandwidth", "core competencies", "market vectors", "ecosystems", "stakeholder value"];
-        
-        function generateCorporateBS() {
-            const verb = bsVerbs[Math.floor(Math.random() * bsVerbs.length)];
-            const adj1 = bsAdjectives[Math.floor(Math.random() * bsAdjectives.length)];
-            const adj2 = bsAdjectives[Math.floor(Math.random() * bsAdjectives.length)];
-            const noun = bsNouns[Math.floor(Math.random() * bsNouns.length)];
-            const noun2 = bsNouns[Math.floor(Math.random() * bsNouns.length)];
-
-            const memo = `In order to successfully execute our Q4 objectives, we must focus on ${verb} ${adj1} ${noun} while simultaneously driving organic growth across our primary ${adj2} ${noun2}. Let's touch base offline regarding this holistic paradigm shift.`;
-            document.getElementById('corporate-memo').innerText = memo;
         }
 
-        // Live Weather Data Fetcher with Local Time Synced Timestamps (&timezone=auto)
-        let userLat = 45.42; // Default Ottawa
-        let userLon = -75.69;
-
-        async function initWeatherAndGPS() {
-            const banner = document.getElementById('frontpage-weather-banner');
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        userLat = position.coords.latitude;
-                        userLon = position.coords.longitude;
-                        await fetchDetailedWeatherData(userLat, userLon, "GPS Synced Location");
-                    },
-                    async () => { 
-                        await fetchDetailedWeatherData(userLat, userLon, "Ottawa, ON (Default)"); 
-                    }
-                );
+        // Stealth spreadsheet mode toggle
+        let isSecretActive = false;
+        function toggleSecretMode() {
+            isSecretActive = !isSecretActive;
+            const mainView = document.getElementById('normal-view');
+            const sheetView = document.getElementById('spreadsheet-view');
+            if(isSecretActive) {
+                mainView.style.display = 'none';
+                sheetView.style.display = 'table';
             } else {
-                await fetchDetailedWeatherData(userLat, userLon, "Ottawa, ON");
+                mainView.style.display = 'block';
+                sheetView.style.display = 'none';
             }
         }
 
-        async function fetchDetailedWeatherData(lat, lon, locationName) {
-            try {
-                // &timezone=auto ensures Open-Meteo returns timestamps matching the exact local timezone of the coordinates
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
-                const res = await fetch(url);
-                const data = await res.json();
-
-                // Get current live temperature (matching current hour index)
-                const currentHourIndex = new Date().getHours();
-                const currentTemp = data.hourly.temperature_2m[currentHourIndex] || data.hourly.temperature_2m[0];
-
-                // Update Front-Page Weather Banner
-                document.getElementById('frontpage-weather-banner').innerHTML = `
-                    <span>📍 ${locationName}</span>
-                    <span>🌡️ Current: <strong>${currentTemp}°C</strong></span>
-                    <span>⚡ Local Time Synced</span>
-                `;
-
-                // 1. Render 72-Hour Hourly with Local Time Stamps
-                let hourlyHtml = "";
-                const hourlyTimes = data.hourly.time;
-                const hourlyTemps = data.hourly.temperature_2m;
-                
-                for (let i = 0; i < 72; i++) {
-                    const rawTime = hourlyTimes[i]; // e.g. "2026-10-06T15:00" in local timezone format
-                    const dateObj = new Date(rawTime);
-                    // Format nicely into local time string
-                    const timeStr = !isNaN(dateObj) ? dateObj.toLocaleTimeString([], { hour: 'numeric', month: 'short', day: 'numeric' }) : rawTime;
-                    
-                    hourlyHtml += `
-                        <div class="weather-hour-card">
-                            <div class="weather-time">${timeStr}</div>
-                            <div class="weather-temp">${hourlyTemps[i]}°C</div>
-                            <div class="weather-cond">Local Time</div>
-                        </div>
-                    `;
-                }
-                document.getElementById('hourly-grid-container').innerHTML = hourlyHtml;
-
-                // 2. Render 7-Day & 14-Day Forecast with Morning, Afternoon, Evening, Overnight
-                let week7Html = "";
-                let week14Html = "";
-                const dailyTimes = data.daily.time;
-                const maxTemps = data.daily.temperature_2m_max;
-                const minTemps = data.daily.temperature_2m_min;
-
-                for (let i = 0; i < dailyTimes.length; i++) {
-                    const dayDate = new Date(dailyTimes[i]).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-                    const maxT = maxTemps[i];
-                    const minT = minTemps[i];
-                    const midT = ((maxT + minT) / 2).toFixed(1);
-                    const coolT = (minT + 1).toFixed(1);
-
-                    const dayCardContent = `
-                        <div class="card">
-                            <h3 style="margin-bottom:8px;">${dayDate}</h3>
-                            <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:10px;">High: ${maxT}°C | Low: ${minT}°C</p>
-                            <div class="weather-period-grid">
-                                <div class="period-card"><div class="period-title">Morning</div><div class="period-val">${coolT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Afternoon</div><div class="period-val">${maxT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Evening</div><div class="period-val">${midT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Overnight</div><div class="period-val">${minT}°C</div></div>
-                            </div>
-                        </div>
-                    `;
-
-                    if (i < 7) week7Html += dayCardContent;
-                    week14Html += dayCardContent;
-                }
-                document.getElementById('week7-container').innerHTML = week7Html;
-                document.getElementById('week14-container').innerHTML = week14Html;
-
-            } catch (err) {
-                document.getElementById('hourly-grid-container').innerHTML = `<p style="color:#ff4757; text-align:center; grid-column:1/-1;">Failed to load live local weather stream.</p>`;
-                document.getElementById('frontpage-weather-banner').innerHTML = `<span>📍 Location Weather Error</span>`;
-            }
-        }
-        initWeatherAndGPS();
-
-        // Bulletins Data with Clickable Source Links
-        let bulletinsData = [
-            { title: "Local Raccoon Syndicate Demands Higher Quality Garbage", desc: "Municipal waste managers report sophisticated sorting by local raccoons, who are now bypassing compost bins entirely in search of premium cardboard packaging.", sourceName: "Ottawa Municipal Sanitation Dispatch", sourceUrl: "https://ottawa.ca" },
-            { title: "Coffee Machine Achieves Sentience, Demands Weekends Off", desc: "An office espresso machine in downtown Ottawa reportedly locked down its steam wand until staff agreed to stop talking about synergy during morning standups.", sourceName: "The Daily Bean Chronicle", sourceUrl: "https://reddit.com/r/coffee" },
-            { title: "Biketrix & E-Bike Commuter Surge on Capital Pathways", desc: "Local commuter groups note a dramatic uptick in high-speed e-bike usage across Ottawa recreational pathways as riders prep for autumn weather.", sourceName: "Ottawa Transit & Mobility Watch", sourceUrl: "https://reddit.com/r/ebikes" },
-            { title: "Centretown Artisans Report Spike in Custom Tattoo Inquiries", desc: "Local ink shops along Bank Street report high volume requests for custom dark art and hand cover-up sleeve concepts.", sourceName: "Capital Tattoo Culture", sourceUrl: "https://instagram.com" }
-        ];
-
-        function renderBulletins() {
-            let html = "";
-            bulletinsData.forEach(b => {
-                html += `
-                    <div class="card">
-                        <div>
-                            <h3>${b.title}</h3>
-                            <p>${b.desc}</p>
-                        </div>
-                        <a href="${b.sourceUrl}" target="_blank" class="card-footer-link">
-                            <span>Source: ${b.sourceName}</span>
-                            <span>Visit Link ↗</span>
-                        </a>
-                    </div>
-                `;
-            });
-            document.getElementById('bulletins-container').innerHTML = html;
-        }
-        renderBulletins();
-
-        function loadMoreBulletins() {
-            bulletinsData.push(
-                { title: "Downtown Traffic Patterns Shift Due to Bridge Maintenance", desc: "Commuters are advised to account for alternative routes around central bridges during peak afternoon hours.", sourceName: "Ottawa Traffic Bulletin", sourceUrl: "https://ottawa.ca" },
-                { title: "Local Market Introducing Artisanal Hot Sauces", desc: "Byward Market vendors showcase new locally-made ghost pepper infusions just in time for fall food festivals.", sourceName: "Byward Culinary Review", sourceUrl: "https://reddit.com/r/spicy" }
-            );
-            renderBulletins();
-        }
-
-        // News Data with 10+ Initial Items per Subcategory & Clickable Source Links
-        let localNewsData = [
-            { title: "Chinatown & Centretown Sweeps", desc: "Ottawa Police report over two dozen arrests following recent targeted patrols along Bank and Somerset streets to address ongoing neighborhood disorder and public safety concerns.", source: "Ottawa Citizen", url: "https://ottawacitizen.com" },
-            { title: "Municipal Focus: Capital Region Campaign Focus", desc: "Local campaigns heat up across the capital region with candidates introducing platform strategies regarding transit infrastructure upgrades, regional trade, and municipal development.", source: "CBC Ottawa", url: "https://cbc.ca/news/canada/ottawa" },
-            { title: "Lansdowne Park Redevelopment Phase 2 Debated", desc: "City councillors review updated architectural renderings and financial forecasts for the upcoming commercial and residential revitalization project.", source: "Ottawa Business Journal", url: "https://obj.ca" },
-            { title: "Rideau Canal Skateway Readiness Prep Underway", desc: "National Capital Commission crews conduct routine maintenance checks and ice-thickness structural evaluations ahead of the winter season.", source: "NCC-CCN Official", url: "https://ncc-ccn.gc.ca" },
-            { title: "Ottawa Public Library Reports Record Digital Checkouts", desc: "Central and branch libraries highlight soaring demand for digital archives, audiobooks, and local historical records.", source: "OPL Newsroom", url: "https://biblioottawalibrary.ca" },
-            { title: "Gatineau Park Fall Foliage Traffic Advisory", desc: "Park wardens issue weekend parking restrictions and shuttle bus schedules to manage peak tourist volume during peak leaf-peeping season.", source: "Gatineau Park Examiner", url: "https://canada.ca/en/gatineau" },
-            { title: "Local Independent Coffee Roasters Win National Award", desc: "A small-batch roaster based out of Hintonburg takes home top honors at the Canadian Specialty Coffee Association showcase.", source: "Capital Food & Drink", url: "https://reddit.com/r/ottawa" },
-            { title: "Ottawa Valley Highway Expansion Project Approved", desc: "Provincial transport ministries sign off on additional passing lanes and safety barrier upgrades along regional connecting routes.", source: "Ontario News Watch", url: "https://news.ontario.ca" },
-            { title: "Downtown Community Arts Grant Recipients Announced", desc: "Over forty local painters, muralists, and independent creators receive municipal funding for public art installations.", source: "Ottawa Arts Council", url: "https://ottawaartscouncil.ca" },
-            { title: "Byward Market Night Market Pilot Program Extended", desc: "Vendor associations and local merchants celebrate successful weekend evening foot traffic metrics throughout late summer and early fall.", source: "Byward Market BIA", url: "https://byward-market.com" }
-        ];
-
-        let worldNewsData = [
-            { title: "Quantum Cryptography Breakthrough Reaches Commercial Milestone", desc: "International consortiums confirm the successful deployment of continent-scale quantum key distribution networks, fundamentally altering global cybersecurity frameworks.", source: "MIT Technology Review", url: "https://technologyreview.com" },
-            { title: "Global Energy Grids Pivot Rapidly to Next-Gen Storage", desc: "Major metropolitan hubs across North America and Europe report record integration rates for localized grid-scale battery arrays, easing peak demand anxiety.", source: "Reuters Energy", url: "https://reuters.com" },
-            { title: "Deep Sea Exploration Vessel Discovers Hydrothermal Vent Ecosystem", desc: "Marine biologists publish findings on previously unknown extremophile species thriving in pitch-black abyssal trenches.", source: "Nature Geoscience", url: "https://nature.com" },
-            { title: "International Space Station Completes Solar Array Upgrades", desc: "Astronauts finish a grueling series of spacewalks to enhance station power generation capacity for upcoming commercial lab modules.", source: "NASA Spaceflight", url: "https://nasa.gov" },
-            { title: "Global Semiconductor Supply Chains Stabilize", desc: "Major hardware manufacturers confirm shorter lead times and expanded foundry fabrication output across Asia and North America.", source: "Bloomberg Tech", url: "https://bloomberg.com" },
-            { title: "Autonomous Shipping Fleet Completes Trans-Pacific Voyage", desc: "A cargo container ship equipped with fully automated navigation algorithms docks safely without human pilot intervention.", source: "Maritime Executive", url: "https://maritime-executive.com" },
-            { title: "International Agreement Signed on Orbital Debris Tracking", desc: "Space agencies commit to shared radar telemetry and active satellite de-orbit protocols to safeguard low Earth orbit.", source: "SpaceNews", url: "https://spacenews.com" },
-            { title: "Global Archaeological Survey Uncovers Ancient Trade Network", desc: "Satellite radar imaging reveals hidden desert routes connecting ancient civilizations across the Arabian Peninsula.", source: "National Geographic", url: "https://nationalgeographic.com" },
-            { title: "Renewable Hydrogen Fuel Cell Trains Expand Across Europe", desc: "Rail networks in Germany and France report successful year-one passenger metrics on zero-emission regional lines.", source: "Railway Gazette", url: "https://railwaygazette.com" },
-            { title: "Global Wildlife Migration Tracking Initiative Launches", desc: "Conservation groups deploy low-earth-orbit satellite tags to monitor endangered herbivore herds across African savannahs.", source: "WWF International", url: "https://wwf.org" }
-        ];
-
-        let techNewsData = [
-            { title: "Open-Source AI Model Training Efficiency Hits New Highs", desc: "Researchers demonstrate transformer architecture optimizations that reduce training compute costs by over forty percent.", source: "Hacker News Daily", url: "https://news.ycombinator.com" },
-            { title: "Solid-State Battery Prototype Passes Automotive Crash Tests", desc: "Automotive engineers validate energy density and thermal stability milestones for next-generation electric vehicle power cells.", source: "Electrek", url: "https://electrek.co" },
-            { title: "Decentralized Social Protocols Surpass 100 Million Users", desc: "The fediverse and independent relay servers report explosive user growth as more communities migrate away from centralized platforms.", source: "Wired", url: "https://wired.com" },
-            { title: "Next-Gen Ergonomic Mechanical Keyboards Feature Haptic Feedback", desc: "Peripheral designers release ultra-customizable input devices aimed at high-output developers and power users.", source: "The Verge", url: "https://theverge.com" },
-            { title: "Encrypted Messaging Standards Adopt Post-Quantum Encryption", desc: "Major communication apps roll out algorithmic updates designed to protect user chats from future quantum computer decryption attacks.", source: "Ars Technica", url: "https://arstechnica.com" },
-            { title: "High-Speed Mesh Wi-Fi 8 Standards Proposed", desc: "Wireless standards committees outline draft specifications targeting ultra-low latency and multi-gigabit throughput in crowded environments.", source: "IEEE Spectrum", url: "https://spectrum.ieee.org" },
-            { title: "Smart Home Matter Protocol Integrates Advanced Automation Routines", desc: "Smart device manufacturers release universal updates supporting complex conditional triggers and local-only edge processing.", source: "Engadget", url: "https://engadget.com" },
-            { title: "Advanced Compression Algorithms Shrink Large Language Models", desc: "Developers successfully run high-capability models locally on consumer-grade laptop GPUs without noticeable loss in reasoning ability.", source: "GitHub Trending", url: "https://github.com" },
-            { title: "Biometric Security Hardware Integrates Liveness Detection", desc: "New hardware security tokens utilize thermal and pulse sensors to prevent spoofing attacks on corporate login portals.", source: "ZDNet", url: "https://zdnet.com" },
-            { title: "Cloud Infrastructure Providers Adopt Liquid Immersion Cooling", desc: "Data centers deploy dielectric fluid immersion tanks to handle the massive thermal loads generated by high-density server racks.", source: "Data Center Knowledge", url: "https://datacenterknowledge.com" }
-        ];
-
-        function renderNewsGrids() {
-            let localHtml = "";
-            localNewsData.forEach(item => {
-                localHtml += `
-                    <div class="card" style="border-color: #1e90ff;">
-                        <div>
-                            <h3>${item.title}</h3>
-                            <p>${item.desc}</p>
-                        </div>
-                        <a href="${item.url}" target="_blank" class="card-footer-link">
-                            <span>Source: ${item.source}</span>
-                            <span>Read Article ↗</span>
-                        </a>
-                    </div>
-                `;
-            });
-            document.getElementById('local-news-grid').innerHTML = localHtml;
-
-            let worldHtml = "";
-            worldNewsData.forEach(item => {
-                worldHtml += `
-                    <div class="card" style="border-color: var(--secondary-accent);">
-                        <div>
-                            <h3>${item.title}</h3>
-                            <p>${item.desc}</p>
-                        </div>
-                        <a href="${item.url}" target="_blank" class="card-footer-link">
-                            <span>Source: ${item.source}</span>
-                            <span>Read Article ↗</span>
-                        </a>
-                    </div>
-                `;
-            });
-            document.getElementById('world-news-grid').innerHTML = worldHtml;
-
-            let techHtml = "";
-            techNewsData.forEach(item => {
-                techHtml += `
-                    <div class="card" style="border-color: #2ed573;">
-                        <div>
-                            <h3>${item.title}</h3>
-                            <p>${item.desc}</p>
-                        </div>
-                        <a href="${item.url}" target="_blank" class="card-footer-link">
-                            <span>Source: ${item.source}</span>
-                            <span>Read Article ↗</span>
-                        </a>
-                    </div>
-                `;
-            });
-            document.getElementById('tech-news-grid').innerHTML = techHtml;
-        }
-        renderNewsGrids();
-
-        function loadMoreNews(category) {
-            if (category === 'local') {
-                localNewsData.push(
-                    { title: "Ottawa River Water Levels Monitored Closely", desc: "Conservation authorities report stable seasonal flow rates following recent precipitation cycles.", source: "Ottawa Riverkeeper", url: "https://ottawariverkeeper.ca" },
-                    { title: "Local Winter Festival Planning Committee Formed", desc: "Organizers begin mapping out ice sculpture layouts and skating rink pathways for the upcoming winter season.", source: "Ottawa Tourism", url: "https://ottawatourism.ca" }
-                );
-            } else if (category === 'world') {
-                worldNewsData.push(
-                    { title: "Global Solar Energy Capacity Surpasses Milestone", desc: "International energy watchdogs report exponential year-over-year gains in photovoltaic installations worldwide.", source: "IEA Report", url: "https://iea.org" },
-                    { title: "Subterranean Freshwater Aquifer Mapped in Desert Region", desc: "Geological surveys uncover massive underground water reserves using advanced orbital radar imaging.", source: "Geology Today", url: "https://geology.com" }
-                );
-            } else if (category === 'tech') {
-                techNewsData.push(
-                    { title: "Edge Computing Devices Gain Local Speech Recognition", desc: "New embedded microchips allow offline voice command processing with zero cloud latency.", source: "EE Times", url: "https://eetimes.com" },
-                    { title: "Autonomous Delivery Drones Receive Extended Flight Permits", desc: "Aviation regulators approve wider suburban delivery routes for commercial aerial logistics operators.", source: "DroneDJ", url: "https://dronedj.com" }
-                );
-            }
-            renderNewsGrids();
-        }
-
-        // 10-Source Search Engine
-        async function runMultiSourceSearch() {
-            const query = document.getElementById('media-search-input').value.trim() || "Ottawa";
-            const selectedSource = document.getElementById('source-selector').value;
-            const resultsContainer = document.getElementById('multi-source-results');
-            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Querying live feeds for "${query}"...</p>`;
-            let combinedCards = [];
-
-            if (selectedSource === 'all' || selectedSource === 'reddit') {
-                try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=5&sort=relevance`)}`;
-                    const res = await fetch(proxyUrl);
-                    const data = await res.json();
-                    const json = JSON.parse(data.contents);
-                    json?.data?.children?.forEach(item => {
-                        const post = item.data;
-                        if (!post.over_18) {
-                            combinedCards.push({
-                                source: `🤖 Reddit (${post.subreddit_name_prefixed})`,
-                                title: post.title,
-                                caption: post.selftext ? post.selftext.substring(0, 100) + '...' : `Posted by u/${post.author}`,
-                                url: `https://reddit.com${post.permalink}`,
-                                thumb: post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png')) ? post.url : null,
-                                stats: `⭐ ${post.score} upvotes • 💬 ${post.num_comments} comments`
-                            });
-                        }
-                    });
-                } catch (e) {}
+        // Geolocation & Weather Data Fetcher with Rolling Current Hour Index
+        function initGPSWeather() {
+            if (!navigator.geolocation) {
+                document.getElementById('location-title').innerText = "Geolocation not supported";
+                return;
             }
 
-            if (selectedSource === 'all' || selectedSource === 'hackernews') {
-                try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=4`);
-                    const data = await res.json();
-                    data?.hits?.forEach(hit => {
-                        combinedCards.push({
-                            source: `💻 Hacker News`,
-                            title: hit.title,
-                            caption: `Submitted by ${hit.author}`,
-                            url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
-                            thumb: null,
-                            stats: `▲ ${hit.points} points • 💬 ${hit.num_comments} comments`
-                        });
-                    });
-                } catch (e) {}
-            }
-
-            if (selectedSource === 'all' || selectedSource === 'mastodon') {
-                try {
-                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=3`);
-                    const data = await res.json();
-                    data?.statuses?.forEach(status => {
-                        const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
-                        combinedCards.push({
-                            source: `🐘 Mastodon (@${status.account.acct})`,
-                            title: cleanContent.substring(0, 60) + '...',
-                            caption: cleanContent,
-                            url: status.url,
-                            thumb: status.media_attachments?.[0]?.preview_url || null,
-                            stats: `🔄 ${status.reblogs_count} boosts • ❤️ ${status.favourites_count} favs`
-                        });
-                    });
-                } catch (e) {}
-            }
-
-            if (selectedSource === 'all' || selectedSource === 'substack') {
-                try {
-                    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
-                    const data = await res.json();
-                    data?.query?.search?.slice(0, 3).forEach(item => {
-                        const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
-                        combinedCards.push({
-                            source: `📰 Open Knowledge`,
-                            title: item.title,
-                            caption: snippet + '...',
-                            url: `https://en.wikipedia.org/?curid=${item.pageid}`,
-                            thumb: null,
-                            stats: `📖 Verified Knowledge Article`
-                        });
-                    });
-                } catch (e) {}
-            }
-
-            const platformConfigs = {
-                tiktok: { name: "🎵 TikTok" }, instagram: { name: "📸 Instagram" }, facebook: { name: "📘 Facebook" }, twitter: { name: "🐦 X / Twitter" }, youtube: { name: "▶️ YouTube" }, tumblr: { name: "📝 Tumblr" }
-            };
-            Object.keys(platformConfigs).forEach(key => {
-                if (selectedSource === 'all' || selectedSource === key) {
-                    const p = platformConfigs[key];
-                    combinedCards.push({
-                        source: p.name,
-                        title: `Live public discussions and viral media for "${query}"`,
-                        caption: `Aggregated creator stream tracking public sentiment on ${p.name}.`,
-                        url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key)}`,
-                        thumb: `https://picsum.photos/400/225?random=${Math.floor(Math.random() * 100)}`,
-                        stats: `🔥 High Engagement • Live Proxy Stream`
-                    });
-                }
-            });
-
-            if (combinedCards.length === 0) {
-                combinedCards.push({
-                    source: `🌐 Web Aggregate`, title: `Search results for "${query}" across open web channels`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, thumb: null, stats: `⚡ Instant Proxy Result`
-                });
-            }
-
-            let html = "";
-            combinedCards.forEach(card => {
-                html += `
-                    <div class="media-result-card">
-                        <div>
-                            <span class="media-source-tag">${card.source}</span>
-                            <a href="${card.url}" target="_blank" class="media-result-title">${card.title}</a>
-                            ${card.thumb ? `<img src="${card.thumb}" class="media-thumb" loading="lazy">` : ``}
-                            <div class="media-caption">${card.caption}</div>
-                        </div>
-                        <div class="media-stats">
-                            <span>${card.stats}</span>
-                            <a href="${card.url}" target="_blank" class="news-link" style="font-size:0.75rem;">Open Source ↗</a>
-                        </div>
-                    </div>
-                `;
-            });
-            resultsContainer.innerHTML = html;
-        }
-        runMultiSourceSearch();
-
-        // Dual Meme Fetcher
-        async function fetchMeme(sub) {
-            const isDark = sub === 'dankmemes';
-            const titleEl = document.getElementById(isDark ? 'dark-meme-title' : 'meme-title');
-            const containerEl = document.getElementById(isDark ? 'dark-meme-container' : 'meme-container');
-            try {
-                const res = await fetch(`https://meme-api.com/gimme/${sub}`);
-                const data = await res.json();
-                titleEl.innerText = data.title;
-                containerEl.innerHTML = `<img src="${data.url}" style="max-width:100%; max-height:280px; border-radius:6px;" alt="Meme">`;
-            } catch (e) {
-                titleEl.innerText = "Failed to load";
-                containerEl.innerHTML = `<p style="color:#ff4757;">Check connection.</p>`;
-            }
-        }
-        fetchMeme('wholesomememes');
-        fetchMeme('dankmemes');
-
-        // Procedural RPG Text Adventure Generator
-        const gameTemplates = [
-            {
-                title: "The Great Grocery Cart Stand-Off",
-                startText: "You are blocking the cereal aisle at 2 AM with your shopping cart. An intense stranger approaches, whispering that your box of Chex is the chosen key to an ancient pantry vault. Do you defend your cereal or throw it at them and run?",
-                choices: [
-                    { text: "Defend the Cereal", next: "p1_defend" },
-                    { text: "Throw & Run", next: "p1_run" }
-                ],
-                nodes: {
-                    p1_defend: { text: "You cross your arms. The stranger nods in deep respect, crowns you King of Breakfast, and gifts you a lifetime supply of oat milk.", win: true },
-                    p1_run: { text: "You trip over a display of discount energy drinks and get buried under an avalanche of aluminum cans. RIP.", win: false }
-                }
-            },
-            {
-                title: "The Midnight Coffee Machine Rebellion",
-                startText: "The office espresso machine glows with a terrifying red LED. It prints a label that says: 'Pay tribute or lose your caffeine privileges forever.' Do you offer it a sacrifice of spare change or challenge it to a staring contest?",
-                choices: [
-                    { text: "Offer Spare Change", next: "p2_coin" },
-                    { text: "Staring Contest", next: "p2_stare" }
-                ],
-                nodes: {
-                    p2_coin: { text: "The machine accepts your tribute and dispenses the smoothest macchiato of your life. You are spared.", win: true },
-                    p2_stare: { text: "Machines don't blink. It blasts hot steam directly into your face out of sheer disrespect.", win: false }
-                }
-            },
-            {
-                title: "The Rogue Autonomous Scooter",
-                startText: "A parked electric scooter suddenly starts beeping on its own, revving its motor as if it wants to race you home. Do you accept the challenge or walk backward slowly?",
-                choices: [
-                    { text: "Accept the Race", next: "p3_race" },
-                    { text: "Walk Backward", next: "p3_walk" }
-                ],
-                nodes: {
-                    p3_race: { text: "You sprint neck-and-neck with the scooter down the sidewalk, achieving peak aerobic greatness. You win by a front wheel.", win: true },
-                    p3_walk: { text: "The scooter follows you home, chirping mockingly outside your window until dawn.", win: false }
-                }
-            }
-        ];
-
-        let currentGame = gameTemplates[Math.floor(Math.random() * gameTemplates.length)];
-        function initGame() {
-            document.getElementById('game-title').innerText = currentGame.title;
-            document.getElementById('game-text').innerText = currentGame.startText;
-            let html = "";
-            currentGame.choices.forEach(c => {
-                html += `<button class="btn-action" style="flex:1;" onclick="progressGame('${c.next}')">${c.text}</button>`;
-            });
-            document.getElementById('game-choices').innerHTML = html;
-        }
-
-        function progressGame(nodeKey) {
-            const node = currentGame.nodes[nodeKey];
-            document.getElementById('game-text').innerText = node.text;
-            let endHtml = node.win ? `<p style="color:#2ed573; font-weight:bold; width:100%;">🎉 Victory! Refresh the page to play a brand new adventure.</p>` : `<p style="color:#ff4757; font-weight:bold; width:100%;">💀 Defeat! Refresh the page to try again.</p>`;
-            document.getElementById('game-choices').innerHTML = endHtml;
-        }
-        initGame();
-
-        // Intrusive Thoughts
-        const thoughts = [
-            "Why do we park on driveways and drive on parkways?",
-            "If you clean a vacuum cleaner, do you become a vacuum cleaner?",
-            "What was the exact thought process of the first human who decided to milk a cow?",
-            "Your brain is the only organ that named itself."
-        ];
-        function generateThought() {
-            const rand = thoughts[Math.floor(Math.random() * thoughts.length)];
-            document.getElementById('thought-text').innerText = `"${rand}"`;
-        }
-    </script>
-</body>
-</html>
+            navigator.geolocation.getCurrentPosition
