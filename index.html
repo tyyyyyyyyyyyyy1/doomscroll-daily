@@ -12,9 +12,7 @@
             --accent-color: #ff4757;
             --secondary-accent: #ffa502;
         }
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
@@ -22,9 +20,7 @@
             margin: 0;
             padding: 10px;
         }
-        @media (min-width: 768px) {
-            body { padding: 20px; }
-        }
+        @media (min-width: 768px) { body { padding: 20px; } }
         header {
             text-align: center;
             padding: 25px 10px;
@@ -40,9 +36,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        @media (min-width: 768px) {
-            h1 { font-size: 3rem; }
-        }
+        @media (min-width: 768px) { h1 { font-size: 3rem; } }
         .tagline {
             font-size: 1rem;
             color: #a4b0be;
@@ -57,7 +51,6 @@
             opacity: 0.9;
             display: block;
         }
-        /* Weather Widget */
         #weather-widget {
             background: var(--card-bg);
             border: 1px solid #333;
@@ -71,7 +64,6 @@
             font-size: 0.95rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        /* Layout Grid - Mobile First (1 Column), Desktop (2 Columns) */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -80,10 +72,7 @@
             gap: 20px;
         }
         @media (min-width: 900px) {
-            .container {
-                grid-template-columns: 1fr 1fr;
-                gap: 30px;
-            }
+            .container { grid-template-columns: 1fr 1fr; gap: 30px; }
         }
         section {
             background: rgba(26, 29, 36, 0.4);
@@ -98,17 +87,12 @@
             margin-bottom: 15px;
             font-size: 1.5rem;
         }
-        /* News Cards */
         .news-card {
             background-color: var(--card-bg);
             border: 1px solid #2f3542;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
-            transition: transform 0.2s;
-        }
-        .news-card:hover {
-            transform: translateY(-2px);
         }
         .news-date {
             font-size: 0.75rem;
@@ -127,17 +111,12 @@
             font-size: 0.95rem;
             line-height: 1.4;
         }
-        /* Meme Grid */
         .meme-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
         }
-        @media (min-width: 500px) {
-            .meme-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
+        @media (min-width: 500px) { .meme-grid { grid-template-columns: 1fr 1fr; } }
         .meme-card {
             background-color: var(--card-bg);
             border: 1px solid #2f3542;
@@ -178,32 +157,25 @@
         <img class="doom-banner" src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600&auto=format&fit=crop" alt="Matrix Doomscrolling">
     </header>
 
-    <!-- Hourly Weather Widget -->
-    <div id="weather-widget">
-        📍 Detecting coordinates for your local weather...
-    </div>
+    <div id="weather-widget">📍 Checking local doom climate...</div>
 
     <div class="container">
-        <!-- Column 1: News -->
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <section>
                 <h2>🌍 World Collapse</h2>
                 <div id="world-news">Loading global doom...</div>
             </section>
-
             <section>
                 <h2 id="local-heading">🇨🇦 Local Nonsense</h2>
-                <div id="local-news">Detecting location for local updates...</div>
+                <div id="local-news">Loading local nonsense...</div>
             </section>
         </div>
 
-        <!-- Column 2: Memes -->
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <section>
                 <h2>🌑 Dark / Unfiltered Memes</h2>
                 <div id="dark-memes" class="meme-grid">Loading hourly chaos...</div>
             </section>
-
             <section>
                 <h2>☀️ Safe For Work (SFW) Memes</h2>
                 <div id="sfw-memes" class="meme-grid">Loading wholesome distractions...</div>
@@ -212,7 +184,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 The Doomscroll Daily. Updates hourly via client-side magic.</p>
+        <p>&copy; 2026 The Doomscroll Daily. Zero friction, maximum collapse.</p>
     </footer>
 
     <script>
@@ -230,8 +202,8 @@
             return snarkyPrefixes[title.length % snarkyPrefixes.length] + trimmed;
         }
 
-        // 1. World News
-        async function loadWorldNews() {
+        async function loadContent() {
+            // 1. World News
             try {
                 const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml&_t=${Date.now()}`);
                 const data = await res.json();
@@ -246,20 +218,15 @@
                 });
                 document.getElementById('world-news').innerHTML = html;
             } catch (e) {
-                document.getElementById('world-news').innerHTML = "<p>Global servers are offline.</p>";
+                document.getElementById('world-news').innerHTML = "<p>Global servers are taking a nap.</p>";
             }
-        }
 
-        // 2. Local News
-        async function loadLocalNews() {
-            const localContainer = document.getElementById('local-news');
-            const localHeading = document.getElementById('local-heading');
+            // 2. Local News & Location Detection
             try {
                 const ipRes = await fetch('https://ipapi.co/json/');
                 const ipData = await ipRes.json();
                 const city = ipData.city || "Ottawa";
-                const country = ipData.country_name || "Canada";
-                localHeading.innerHTML = `📍 Local Nonsense (${city})`;
+                document.getElementById('local-heading').innerHTML = `📍 Local Nonsense (${city})`;
 
                 let rssUrl = "https://www.cbc.ca/webfeed/rss/rss-canada-ottawa";
                 if (city.toLowerCase().includes("toronto")) {
@@ -281,82 +248,69 @@
                         <p>${makeSnarky(item.title, item.description)}</p>
                     </div>`;
                 });
-                localContainer.innerHTML = html;
+                document.getElementById('local-news').innerHTML = html;
             } catch (e) {
-                localContainer.innerHTML = "<p>Local news feeds failed to load.</p>";
+                document.getElementById('local-news').innerHTML = "<p>Local updates unavailable, but your city is still wild.</p>";
             }
-        }
 
-        // 3. Reliable Meme Feeds (10 Dark & 10 SFW)
-        async function loadMemes() {
+            // 3. Parallel Meme Loading (Fetches 10 instantly using Promise.all)
             try {
-                const darkContainer = document.getElementById('dark-memes');
+                const fetchMemesBatch = async (subreddit) => {
+                    const promises = [];
+                    for (let i = 0; i < 10; i++) {
+                        promises.push(fetch(`https://meme-api.com/gimme/${subreddit}`).then(r => r.json()));
+                    }
+                    return await Promise.all(promises);
+                };
+
+                const [darkMemes, sfwMemes] = await Promise.all([
+                    fetchMemesBatch('dankmemes'),
+                    fetchMemesBatch('wholesomememes')
+                ]);
+
                 let darkHtml = '';
-                for (let i = 0; i < 10; i++) {
-                    const res = await fetch(`https://meme-api.com/gimme/dankmemes`);
-                    const meme = await res.json();
+                darkMemes.forEach(meme => {
                     darkHtml += `
                     <div class="meme-card">
-                        <a href="${meme.postLink}" target="_blank">
-                            <img src="${meme.url}" alt="Dark Meme" loading="lazy">
-                        </a>
+                        <a href="${meme.postLink}" target="_blank"><img src="${meme.url}" alt="Dark Meme" loading="lazy"></a>
                         <p>${meme.title}</p>
                     </div>`;
-                }
-                darkContainer.innerHTML = darkHtml;
+                });
+                document.getElementById('dark-memes').innerHTML = darkHtml;
 
-                const sfwContainer = document.getElementById('sfw-memes');
                 let sfwHtml = '';
-                for (let i = 0; i < 10; i++) {
-                    const res = await fetch(`https://meme-api.com/gimme/wholesomememes`);
-                    const meme = await res.json();
+                sfwMemes.forEach(meme => {
                     sfwHtml += `
                     <div class="meme-card">
-                        <a href="${meme.postLink}" target="_blank">
-                            <img src="${meme.url}" alt="SFW Meme" loading="lazy">
-                        </a>
+                        <a href="${meme.postLink}" target="_blank"><img src="${meme.url}" alt="SFW Meme" loading="lazy"></a>
                         <p>${meme.title}</p>
                     </div>`;
-                }
-                sfwContainer.innerHTML = sfwHtml;
+                });
+                document.getElementById('sfw-memes').innerHTML = sfwHtml;
 
             } catch (e) {
-                document.getElementById('dark-memes').innerHTML = "<p>Meme servers taking a quick breather.</p>";
-                document.getElementById('sfw-memes').innerHTML = "<p>Meme servers taking a quick breather.</p>";
+                document.getElementById('dark-memes').innerHTML = "<p>Memes currently buffering.</p>";
+                document.getElementById('sfw-memes').innerHTML = "<p>Memes currently buffering.</p>";
+            }
+
+            // 4. Weather Widget
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    try {
+                        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`);
+                        const data = await res.json();
+                        document.getElementById('weather-widget').innerHTML = `🌡 Local Weather: ${data.current_weather.temperature}°C — Perfect for scrolling.`;
+                    } catch(e) {
+                        document.getElementById('weather-widget').innerHTML = "🌡️ Weather: 100% chance of a digital existential crisis.";
+                    }
+                }, () => {
+                    document.getElementById('weather-widget').innerHTML = "🌡️ Weather: Location blocked, but looking gloomy.";
+                });
             }
         }
 
-        // 4. Weather Widget
-        async function loadWeather() {
-            const widget = document.getElementById('weather-widget');
-            if (!navigator.geolocation) {
-                widget.innerHTML = "🌡️ Weather: Geolocation not supported.";
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                try {
-                    const lat = pos.coords.latitude;
-                    const lon = pos.coords.longitude;
-                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-                    const data = await res.json();
-                    widget.innerHTML = `🌡 Local Weather: ${data.current_weather.temperature}°C — Perfect for scrolling.`;
-                } catch(e) {
-                    widget.innerHTML = "🌡️ Weather: 100% chance of an existential crisis.";
-                }
-            }, () => {
-                widget.innerHTML = "🌡️ Weather: Location blocked, but things look gloomy.";
-            });
-        }
-
-        function refreshAll() {
-            loadWorldNews();
-            loadLocalNews();
-            loadMemes();
-            loadWeather();
-        }
-
-        refreshAll();
-        setInterval(refreshAll, 3600000);
+        loadContent();
+        setInterval(loadContent, 3600000);
     </script>
 </body>
 </html>
