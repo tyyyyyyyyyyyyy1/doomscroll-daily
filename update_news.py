@@ -4,12 +4,12 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 WORLD_FEEDS = [
-    "http://feeds.bbci.co.uk/news/world/rss.xml",
-    "https://www.reutersagency.com/feed/?best-topics=world&post_type=best"
+    "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "https://rss.cnn.com/rss/edition_world.rss"
 ]
 
 LOCAL_FEEDS = [
-    "https://www.cbc.ca/cmlink/rss-news-canada-ottawa",
+    "https://www.cbc.ca/webfeed/rss/rss-canada-ottawa",
     "https://ottawacitizen.com/feed/"
 ]
 
@@ -31,7 +31,6 @@ def fetch_and_roast_feeds(feed_urls, limit=3):
     for url in feed_urls:
         try:
             print(f"Downloading feed with timeout: {url}")
-            # Use requests with a strict 5-second timeout so it never hangs
             response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
             if response.status_code == 200:
                 feed = feedparser.parse(response.content)
