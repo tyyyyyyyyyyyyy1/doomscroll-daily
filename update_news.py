@@ -21,12 +21,14 @@ def make_funny_and_snarky(title, original_summary):
         "In events everyone will completely forget by tomorrow: ",
         "Surprising absolutely no one, ",
         "Local timeline takes another weird turn: ",
-        "Experts are baffled, but mostly just tired: "
+        "Experts are baffled, but mostly just tired: ",
+        "Another classic entry for the history books of doom: ",
+        "Hold onto your hats, because: "
     ]
     chosen_prefix = snarky_prefixes[len(title) % len(snarky_prefixes)]
     return f"{chosen_prefix}{original_summary}"
 
-def fetch_and_roast_feeds(feed_urls, limit=3):
+def fetch_and_roast_feeds(feed_urls, limit=10):
     items = []
     for url in feed_urls:
         try:
@@ -67,9 +69,9 @@ def generate_html_cards(items):
     return html_output if html_output else "<p>The robots are currently taking a nap. Check back soon.</p>"
 
 if __name__ == "__main__":
-    print("Starting fast safe news scraper...")
-    world_items = fetch_and_roast_feeds(WORLD_FEEDS, limit=3)
-    local_items = fetch_and_roast_feeds(LOCAL_FEEDS, limit=3)
+    print("Starting heavy news scraper (20 articles target)...")
+    world_items = fetch_and_roast_feeds(WORLD_FEEDS, limit=10)
+    local_items = fetch_and_roast_feeds(LOCAL_FEEDS, limit=10)
     
     world_html = generate_html_cards(world_items)
     local_html = generate_html_cards(local_items)
