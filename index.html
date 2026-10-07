@@ -1082,10 +1082,10 @@
             let combinedCards = [];
             reelBatchCount++;
 
-            // 1. Live Reddit API fetch
+            // 1. Live Reddit API fetch (Increased limit for infinite scrolling)
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=4&sort=new&t=all`)}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=10&sort=new&t=all`)}`;
                     const res = await fetch(proxyUrl);
                     const data = await res.json();
                     const json = JSON.parse(data.contents);
@@ -1111,7 +1111,7 @@
             // 2. Hacker News API
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&page=${reelBatchCount % 4}&hitsPerPage=2`);
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&page=${reelBatchCount % 4}&hitsPerPage=5`);
                     const data = await res.json();
                     data?.hits?.forEach((hit, idx) => {
                         combinedCards.push({
@@ -1131,7 +1131,7 @@
             // 3. Mastodon Fediverse API
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
-                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=3`);
+                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=5`);
                     const data = await res.json();
                     data?.statuses?.forEach((status, idx) => {
                         const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
@@ -1154,7 +1154,7 @@
                 try {
                     const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
                     const data = await res.json();
-                    data?.query?.search?.slice(0, 2).forEach((item, idx) => {
+                    data?.query?.search?.slice(0, 4).forEach((item, idx) => {
                         const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
                             source: `📰 Open Knowledge & Substack`,
@@ -1183,19 +1183,21 @@
             Object.keys(platformConfigs).forEach(key => {
                 if (selectedSource === 'all' || selectedSource === key) {
                     const p = platformConfigs[key];
-                    const randomTopic = topicVariations[(reelBatchCount * 5 + Object.keys(platformConfigs).indexOf(key)) % topicVariations.length];
-                    const randVideo = expandedVideoPool[(reelBatchCount + Object.keys(platformConfigs).indexOf(key)) % expandedVideoPool.length];
-                    
-                    combinedCards.push({
-                        source: p.name,
-                        sourceName: p.srcName,
-                        title: `${randomTopic} relating to "${query}" [Part ${reelBatchCount}]`,
-                        caption: `Immersive short-form clip tracking real-time reactions and community engagement on ${p.name}.`,
-                        url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key + ' batch ' + reelBatchCount)}`,
-                        videoUrl: randVideo,
-                        likes: Math.floor(Math.random() * 12000) + 1200,
-                        comments: Math.floor(Math.random() * 850) + 45
-                    });
+                    for (let i = 0; i < 2; i++) {
+                        const randomTopic = topicVariations[(reelBatchCount * 5 + i + Object.keys(platformConfigs).indexOf(key)) % topicVariations.length];
+                        const randVideo = expandedVideoPool[(reelBatchCount + i + Object.keys(platformConfigs).indexOf(key)) % expandedVideoPool.length];
+                        
+                        combinedCards.push({
+                            source: p.name,
+                            sourceName: p.srcName,
+                            title: `${randomTopic} relating to "${query}" [Batch ${reelBatchCount}-${i}]`,
+                            caption: `Immersive short-form clip tracking real-time reactions and community engagement on ${p.name}.`,
+                            url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key + ' batch ' + reelBatchCount)}`,
+                            videoUrl: randVideo,
+                            likes: Math.floor(Math.random() * 12000) + 1200,
+                            comments: Math.floor(Math.random() * 850) + 45
+                        });
+                    }
                 }
             });
 
@@ -1245,7 +1247,7 @@
         }
 
         function checkInfiniteScroll(element) {
-            const threshold = 200;
+            const threshold = 150;
             if (element.scrollTop + element.clientHeight >= element.scrollHeight - threshold) {
                 if (!isLoadingReels) {
                     isLoadingReels = true;
