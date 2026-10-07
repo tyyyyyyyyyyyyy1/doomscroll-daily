@@ -437,7 +437,7 @@
     <!-- Front Page Quick Weather Summary Banner -->
     <div id="frontpage-weather-banner">
         <span>📍 Locating GPS...</span>
-        <span>🌡️️ Loading live temp...</span>
+        <span>🌡 Loading live temp...</span>
         <span>🌤️ Synced Local Time</span>
     </div>
 
@@ -500,15 +500,15 @@
         <section>
             <h2>🌤️ Comprehensive Weather Forecast</h2>
             <div class="sub-tab-nav">
-                <button class="sub-tab-btn active" onclick="switchWeatherSub('hourly-weather', this)">⚡ 72-Hour Hourly (Local Time)</button>
+                <button class="sub-tab-btn active" onclick="switchWeatherSub('hourly-weather', this)">⚡ 24-Hour Rolling Hourly (Local Time)</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSub('week7-weather', this)">📅 7-Day Forecast</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSub('week14-weather', this)">🗓️ 14-Day Extended</button>
             </div>
 
-            <!-- Sub 1: 72 Hour Hourly -->
+            <!-- Sub 1: Hourly Forecast -->
             <div id="hourly-weather" class="weather-sub-pane active">
                 <div class="card" style="margin-bottom: 15px;">
-                    <h3 style="margin-top:0;">Hourly Breakdown (Next 72 Hours - Local Time Synced)</h3>
+                    <h3 style="margin-top:0;">Rolling Hourly Breakdown (Next 24 Hours - Local Time Synced)</h3>
                     <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:15px;">Synchronized with local time zone timestamps</p>
                     <div id="hourly-grid-container" class="weather-grid-hourly">
                         <p style="color:#747d8c; text-align:center; grid-column:1/-1;">Loading local time hourly forecast...</p>
@@ -661,12 +661,11 @@
             document.getElementById('corporate-memo').innerText = memo;
         }
 
-        // Live Weather Data Fetcher with Local Time Synced Timestamps (&timezone=auto)
-        let userLat = 45.42; // Default Ottawa
-        let userLon = -75.69;
+        // Live Weather Data Fetcher (Hourly for Today + Optimized Daily High/Low for 7/14 Day Periods)
+        let userLat = 45.4215; // Default Ottawa
+        let userLon = -75.6972;
 
         async function initWeatherAndGPS() {
-            const banner = document.getElementById('frontpage-weather-banner');
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     async (position) => {
@@ -685,14 +684,25 @@
 
         async function fetchDetailedWeatherData(lat, lon, locationName) {
             try {
-                // &timezone=auto ensures Open-Meteo returns timestamps matching the exact local timezone of the coordinates
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+                // Requesting hourly data strictly for the 24-hour strip, and 14 days of daily min/max for the 7/14 day period cards
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
                 const res = await fetch(url);
                 const data = await res.json();
 
-                // Get current live temperature (matching current hour index)
-                const currentHourIndex = new Date().getHours();
-                const currentTemp = data.hourly.temperature_2m[currentHourIndex] || data.hourly.temperature_2m[0];
+                const times = data.hourly.time;
+                const temps = data.hourly.temperature_2m;
+
+                const now = new Date();
+                let currentIndex = 0;
+                for (let i = 0; i < times.length; i++) {
+                    const forecastTime = new Date(times[i]);
+                    if (forecastTime >= now) {
+                        currentIndex = i;
+                        break;
+                    }
+                }
+
+                const currentTemp = Math.round(temps[currentIndex] || temps[0]);
 
                 // Update Front-Page Weather Banner
                 document.getElementById('frontpage-weather-banner').innerHTML = `
@@ -701,28 +711,24 @@
                     <span>⚡ Local Time Synced</span>
                 `;
 
-                // 1. Render 72-Hour Hourly with Local Time Stamps
+                // Render Rolling 24-Hour Forecast starting from current hour
                 let hourlyHtml = "";
-                const hourlyTimes = data.hourly.time;
-                const hourlyTemps = data.hourly.temperature_2m;
-                
-                for (let i = 0; i < 72; i++) {
-                    const rawTime = hourlyTimes[i]; // e.g. "2026-10-06T15:00" in local timezone format
-                    const dateObj = new Date(rawTime);
-                    // Format nicely into local time string
-                    const timeStr = !isNaN(dateObj) ? dateObj.toLocaleTimeString([], { hour: 'numeric', month: 'short', day: 'numeric' }) : rawTime;
+                for (let i = currentIndex; i < currentIndex + 24 && i < times.length; i++) {
+                    const tDate = new Date(times[i]);
+                    const hourLabel = tDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+                    const tempVal = Math.round(temps[i]);
                     
                     hourlyHtml += `
                         <div class="weather-hour-card">
-                            <div class="weather-time">${timeStr}</div>
-                            <div class="weather-temp">${hourlyTemps[i]}°C</div>
+                            <div class="weather-time">${hourLabel}</div>
+                            <div class="weather-temp">${tempVal}°C</div>
                             <div class="weather-cond">Local Time</div>
                         </div>
                     `;
                 }
                 document.getElementById('hourly-grid-container').innerHTML = hourlyHtml;
 
-                // 2. Render 7-Day & 14-Day Forecast with Morning, Afternoon, Evening, Overnight
+                // Render 7-Day & 14-Day Period Cards (Morning, Afternoon, Evening, Overnight)
                 let week7Html = "";
                 let week14Html = "";
                 const dailyTimes = data.daily.time;
@@ -733,18 +739,22 @@
                     const dayDate = new Date(dailyTimes[i]).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
                     const maxT = maxTemps[i];
                     const minT = minTemps[i];
-                    const midT = ((maxT + minT) / 2).toFixed(1);
-                    const coolT = (minT + 1).toFixed(1);
+                    
+                    // Derived period estimations from daily high/low
+                    const morningT = (minT + (maxT - minT) * 0.3).toFixed(1);
+                    const afternoonT = maxT;
+                    const eveningT = (minT + (maxT - minT) * 0.6).toFixed(1);
+                    const overnightT = minT;
 
                     const dayCardContent = `
                         <div class="card">
                             <h3 style="margin-bottom:8px;">${dayDate}</h3>
                             <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:10px;">High: ${maxT}°C | Low: ${minT}°C</p>
                             <div class="weather-period-grid">
-                                <div class="period-card"><div class="period-title">Morning</div><div class="period-val">${coolT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Afternoon</div><div class="period-val">${maxT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Evening</div><div class="period-val">${midT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Overnight</div><div class="period-val">${minT}°C</div></div>
+                                <div class="period-card"><div class="period-title">Morning</div><div class="period-val">${morningT}°C</div></div>
+                                <div class="period-card"><div class="period-title">Afternoon</div><div class="period-val">${afternoonT}°C</div></div>
+                                <div class="period-card"><div class="period-title">Evening</div><div class="period-val">${eveningT}°C</div></div>
+                                <div class="period-card"><div class="period-title">Overnight</div><div class="period-val">${overnightT}°C</div></div>
                             </div>
                         </div>
                     `;
