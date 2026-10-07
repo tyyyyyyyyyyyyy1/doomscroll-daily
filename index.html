@@ -164,7 +164,6 @@
             box-shadow: 0 4px 12px rgba(255, 51, 75, 0.3);
         }
 
-        /* Subcategory Nav */
         .sub-tab-nav {
             display: flex;
             justify-content: center;
@@ -236,7 +235,6 @@
         }
         .card-footer-link:hover { text-decoration: underline; }
 
-        /* Weather Grid Styles */
         .weather-grid-hourly {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -316,7 +314,6 @@
         }
         .search-bar-wrapper button:hover { background: #ff5267; }
 
-        /* TikTok / Instagram Reels Immersive Vertical Feed Container */
         .media-feed-wrapper {
             position: relative;
             max-width: 480px;
@@ -350,7 +347,6 @@
             overflow: hidden;
         }
 
-        /* Fullscreen Media Assets */
         .media-asset-container {
             position: absolute;
             top: 0;
@@ -369,7 +365,6 @@
             object-fit: cover;
         }
 
-        /* Reels Gradient Overlay for Text Readability */
         .reels-gradient-overlay {
             position: absolute;
             bottom: 0;
@@ -381,7 +376,6 @@
             pointer-events: none;
         }
 
-        /* Reels UI Overlay Layout */
         .reels-content-box {
             position: relative;
             z-index: 3;
@@ -441,7 +435,6 @@
         }
         .source-attribution-link:hover { background: #00f2fe; color: #000; }
 
-        /* Floating TikTok / Reels Action Sidebar */
         .reels-action-sidebar {
             position: absolute;
             right: 15px;
@@ -471,7 +464,6 @@
         .reel-action-icon { font-size: 1.2rem; line-height: 1; }
         .reel-action-count { font-size: 0.65rem; font-weight: bold; margin-top: 3px; color: #f1f2f6; }
 
-        /* Feed Overlay Hint & Desktop Controls */
         .feed-hint {
             position: absolute;
             right: 25px;
@@ -551,7 +543,6 @@
         <button class="panic-btn" onclick="toggleCorporatePanic()">📈 Corporate BS (Esc)</button>
     </div>
 
-    <!-- Corporate Bullsh!t Generator Panic Screen -->
     <div id="corporate-panic">
         <h2 style="color: #0056b3; margin-top:0;">📊 Executive Synergy & Paradigm Strategy Memorandum</h2>
         <p id="corporate-memo" style="font-size: 1.2rem; line-height: 1.6; background: #f8f9fa; padding: 20px; border-left: 5px solid #0056b3; border-radius: 4px;">
@@ -563,7 +554,6 @@
         </div>
     </div>
 
-    <!-- Trash Panda Chaos Mode -->
     <div id="raccoon-chaos">
         <h1 style="color: #ffa502; font-size: 3.5rem; margin-bottom: 10px;">🦝 THE GARBAGE GOBLINS HAVE AWOKEN 🦝</h1>
         <p style="font-size: 1.3rem; color: #ced6e0; max-width: 600px; line-height: 1.5;">You clicked the forbidden trash button. The local raccoon syndicate demands all leftover pizza crusts immediately or your Wi-Fi router gets chewed through.</p>
@@ -577,7 +567,6 @@
 
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     
-    <!-- Front Page Quick Weather Summary Banner -->
     <div id="frontpage-weather-banner">
         <span>📍 Locating GPS...</span>
         <span>🌡 Loading live temp...</span>
@@ -648,7 +637,6 @@
                 <button class="sub-tab-btn" onclick="switchWeatherSub('week14-weather', this)">🗓️ 14-Day Extended</button>
             </div>
 
-            <!-- Sub 1: Hourly Forecast -->
             <div id="hourly-weather" class="weather-sub-pane active">
                 <div class="card" style="margin-bottom: 15px;">
                     <h3 style="margin-top:0;">Rolling Hourly Breakdown (Next 24 Hours - Local Time Synced)</h3>
@@ -659,12 +647,10 @@
                 </div>
             </div>
 
-            <!-- Sub 2: 7 Day Forecast -->
             <div id="week7-weather" class="weather-sub-pane">
                 <div id="week7-container" class="card-grid"></div>
             </div>
 
-            <!-- Sub 3: 14 Day Forecast -->
             <div id="week14-weather" class="weather-sub-pane">
                 <div id="week14-container" class="card-grid"></div>
             </div>
@@ -694,7 +680,6 @@
                     <button onclick="runMultiSourceSearch()">Search Reels</button>
                 </div>
                 
-                <!-- TikTok / Instagram Reels Style Feed Container -->
                 <div class="media-feed-wrapper">
                     <div class="feed-hint">↕ Infinite Doom-Scroll</div>
                     <div id="multi-source-results" onscroll="checkInfiniteScroll(this)">
@@ -782,7 +767,6 @@
             btnElement.classList.add('active');
         }
 
-        // Fun Panic Modes
         function toggleCorporatePanic() {
             document.body.classList.toggle('panic-mode');
             if(document.body.classList.contains('panic-mode')) generateCorporateBS();
@@ -797,7 +781,6 @@
             }
         });
 
-        // Corporate Bullsh!t Generator
         const bsVerbs = ["leveraging", "synergizing", "disrupting", "optimizing", "pivoting", "streamlining", "reimagining"];
         const bsAdjectives = ["cross-platform", "holistic", "scalable", "paradigm-shifting", "quantum-grade", "low-friction", "agile"];
         const bsNouns = ["touchpoints", "deliverables", "bandwidth", "core competencies", "market vectors", "ecosystems", "stakeholder value"];
@@ -813,7 +796,6 @@
             document.getElementById('corporate-memo').innerText = memo;
         }
 
-        // Conversion Helpers
         function cToF(c) { return (c * 9/5) + 32; }
         function mmToInches(mm) { return mm / 25.4; }
         function cmToInches(cm) { return cm / 2.54; }
@@ -839,7 +821,6 @@
             return { label, details };
         }
 
-        // Live Weather Data Fetcher
         let userLat = 45.4215;
         let userLon = -75.6972;
 
@@ -950,7 +931,6 @@
         }
         initWeatherAndGPS();
 
-        // Bulletins Data
         let bulletinsData = [
             { title: "Local Raccoon Syndicate Demands Higher Quality Garbage", desc: "Municipal waste managers report sophisticated sorting by local raccoons, who are now bypassing compost bins entirely in search of premium cardboard packaging.", sourceName: "Ottawa Municipal Sanitation Dispatch", sourceUrl: "https://ottawa.ca" },
             { title: "Coffee Machine Achieves Sentience, Demands Weekends Off", desc: "An office espresso machine in downtown Ottawa reportedly locked down its steam wand until staff agreed to stop talking about synergy during morning standups.", sourceName: "The Daily Bean Chronicle", sourceUrl: "https://reddit.com/r/coffee" },
@@ -986,7 +966,6 @@
             renderBulletins();
         }
 
-        // News Data
         let localNewsData = [
             { title: "Chinatown & Centretown Sweeps", desc: "Ottawa Police report over two dozen arrests following recent targeted patrols along Bank and Somerset streets to address ongoing neighborhood disorder and public safety concerns.", source: "Ottawa Citizen", url: "https://ottawacitizen.com" },
             { title: "Municipal Focus: Capital Region Campaign Focus", desc: "Local campaigns heat up across the capital region with candidates introducing platform strategies regarding transit infrastructure upgrades, regional trade, and municipal development.", source: "CBC Ottawa", url: "https://cbc.ca/news/canada/ottawa" },
@@ -1067,9 +1046,28 @@
             renderNewsGrids();
         }
 
-        // Infinite Scrolling 10-Source Reels Engine
+        // True Infinite Scrolling & Video Engine
         let isLoadingReels = false;
         let reelBatchCount = 0;
+
+        const expandedVideoPool = [
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackSeeTheWorld.mp4",
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+        ];
+
+        const topicVariations = [
+            "Viral street interview moments", "Late night snack tier lists", "Bizarre public transit encounters",
+            "Unhinged DIY home renovation projects", "Local coffee shop conspiracies", "Tech gadgets that went entirely wrong",
+            "Midnight bike ride reflections", "Strange marketplace finds", "Aesthetic autumn morning vibes",
+            "Unintentional comedy captured live", "Underground music scene highlights", "Pet reactions to modern art"
+        ];
 
         async function runMultiSourceSearch(isAppend = false) {
             const query = document.getElementById('media-search-input').value.trim() || "Ottawa";
@@ -1084,86 +1082,79 @@
             let combinedCards = [];
             reelBatchCount++;
 
-            // 1. Reddit Integration
+            // 1. Live Reddit API fetch
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query + ' ' + reelBatchCount)}&limit=3&sort=new`)}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=4&sort=new&t=all`)}`;
                     const res = await fetch(proxyUrl);
                     const data = await res.json();
                     const json = JSON.parse(data.contents);
-                    json?.data?.children?.forEach(item => {
+                    json?.data?.children?.forEach((item, idx) => {
                         const post = item.data;
                         if (!post.over_18) {
-                            let videoUrl = null;
-                            if (post.secure_media?.reddit_video?.fallback_url) {
-                                videoUrl = post.secure_media.reddit_video.fallback_url;
-                            }
+                            let videoUrl = post.secure_media?.reddit_video?.fallback_url || expandedVideoPool[(reelBatchCount + idx) % expandedVideoPool.length];
                             combinedCards.push({
-                                source: `🤖 Reddit (${post.subreddit_name_prefixed})`,
+                                source: `🤖 Reddit (r/${post.subreddit})`,
                                 sourceName: `r/${post.subreddit}`,
                                 title: post.title,
-                                caption: post.selftext ? post.selftext.substring(0, 140) : `Shared in r/${post.subreddit} by u/${post.author}`,
+                                caption: post.selftext ? post.selftext.substring(0, 140) : `Community discussion shared by u/${post.author} regarding ${query}.`,
                                 url: `https://reddit.com${post.permalink}`,
                                 videoUrl: videoUrl,
-                                thumb: (!videoUrl && post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.includes('imgur'))) ? post.url : null,
-                                likes: post.score || Math.floor(Math.random() * 2000) + 100,
-                                comments: post.num_comments || Math.floor(Math.random() * 150) + 10
+                                likes: post.score || Math.floor(Math.random() * 4000) + 200,
+                                comments: post.num_comments || Math.floor(Math.random() * 300) + 15
                             });
                         }
                     });
                 } catch (e) {}
             }
 
-            // 2. Hacker News
+            // 2. Hacker News API
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&page=${reelBatchCount % 3}&hitsPerPage=2`);
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&page=${reelBatchCount % 4}&hitsPerPage=2`);
                     const data = await res.json();
-                    data?.hits?.forEach(hit => {
+                    data?.hits?.forEach((hit, idx) => {
                         combinedCards.push({
                             source: `💻 Hacker News`,
-                            sourceName: `Hacker News`,
+                            sourceName: `Hacker News Stream`,
                             title: hit.title,
-                            caption: `Community tech discussion submitted by ${hit.author}.`,
+                            caption: `Tech discussion submitted by ${hit.author || 'community member'}. Points: ${hit.points || 120}.`,
                             url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
-                            videoUrl: null,
-                            thumb: null,
-                            likes: hit.points || 150,
-                            comments: hit.num_comments || 42
+                            videoUrl: expandedVideoPool[(reelBatchCount * 3 + idx) % expandedVideoPool.length],
+                            likes: hit.points || 250,
+                            comments: hit.num_comments || 55
                         });
                     });
                 } catch (e) {}
             }
 
-            // 3. Mastodon
+            // 3. Mastodon Fediverse API
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
-                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=2`);
+                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=3`);
                     const data = await res.json();
-                    data?.statuses?.forEach(status => {
+                    data?.statuses?.forEach((status, idx) => {
                         const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
-                        const att = status.media_attachments?.[0];
                         combinedCards.push({
                             source: `🐘 Mastodon (@${status.account.acct})`,
-                            sourceName: `Fediverse Stream`,
-                            title: cleanContent.substring(0, 60) + '...',
+                            sourceName: `Fediverse Network`,
+                            title: cleanContent.substring(0, 65) + '...',
                             caption: cleanContent,
                             url: status.url,
-                            videoUrl: att?.type === 'video' ? att.url : null,
-                            thumb: att?.type === 'image' ? att.preview_url : null,
-                            likes: status.favourites_count || 88,
-                            comments: status.reblogs_count || 24
+                            videoUrl: expandedVideoPool[(reelBatchCount + idx * 2) % expandedVideoPool.length],
+                            likes: status.favourites_count || 142,
+                            comments: status.reblogs_count || 31
                         });
                     });
                 } catch (e) {}
             }
 
-            // 4. Open Knowledge / Wikipedia
+            // 4. Wikipedia Open Knowledge API
             if (selectedSource === 'all' || selectedSource === 'substack') {
                 try {
-                    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query + ' ' + reelBatchCount)}&format=json&origin=*`);
+                    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
                     const data = await res.json();
-                    data?.query?.search?.slice(0, 1).forEach(item => {
+                    data?.query?.search?.slice(0, 2).forEach((item, idx) => {
                         const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
                             source: `📰 Open Knowledge & Substack`,
@@ -1171,26 +1162,15 @@
                             title: item.title,
                             caption: snippet + '...',
                             url: `https://en.wikipedia.org/?curid=${item.pageid}`,
-                            videoUrl: null,
-                            thumb: null,
-                            likes: Math.floor(Math.random() * 5000) + 500,
-                            comments: Math.floor(Math.random() * 300) + 20
+                            videoUrl: expandedVideoPool[(reelBatchCount * 4 + idx) % expandedVideoPool.length],
+                            likes: Math.floor(Math.random() * 6000) + 800,
+                            comments: Math.floor(Math.random() * 400) + 40
                         });
                     });
                 } catch (e) {}
             }
 
-            // 5. Short-Form Video & Social Reels Pool (TikTok, IG, YouTube, X, Facebook, Tumblr)
-            const videoSamplePool = [
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
-            ];
-
+            // 5. Dynamic Platform Reels (TikTok, Instagram, Facebook, X, YouTube, Tumblr) with Unique Topics
             const platformConfigs = {
                 tiktok: { name: "🎵 TikTok", srcName: "TikTok Creator Stream" },
                 instagram: { name: "📸 Instagram", srcName: "Instagram Reels" },
@@ -1203,56 +1183,31 @@
             Object.keys(platformConfigs).forEach(key => {
                 if (selectedSource === 'all' || selectedSource === key) {
                     const p = platformConfigs[key];
-                    const randVideo = videoSamplePool[Math.floor(Math.random() * videoSamplePool.length)];
+                    const randomTopic = topicVariations[(reelBatchCount * 5 + Object.keys(platformConfigs).indexOf(key)) % topicVariations.length];
+                    const randVideo = expandedVideoPool[(reelBatchCount + Object.keys(platformConfigs).indexOf(key)) % expandedVideoPool.length];
+                    
                     combinedCards.push({
                         source: p.name,
                         sourceName: p.srcName,
-                        title: `Trending feed batch #${reelBatchCount} for "${query}"`,
-                        caption: `Immersive vertical short-form stream tracking public reactions, memes, and live clips on ${p.name}.`,
-                        url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key + ' ' + reelBatchCount)}`,
+                        title: `${randomTopic} relating to "${query}" [Part ${reelBatchCount}]`,
+                        caption: `Immersive short-form clip tracking real-time reactions and community engagement on ${p.name}.`,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key + ' batch ' + reelBatchCount)}`,
                         videoUrl: randVideo,
-                        thumb: null,
-                        likes: Math.floor(Math.random() * 9500) + 1500,
-                        comments: Math.floor(Math.random() * 600) + 60
+                        likes: Math.floor(Math.random() * 12000) + 1200,
+                        comments: Math.floor(Math.random() * 850) + 45
                     });
                 }
             });
 
-            if (combinedCards.length === 0) {
-                combinedCards.push({
-                    source: `🌐 Web Aggregate`, sourceName: `Google Search`, title: `Search results for "${query}" (Batch ${reelBatchCount})`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, videoUrl: null, thumb: null, likes: 500, comments: 50
-                });
-            }
-
             let html = "";
             combinedCards.forEach((card, index) => {
-                let mediaElement = "";
-                if (card.videoUrl) {
-                    mediaElement = `
+                html += `
+                    <div class="media-result-card">
                         <div class="media-asset-container">
                             <video src="${card.videoUrl}" class="media-video" autoplay loop muted playsinline></video>
                         </div>
-                    `;
-                } else if (card.thumb) {
-                    mediaElement = `
-                        <div class="media-asset-container">
-                            <img src="${card.thumb}" class="media-thumb" loading="lazy" alt="Media Asset">
-                        </div>
-                    `;
-                } else {
-                    mediaElement = `
-                        <div class="media-asset-container">
-                            <img src="https://picsum.photos/600/900?random=${reelBatchCount * 50 + index}" class="media-thumb" loading="lazy" alt="Immersive Placeholder">
-                        </div>
-                    `;
-                }
-
-                html += `
-                    <div class="media-result-card">
-                        ${mediaElement}
                         <div class="reels-gradient-overlay"></div>
                         
-                        <!-- Floating TikTok / Instagram Reels Side Action Bar -->
                         <div class="reels-action-sidebar">
                             <div class="reel-action-btn" onclick="this.style.color='#ff334b'">
                                 <span class="reel-action-icon">❤️</span>
@@ -1268,7 +1223,6 @@
                             </div>
                         </div>
 
-                        <!-- Reels Text & Attribution Details -->
                         <div class="reels-content-box">
                             <span class="media-source-tag">${card.source}</span>
                             <a href="${card.url}" target="_blank" class="media-result-title">${card.title}</a>
@@ -1290,9 +1244,8 @@
             isLoadingReels = false;
         }
 
-        // Infinite Scroll Listener for the Reels container
         function checkInfiniteScroll(element) {
-            const threshold = 150; // pixels from the bottom
+            const threshold = 200;
             if (element.scrollTop + element.clientHeight >= element.scrollHeight - threshold) {
                 if (!isLoadingReels) {
                     isLoadingReels = true;
@@ -1301,7 +1254,6 @@
             }
         }
 
-        // Desktop Next/Prev scroller helper for vertical reels feed
         function scrollMediaFeed(direction) {
             const container = document.getElementById('multi-source-results');
             const cardHeight = container.clientHeight;
@@ -1313,7 +1265,6 @@
 
         runMultiSourceSearch();
 
-        // Dual Meme Fetcher
         async function fetchMeme(sub) {
             const isDark = sub === 'dankmemes';
             const titleEl = document.getElementById(isDark ? 'dark-meme-title' : 'meme-title');
@@ -1331,7 +1282,6 @@
         fetchMeme('wholesomememes');
         fetchMeme('dankmemes');
 
-        // RPG Adventure Generator
         const gameTemplates = [
             {
                 title: "The Great Grocery Cart Stand-Off",
@@ -1378,7 +1328,6 @@
         }
         initGame();
 
-        // Intrusive Thoughts
         const thoughts = [
             "If you skin a potato, are you undressing it or committing a war crime against a vegetable?",
             "What if your skeleton is actually trying to escape your meat prison, and your skin is just a very stubborn straightjacket?",
