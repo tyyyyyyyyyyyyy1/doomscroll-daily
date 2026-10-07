@@ -684,8 +684,8 @@
 
         async function fetchDetailedWeatherData(lat, lon, locationName) {
             try {
-                // Requesting hourly data strictly for the 24-hour strip, and 14 days of daily min/max for the 7/14 day period cards
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+                // Requesting hourly data for the 24-hour strip, and forecast_days=14 for the full 14-day daily min/max outlook
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&forecast_days=14&timezone=auto`;
                 const res = await fetch(url);
                 const data = await res.json();
 
