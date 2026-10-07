@@ -239,7 +239,7 @@
         /* Weather Specific Grid Styles */
         .weather-grid-hourly {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
         }
         .weather-hour-card {
@@ -250,8 +250,9 @@
             text-align: center;
         }
         .weather-time { font-size: 0.8rem; color: #1e90ff; font-weight: bold; margin-bottom: 5px; }
-        .weather-temp { font-size: 1.2rem; color: var(--secondary-accent); font-weight: bold; margin: 5px 0; }
-        .weather-cond { font-size: 0.8rem; color: #ced6e0; }
+        .weather-temp { font-size: 1.1rem; color: var(--secondary-accent); font-weight: bold; margin: 4px 0; }
+        .weather-cond { font-size: 0.8rem; color: #fff; font-weight: bold; margin-top: 4px; }
+        .weather-precip { font-size: 0.75rem; color: #1e90ff; margin-top: 2px; }
 
         .weather-period-grid {
             display: grid;
@@ -270,7 +271,8 @@
             text-align: center;
         }
         .period-title { font-size: 0.75rem; color: #1e90ff; font-weight: bold; text-transform: uppercase; }
-        .period-val { font-size: 0.95rem; color: #fff; margin-top: 4px; }
+        .period-val { font-size: 0.9rem; color: #fff; margin-top: 2px; }
+        .period-cond { font-size: 0.7rem; color: #ffa502; margin-top: 2px; font-weight: bold; }
 
         .media-engine-box {
             background: var(--card-bg);
@@ -498,7 +500,7 @@
     <!-- Tab 3: Weather -->
     <div id="weather-tab" class="tab-pane">
         <section>
-            <h2>🌤️ Comprehensive Weather Forecast</h2>
+            <h2>🌤️ Comprehensive Universal Weather Forecast</h2>
             <div class="sub-tab-nav">
                 <button class="sub-tab-btn active" onclick="switchWeatherSub('hourly-weather', this)">⚡ 24-Hour Rolling Hourly (Local Time)</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSub('week7-weather', this)">📅 7-Day Forecast</button>
@@ -509,7 +511,7 @@
             <div id="hourly-weather" class="weather-sub-pane active">
                 <div class="card" style="margin-bottom: 15px;">
                     <h3 style="margin-top:0;">Rolling Hourly Breakdown (Next 24 Hours - Local Time Synced)</h3>
-                    <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:15px;">Synchronized with local time zone timestamps</p>
+                    <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:15px;">Displaying Metric & Imperial units simultaneously</p>
                     <div id="hourly-grid-container" class="weather-grid-hourly">
                         <p style="color:#747d8c; text-align:center; grid-column:1/-1;">Loading local time hourly forecast...</p>
                     </div>
@@ -661,7 +663,40 @@
             document.getElementById('corporate-memo').innerText = memo;
         }
 
-        // Live Weather Data Fetcher (Hourly for Today + Optimized Daily High/Low for 7/14 Day Periods)
+        // Conversion Helpers
+        function cToF(c) {
+            return (c * 9/5) + 32;
+        }
+        function mmToInches(mm) {
+            return mm / 25.4;
+        }
+        function cmToInches(cm) {
+            return cm / 2.54;
+        }
+
+        // WMO Weather Code Interpreter Helper with Dual Unit Formatting
+        function interpretWeather(code, rainMm = 0, snowCm = 0) {
+            let label = "Sunny / Clear";
+            if (code >= 1 && code <= 2) label = "Partly Cloudy";
+            else if (code === 3) label = "Overcast / Cloudy";
+            else if (code >= 51 && code <= 67 || (code >= 80 && code <= 82)) label = "Rainy";
+            else if (code >= 71 && code <= 77 || code >= 85 && code <= 86) label = "Snowy";
+            else if (code >= 95) label = "Thunderstorm";
+
+            let details = "";
+            if (rainMm > 0.05) {
+                const rainIn = mmToInches(rainMm);
+                details += `🌧️ ${rainMm.toFixed(1)} mm (${rainIn.toFixed(2)} in) rain`;
+            }
+            if (snowCm > 0.05) {
+                const snowIn = cmToInches(snowCm);
+                if (details) details += " | ";
+                details += `❄️ ${snowCm.toFixed(1)} cm (${snowIn.toFixed(2)} in) snow`;
+            }
+            return { label, details };
+        }
+
+        // Live Weather Data Fetcher
         let userLat = 45.4215; // Default Ottawa
         let userLon = -75.6972;
 
@@ -684,13 +719,15 @@
 
         async function fetchDetailedWeatherData(lat, lon, locationName) {
             try {
-                // Requesting hourly data for the 24-hour strip, and forecast_days=14 for the full 14-day daily min/max outlook
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&forecast_days=14&timezone=auto`;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weather_code,rain,snowfall&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum,snowfall_sum&forecast_days=14&timezone=auto`;
                 const res = await fetch(url);
                 const data = await res.json();
 
                 const times = data.hourly.time;
                 const temps = data.hourly.temperature_2m;
+                const codes = data.hourly.weather_code;
+                const rains = data.hourly.rain;
+                const snows = data.hourly.snowfall;
 
                 const now = new Date();
                 let currentIndex = 0;
@@ -702,59 +739,76 @@
                     }
                 }
 
-                const currentTemp = Math.round(temps[currentIndex] || temps[0]);
+                const currentTempC = temps[currentIndex] || temps[0];
+                const currentTempF = cToF(currentTempC);
+                const currentWeatherInfo = interpretWeather(codes[currentIndex] || 0, rains[currentIndex] || 0, snows[currentIndex] || 0);
 
                 // Update Front-Page Weather Banner
                 document.getElementById('frontpage-weather-banner').innerHTML = `
                     <span>📍 ${locationName}</span>
-                    <span>🌡️ Current: <strong>${currentTemp}°C</strong></span>
-                    <span>⚡ Local Time Synced</span>
+                    <span>🌡️ Current: <strong>${Math.round(currentTempC)}°C (${Math.round(currentTempF)}°F)</strong> (${currentWeatherInfo.label})</span>
+                    <span>⚡ Universal Units Synced</span>
                 `;
 
-                // Render Rolling 24-Hour Forecast starting from current hour
+                // Render Rolling 24-Hour Forecast
                 let hourlyHtml = "";
                 for (let i = currentIndex; i < currentIndex + 24 && i < times.length; i++) {
                     const tDate = new Date(times[i]);
                     const hourLabel = tDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-                    const tempVal = Math.round(temps[i]);
+                    const tempC = temps[i];
+                    const tempF = cToF(tempC);
+                    const wInfo = interpretWeather(codes[i], rains[i], snows[i]);
                     
                     hourlyHtml += `
                         <div class="weather-hour-card">
                             <div class="weather-time">${hourLabel}</div>
-                            <div class="weather-temp">${tempVal}°C</div>
-                            <div class="weather-cond">Local Time</div>
+                            <div class="weather-temp">${Math.round(tempC)}°C / ${Math.round(tempF)}°F</div>
+                            <div class="weather-cond">${wInfo.label}</div>
+                            ${wInfo.details ? `<div class="weather-precip">${wInfo.details}</div>` : ''}
                         </div>
                     `;
                 }
                 document.getElementById('hourly-grid-container').innerHTML = hourlyHtml;
 
-                // Render 7-Day & 14-Day Period Cards (Morning, Afternoon, Evening, Overnight)
+                // Render 7-Day & 14-Day Period Cards
                 let week7Html = "";
                 let week14Html = "";
                 const dailyTimes = data.daily.time;
                 const maxTemps = data.daily.temperature_2m_max;
                 const minTemps = data.daily.temperature_2m_min;
+                const dailyCodes = data.daily.weather_code;
+                const dailyRain = data.daily.precipitation_sum;
+                const dailySnow = data.daily.snowfall_sum;
 
                 for (let i = 0; i < dailyTimes.length; i++) {
                     const dayDate = new Date(dailyTimes[i]).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-                    const maxT = maxTemps[i];
-                    const minT = minTemps[i];
+                    const maxC = maxTemps[i];
+                    const minC = minTemps[i];
+                    const maxF = cToF(maxC);
+                    const minF = cToF(minC);
                     
+                    const dCode = dailyCodes[i];
+                    const dRain = dailyRain[i] || 0;
+                    const dSnow = dailySnow[i] || 0;
+                    
+                    const dayCondition = interpretWeather(dCode, dRain, dSnow);
+
                     // Derived period estimations from daily high/low
-                    const morningT = (minT + (maxT - minT) * 0.3).toFixed(1);
-                    const afternoonT = maxT;
-                    const eveningT = (minT + (maxT - minT) * 0.6).toFixed(1);
-                    const overnightT = minT;
+                    const mornC = minC + (maxC - minC) * 0.3;
+                    const aftC = maxC;
+                    const eveC = minC + (maxC - minC) * 0.6;
+                    const ovnC = minC;
 
                     const dayCardContent = `
                         <div class="card">
-                            <h3 style="margin-bottom:8px;">${dayDate}</h3>
-                            <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:10px;">High: ${maxT}°C | Low: ${minT}°C</p>
+                            <h3 style="margin-bottom:4px;">${dayDate}</h3>
+                            <p style="font-size:0.85rem; color:#ffa502; margin-bottom:6px; font-weight:bold;">${dayCondition.label} ${dayCondition.details ? '• ' + dayCondition.details : ''}</p>
+                            <p style="font-size:0.8rem; color:#a4b0be; margin-bottom:10px;">High: ${maxC.toFixed(1)}°C (${maxF.toFixed(1)}°F) | Low: ${minC.toFixed(1)}°C (${minF.toFixed(1)}°F)</p>
                             <div class="weather-period-grid">
-                                <div class="period-card"><div class="period-title">Morning</div><div class="period-val">${morningT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Afternoon</div><div class="period-val">${afternoonT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Evening</div><div class="period-val">${eveningT}°C</div></div>
-                                <div class="period-card"><div class="period-title">Overnight</div><div class="period-val">${overnightT}°C</div></div>
+                                <div class="period-card"><div class="period-title">Morning</div><div class="period-val">${mornC.toFixed(1)}°C<br>${cToF(mornC).toFixed(1)}°F</div></div>
+                                <div class="period-card"><div class="period-title">Afternoon</div><div class="period-val">${aftC.toFixed(1)}°C<br>${cToF(aftC).toFixed(1)}°F</div></div>
+                                <div class="period-card"><div class="period-title">Evening</div><div class="period-val">${eveC.toFixed(1)}°C<br>${cToF(eveC).toFixed(1)}°F</div></div>
+                                <div class="period-card"><div class="period-title">Overnight</div><div class="period-val">${ovnC.toFixed(1)}°C<br>${cToF(ovnC).toFixed(1)}°F</div></div>
                             </div>
                         </div>
                     `;
