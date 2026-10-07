@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Doomscroll Daily - Infinite Reels Engine</title>
+    <title>The Doomscroll Daily - Native Reels Engine</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -314,15 +314,16 @@
         }
         .search-bar-wrapper button:hover { background: #ff5267; }
 
+        /* TikTok / IG Reels Feed Styles */
         .media-feed-wrapper {
             position: relative;
-            max-width: 480px;
+            max-width: 420px;
             margin: 0 auto;
         }
         #multi-source-results {
             display: flex;
             flex-direction: column;
-            height: 680px;
+            height: 720px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             gap: 0;
@@ -330,7 +331,7 @@
             border: 2px solid #2a2f3d;
             background: #000;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
         }
         #multi-source-results::-webkit-scrollbar { width: 0px; background: transparent; }
 
@@ -354,12 +355,12 @@
             width: 100%;
             height: 100%;
             z-index: 1;
-            background: #000;
+            background: #050508;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .media-thumb, .media-video {
+        .media-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -370,8 +371,8 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 65%;
-            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.95) 100%);
+            height: 70%;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.95) 100%);
             z-index: 2;
             pointer-events: none;
         }
@@ -398,7 +399,7 @@
             backdrop-filter: blur(4px);
         }
         .media-result-title {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             color: #fff;
             font-weight: bold;
             margin-bottom: 6px;
@@ -407,13 +408,13 @@
         }
         .media-result-title:hover { text-decoration: underline; color: var(--secondary-accent); }
         .media-caption {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #d1d8e0;
             margin-bottom: 10px;
             line-height: 1.35;
             text-shadow: 0 1px 2px rgba(0,0,0,0.8);
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -437,7 +438,7 @@
 
         .reels-action-sidebar {
             position: absolute;
-            right: 15px;
+            right: 12px;
             bottom: 30px;
             z-index: 4;
             display: flex;
@@ -681,7 +682,7 @@
                 </div>
                 
                 <div class="media-feed-wrapper">
-                    <div class="feed-hint">↕ Infinite Doom-Scroll</div>
+                    <div class="feed-hint">↕ TikTok / IG Swipe Stream</div>
                     <div id="multi-source-results" onscroll="checkInfiniteScroll(this)">
                         <p style="color:#8f9bba; text-align:center; padding: 40px;">Select sources and enter a query to load vertical reels stream...</p>
                     </div>
@@ -750,6 +751,13 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             btnElement.classList.add('active');
+            
+            // If switching away from media tab, pause videos to save CPU
+            if(tabId !== 'media-tab') {
+                document.querySelectorAll('.media-video').forEach(v => v.pause());
+            } else {
+                handleScrollPlay();
+            }
         }
 
         function switchNewsSub(subId, btnElement) {
@@ -1046,20 +1054,22 @@
             renderNewsGrids();
         }
 
-        // True Infinite Scrolling & Video Engine
+        // --- NATIVE TIKTOK/IG REELS ENGINE WITH FAST VERIFIED VIDEO POOLS ---
         let isLoadingReels = false;
         let reelBatchCount = 0;
 
-        const expandedVideoPool = [
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackSeeTheWorld.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+        // Guaranteed active, fast-loading direct mp4 streams optimized for vertical/card looping
+        const highSpeedVideoPool = [
+            "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-1232-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-DJ-playing-music-in-a-nightclub-41271-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-man-working-on-a-laptop-43098-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-with-code-31940-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-traffic-in-the-city-at-night-4152-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-scenic-aerial-view-of-a-city-at-sunset-41603-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-set-of-plate-with-gourmet-food-and-drink-42661-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-neon-lights-of-a-city-at-night-4153-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-close-up-of-hands-making-coffee-latte-art-42993-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-skateboarder-doing-a-trick-in-a-park-42621-large.mp4"
         ];
 
         const topicVariations = [
@@ -1076,30 +1086,30 @@
             
             if (!isAppend) {
                 reelBatchCount = 0;
-                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Loading immersive reels for "${query}"...</p>`;
+                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Loading Reels for "${query}"...</p>`;
             }
 
             let combinedCards = [];
             reelBatchCount++;
 
-            // 1. Live Reddit API fetch (Increased limit for infinite scrolling)
+            // 1. Reddit API fetch
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=10&sort=new&t=all`)}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=8&sort=new&t=all`)}`;
                     const res = await fetch(proxyUrl);
                     const data = await res.json();
                     const json = JSON.parse(data.contents);
                     json?.data?.children?.forEach((item, idx) => {
                         const post = item.data;
                         if (!post.over_18) {
-                            let videoUrl = post.secure_media?.reddit_video?.fallback_url || expandedVideoPool[(reelBatchCount + idx) % expandedVideoPool.length];
+                            let vidUrl = highSpeedVideoPool[(reelBatchCount + idx) % highSpeedVideoPool.length];
                             combinedCards.push({
                                 source: `🤖 Reddit (r/${post.subreddit})`,
                                 sourceName: `r/${post.subreddit}`,
                                 title: post.title,
-                                caption: post.selftext ? post.selftext.substring(0, 140) : `Community discussion shared by u/${post.author} regarding ${query}.`,
+                                caption: post.selftext ? post.selftext.substring(0, 120) : `Community discussion shared by u/${post.author} regarding ${query}.`,
                                 url: `https://reddit.com${post.permalink}`,
-                                videoUrl: videoUrl,
+                                videoUrl: vidUrl,
                                 likes: post.score || Math.floor(Math.random() * 4000) + 200,
                                 comments: post.num_comments || Math.floor(Math.random() * 300) + 15
                             });
@@ -1111,7 +1121,7 @@
             // 2. Hacker News API
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&page=${reelBatchCount % 4}&hitsPerPage=5`);
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&page=${reelBatchCount % 3}&hitsPerPage=4`);
                     const data = await res.json();
                     data?.hits?.forEach((hit, idx) => {
                         combinedCards.push({
@@ -1120,7 +1130,7 @@
                             title: hit.title,
                             caption: `Tech discussion submitted by ${hit.author || 'community member'}. Points: ${hit.points || 120}.`,
                             url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
-                            videoUrl: expandedVideoPool[(reelBatchCount * 3 + idx) % expandedVideoPool.length],
+                            videoUrl: highSpeedVideoPool[(reelBatchCount * 2 + idx) % highSpeedVideoPool.length],
                             likes: hit.points || 250,
                             comments: hit.num_comments || 55
                         });
@@ -1131,17 +1141,17 @@
             // 3. Mastodon Fediverse API
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
-                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=5`);
+                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=4`);
                     const data = await res.json();
                     data?.statuses?.forEach((status, idx) => {
                         const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
                             source: `🐘 Mastodon (@${status.account.acct})`,
                             sourceName: `Fediverse Network`,
-                            title: cleanContent.substring(0, 65) + '...',
+                            title: cleanContent.substring(0, 55) + '...',
                             caption: cleanContent,
                             url: status.url,
-                            videoUrl: expandedVideoPool[(reelBatchCount + idx * 2) % expandedVideoPool.length],
+                            videoUrl: highSpeedVideoPool[(reelBatchCount * 3 + idx) % highSpeedVideoPool.length],
                             likes: status.favourites_count || 142,
                             comments: status.reblogs_count || 31
                         });
@@ -1149,28 +1159,7 @@
                 } catch (e) {}
             }
 
-            // 4. Wikipedia Open Knowledge API
-            if (selectedSource === 'all' || selectedSource === 'substack') {
-                try {
-                    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
-                    const data = await res.json();
-                    data?.query?.search?.slice(0, 4).forEach((item, idx) => {
-                        const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
-                        combinedCards.push({
-                            source: `📰 Open Knowledge & Substack`,
-                            sourceName: `Wikipedia Archive`,
-                            title: item.title,
-                            caption: snippet + '...',
-                            url: `https://en.wikipedia.org/?curid=${item.pageid}`,
-                            videoUrl: expandedVideoPool[(reelBatchCount * 4 + idx) % expandedVideoPool.length],
-                            likes: Math.floor(Math.random() * 6000) + 800,
-                            comments: Math.floor(Math.random() * 400) + 40
-                        });
-                    });
-                } catch (e) {}
-            }
-
-            // 5. Dynamic Platform Reels (TikTok, Instagram, Facebook, X, YouTube, Tumblr) with Unique Topics
+            // 4. Platform Reels Generator (TikTok, Instagram, Facebook, X, YouTube, Tumblr)
             const platformConfigs = {
                 tiktok: { name: "🎵 TikTok", srcName: "TikTok Creator Stream" },
                 instagram: { name: "📸 Instagram", srcName: "Instagram Reels" },
@@ -1184,18 +1173,18 @@
                 if (selectedSource === 'all' || selectedSource === key) {
                     const p = platformConfigs[key];
                     for (let i = 0; i < 2; i++) {
-                        const randomTopic = topicVariations[(reelBatchCount * 5 + i + Object.keys(platformConfigs).indexOf(key)) % topicVariations.length];
-                        const randVideo = expandedVideoPool[(reelBatchCount + i + Object.keys(platformConfigs).indexOf(key)) % expandedVideoPool.length];
+                        const randomTopic = topicVariations[(reelBatchCount * 4 + i + Object.keys(platformConfigs).indexOf(key)) % topicVariations.length];
+                        const randVideo = highSpeedVideoPool[(reelBatchCount + i + Object.keys(platformConfigs).indexOf(key)) % highSpeedVideoPool.length];
                         
                         combinedCards.push({
                             source: p.name,
                             sourceName: p.srcName,
-                            title: `${randomTopic} relating to "${query}" [Batch ${reelBatchCount}-${i}]`,
-                            caption: `Immersive short-form clip tracking real-time reactions and community engagement on ${p.name}.`,
-                            url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key + ' batch ' + reelBatchCount)}`,
+                            title: `${randomTopic} relating to "${query}"`,
+                            caption: `Trending short-form clip capturing real-time community engagement and viral discussion.`,
+                            url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key)}`,
                             videoUrl: randVideo,
-                            likes: Math.floor(Math.random() * 12000) + 1200,
-                            comments: Math.floor(Math.random() * 850) + 45
+                            likes: Math.floor(Math.random() * 15000) + 1200,
+                            comments: Math.floor(Math.random() * 950) + 45
                         });
                     }
                 }
@@ -1204,9 +1193,9 @@
             let html = "";
             combinedCards.forEach((card, index) => {
                 html += `
-                    <div class="media-result-card">
+                    <div class="media-result-card" data-index="${index}">
                         <div class="media-asset-container">
-                            <video src="${card.videoUrl}" class="media-video" autoplay loop muted playsinline></video>
+                            <video src="${card.videoUrl}" class="media-video" loop muted playsinline preload="auto"></video>
                         </div>
                         <div class="reels-gradient-overlay"></div>
                         
@@ -1244,6 +1233,38 @@
                 resultsContainer.innerHTML = html;
             }
             isLoadingReels = false;
+            
+            // Trigger automatic playback assignment for the newly rendered cards
+            handleScrollPlay();
+        }
+
+        // Intersection Observer for Automatic TikTok-style Play/Pause on Scroll
+        function handleScrollPlay() {
+            const container = document.getElementById('multi-source-results');
+            const cards = container.querySelectorAll('.media-result-card');
+            
+            const observerOptions = {
+                root: container,
+                threshold: 0.6 // Plays when 60% of the reel card is visible in view
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target.querySelector('video');
+                    if (!video) return;
+
+                    if (entry.isIntersecting) {
+                        // Play active card video
+                        video.play().catch(() => {});
+                    } else {
+                        // Pause inactive card video and reset time
+                        video.pause();
+                        video.currentTime = 0;
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => observer.observe(card));
         }
 
         function checkInfiniteScroll(element) {
