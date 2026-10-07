@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Doomscroll Daily - Multi-Source Media Engine</title>
+    <title>The Doomscroll Daily - Immersive Reels Engine</title>
     <style>
         :root {
-            --bg-color: #0f1115;
-            --card-bg: #1a1d24;
-            --text-color: #e1e4e8;
-            --accent-color: #ff4757;
-            --secondary-accent: #ffa502;
-            --tab-bg: #222630;
-            --tab-active: #ff4757;
+            --bg-color: #0b0e14;
+            --card-bg: #12161f;
+            --text-color: #f1f2f6;
+            --accent-color: #ff334b;
+            --secondary-accent: #00f2fe;
+            --tab-bg: #1a1f2c;
+            --tab-active: #ff334b;
         }
         * { box-sizing: border-box; }
         body {
@@ -33,7 +33,7 @@
             z-index: 9999;
         }
         .panic-btn {
-            background: #ff4757;
+            background: #ff334b;
             color: white;
             border: none;
             padding: 8px 12px;
@@ -41,7 +41,7 @@
             font-weight: bold;
             font-size: 0.8rem;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+            box-shadow: 0 4px 12px rgba(255, 51, 75, 0.4);
         }
         .panic-btn.raccoon { background: #ffa502; color: #000; }
         .panic-btn:hover { transform: scale(1.05); }
@@ -86,7 +86,7 @@
             display: none;
             padding: 40px;
             background: #000;
-            color: #ff4757;
+            color: #ff334b;
             text-align: center;
             min-height: 100vh;
         }
@@ -100,9 +100,9 @@
         header {
             text-align: center;
             padding: 25px 10px;
-            border-bottom: 2px dashed #333;
+            border-bottom: 2px dashed #2a2f3d;
             margin-bottom: 15px;
-            background: linear-gradient(135deg, #1a1d24 0%, #2f1b25 100%);
+            background: linear-gradient(135deg, #12161f 0%, #25141d 100%);
             border-radius: 12px;
         }
         h1 {
@@ -113,11 +113,11 @@
             letter-spacing: 1px;
         }
         @media (min-width: 768px) { h1 { font-size: 3rem; } }
-        .tagline { font-size: 1rem; color: #a4b0be; margin-top: 8px; }
+        .tagline { font-size: 1rem; color: #8f9bba; margin-top: 8px; }
 
         #panic-banner, #gps-weather-widget, #frontpage-weather-banner {
             background: var(--card-bg);
-            border: 1px solid #333;
+            border: 1px solid #2a2f3d;
             padding: 10px 15px;
             border-radius: 8px;
             text-align: center;
@@ -128,8 +128,8 @@
             font-weight: bold;
         }
         #frontpage-weather-banner {
-            background: linear-gradient(135deg, #1a1d24 0%, #1e272c 100%);
-            border-color: #1e90ff44;
+            background: linear-gradient(135deg, #12161f 0%, #19202c 100%);
+            border-color: #00f2fe33;
             color: #fff;
             display: flex;
             justify-content: space-around;
@@ -148,7 +148,7 @@
         .tab-btn {
             background-color: var(--tab-bg);
             color: var(--text-color);
-            border: 1px solid #333;
+            border: 1px solid #2a2f3d;
             padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
@@ -156,15 +156,15 @@
             font-size: 0.95rem;
             transition: all 0.2s ease;
         }
-        .tab-btn:hover { background-color: #2f3542; }
+        .tab-btn:hover { background-color: #242b3b; }
         .tab-btn.active {
             background-color: var(--tab-active);
             color: #fff;
             border-color: var(--tab-active);
-            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+            box-shadow: 0 4px 12px rgba(255, 51, 75, 0.3);
         }
 
-        /* Subcategory Nav (News & Weather) */
+        /* Subcategory Nav */
         .sub-tab-nav {
             display: flex;
             justify-content: center;
@@ -173,20 +173,20 @@
             flex-wrap: wrap;
         }
         .sub-tab-btn {
-            background: #15181e;
-            color: #a4b0be;
-            border: 1px solid #333;
+            background: #12161f;
+            color: #8f9bba;
+            border: 1px solid #2a2f3d;
             padding: 8px 15px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             font-size: 0.85rem;
         }
-        .sub-tab-btn:hover { background: #222630; color: #fff; }
+        .sub-tab-btn:hover { background: #1a1f2c; color: #fff; }
         .sub-tab-btn.active {
-            background: #1e90ff;
-            color: #fff;
-            border-color: #1e90ff;
+            background: #00f2fe;
+            color: #000;
+            border-color: #00f2fe;
         }
 
         .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
@@ -212,7 +212,7 @@
 
         .card {
             background-color: var(--card-bg);
-            border: 1px solid #333;
+            border: 1px solid #2a2f3d;
             border-radius: 8px;
             padding: 15px;
             display: flex;
@@ -224,11 +224,11 @@
         
         .card-footer-link {
             font-size: 0.8rem;
-            color: #1e90ff;
+            color: #00f2fe;
             text-decoration: none;
             font-weight: bold;
             align-self: flex-start;
-            border-top: 1px solid #2a2e39;
+            border-top: 1px solid #1f2533;
             padding-top: 8px;
             width: 100%;
             display: flex;
@@ -236,7 +236,7 @@
         }
         .card-footer-link:hover { text-decoration: underline; }
 
-        /* Weather Specific Grid Styles */
+        /* Weather Grid Styles */
         .weather-grid-hourly {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -244,15 +244,15 @@
         }
         .weather-hour-card {
             background: var(--card-bg);
-            border: 1px solid #333;
+            border: 1px solid #2a2f3d;
             border-radius: 6px;
             padding: 10px;
             text-align: center;
         }
-        .weather-time { font-size: 0.8rem; color: #1e90ff; font-weight: bold; margin-bottom: 5px; }
+        .weather-time { font-size: 0.8rem; color: #00f2fe; font-weight: bold; margin-bottom: 5px; }
         .weather-temp { font-size: 1.1rem; color: var(--secondary-accent); font-weight: bold; margin: 4px 0; }
         .weather-cond { font-size: 0.8rem; color: #fff; font-weight: bold; margin-top: 4px; }
-        .weather-precip { font-size: 0.75rem; color: #1e90ff; margin-top: 2px; }
+        .weather-precip { font-size: 0.75rem; color: #00f2fe; margin-top: 2px; }
 
         .weather-period-grid {
             display: grid;
@@ -264,20 +264,20 @@
             .weather-period-grid { grid-template-columns: repeat(2, 1fr); }
         }
         .period-card {
-            background: #11141a;
-            border: 1px solid #2a2e39;
+            background: #0b0e14;
+            border: 1px solid #1f2533;
             border-radius: 6px;
             padding: 8px;
             text-align: center;
         }
-        .period-title { font-size: 0.75rem; color: #1e90ff; font-weight: bold; text-transform: uppercase; }
+        .period-title { font-size: 0.75rem; color: #00f2fe; font-weight: bold; text-transform: uppercase; }
         .period-val { font-size: 0.9rem; color: #fff; margin-top: 2px; }
         .period-cond { font-size: 0.7rem; color: #ffa502; margin-top: 2px; font-weight: bold; }
 
         .media-engine-box {
             background: var(--card-bg);
-            border: 1px solid #333;
-            border-radius: 8px;
+            border: 1px solid #2a2f3d;
+            border-radius: 12px;
             padding: 20px;
         }
         .search-bar-wrapper {
@@ -289,155 +289,206 @@
         .search-bar-wrapper input {
             flex: 1;
             min-width: 220px;
-            background: #0f1115;
-            border: 1px solid #444;
+            background: #0b0e14;
+            border: 1px solid #333;
             color: #fff;
             padding: 12px 15px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 1rem;
         }
         .search-bar-wrapper select {
-            background: #0f1115;
-            border: 1px solid #444;
+            background: #0b0e14;
+            border: 1px solid #333;
             color: #fff;
             padding: 12px 15px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 0.95rem;
             cursor: pointer;
         }
         .search-bar-wrapper button {
-            background: #ff4757;
+            background: #ff334b;
             color: white;
             border: none;
             padding: 0 20px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
         }
-        .search-bar-wrapper button:hover { background: #ff6b81; }
+        .search-bar-wrapper button:hover { background: #ff5267; }
 
-        /* TikTok-Style Immersive Vertical Snap Feed Styles */
+        /* TikTok / Instagram Reels Immersive Vertical Feed Container */
         .media-feed-wrapper {
             position: relative;
+            max-width: 480px;
+            margin: 0 auto;
         }
         #multi-source-results {
             display: flex;
             flex-direction: column;
-            height: 600px;
+            height: 680px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             gap: 0;
-            border-radius: 10px;
-            border: 1px solid #333;
+            border-radius: 16px;
+            border: 2px solid #2a2f3d;
             background: #000;
             position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
-        #multi-source-results::-webkit-scrollbar { width: 5px; }
-        #multi-source-results::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        #multi-source-results::-webkit-scrollbar { width: 0px; background: transparent; }
 
         .media-result-card {
             height: 100%;
             min-height: 100%;
             scroll-snap-align: start;
             scroll-snap-stop: always;
-            background: #11141a;
-            border: none;
-            border-bottom: 2px solid #222630;
-            border-radius: 0;
-            padding: 22px;
+            background: #000;
+            position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            box-sizing: border-box;
-            position: relative;
-        }
-        .media-source-tag {
-            font-size: 0.75rem;
-            background: #222630;
-            padding: 4px 10px;
-            border-radius: 4px;
-            color: #ffa502;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 8px;
-            width: fit-content;
-        }
-        .media-result-title {
-            font-size: 1.25rem;
-            color: #ff6b81;
-            font-weight: bold;
-            margin-bottom: 6px;
-            text-decoration: none;
-        }
-        .media-result-title:hover { text-decoration: underline; }
-        .media-caption {
-            font-size: 0.95rem;
-            color: #ced6e0;
-            margin-bottom: 12px;
-            line-height: 1.4;
-            max-height: 90px;
-            overflow-y: auto;
-        }
-        
-        /* Full-Sized Immersive Media Assets (Images & Direct Video Players) */
-        .media-asset-container {
-            width: 100%;
-            flex: 1;
-            max-height: 320px;
-            background: #000;
-            border-radius: 8px;
+            justify-content: flex-end;
             overflow: hidden;
+        }
+
+        /* Fullscreen Media Assets */
+        .media-asset-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
-            border: 1px solid #2a2e39;
         }
         .media-thumb, .media-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            background: #000;
         }
 
-        .media-stats-footer {
-            font-size: 0.85rem;
-            color: #a4b0be;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #222;
-            padding-top: 10px;
+        /* Reels Gradient Overlay for Text Readability */
+        .reels-gradient-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 65%;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.95) 100%);
+            z-index: 2;
+            pointer-events: none;
         }
-        .source-attribution-link {
-            font-size: 0.8rem;
-            color: #1e90ff;
-            background: #15181e;
+
+        /* Reels UI Overlay Layout */
+        .reels-content-box {
+            position: relative;
+            z-index: 3;
+            padding: 20px;
+            padding-right: 75px; /* Leave space for floating actions */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .media-source-tag {
+            font-size: 0.75rem;
+            background: rgba(255, 51, 75, 0.85);
             padding: 4px 10px;
-            border-radius: 4px;
-            border: 1px solid #2a2e39;
+            border-radius: 20px;
+            color: #fff;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 8px;
+            width: fit-content;
+            backdrop-filter: blur(4px);
+        }
+        .media-result-title {
+            font-size: 1.15rem;
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-decoration: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        .media-result-title:hover { text-decoration: underline; color: var(--secondary-accent); }
+        .media-caption {
+            font-size: 0.9rem;
+            color: #d1d8e0;
+            margin-bottom: 10px;
+            line-height: 1.35;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .source-attribution-link {
+            font-size: 0.75rem;
+            color: #00f2fe;
+            background: rgba(0,0,0,0.6);
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(0,242,254,0.3);
             text-decoration: none;
             font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            width: fit-content;
+            backdrop-filter: blur(4px);
         }
-        .source-attribution-link:hover { background: #1e90ff; color: #fff; }
+        .source-attribution-link:hover { background: #00f2fe; color: #000; }
+
+        /* Floating TikTok / Reels Action Sidebar */
+        .reels-action-sidebar {
+            position: absolute;
+            right: 15px;
+            bottom: 30px;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .reel-action-btn {
+            background: rgba(20, 24, 33, 0.75);
+            border: 1px solid rgba(255,255,255,0.15);
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: transform 0.2s;
+        }
+        .reel-action-btn:hover { transform: scale(1.1); background: rgba(255, 51, 75, 0.8); }
+        .reel-action-icon { font-size: 1.2rem; line-height: 1; }
+        .reel-action-count { font-size: 0.65rem; font-weight: bold; margin-top: 3px; color: #f1f2f6; }
 
         /* Feed Overlay Hint & Desktop Controls */
         .feed-hint {
             position: absolute;
-            right: 20px;
-            bottom: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #ffa502;
-            font-size: 0.8rem;
-            padding: 6px 14px;
+            right: 25px;
+            top: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #00f2fe;
+            font-size: 0.75rem;
+            padding: 5px 12px;
             border-radius: 20px;
             pointer-events: none;
             z-index: 10;
-            border: 1px solid #444;
+            border: 1px solid rgba(0,242,254,0.3);
+            backdrop-filter: blur(4px);
         }
         .feed-nav-controls {
             position: absolute;
-            right: 20px;
+            right: -55px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
@@ -445,10 +496,13 @@
             gap: 12px;
             z-index: 15;
         }
+        @media (max-width: 600px) {
+            .feed-nav-controls { display: none; }
+        }
         .feed-nav-btn {
-            background: rgba(34, 38, 48, 0.9);
+            background: rgba(26, 31, 44, 0.9);
             color: #fff;
-            border: 1px solid #555;
+            border: 1px solid #333;
             width: 42px;
             height: 42px;
             border-radius: 50%;
@@ -468,12 +522,12 @@
             color: white;
             border: none;
             padding: 10px 15px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
             margin-top: 10px;
         }
-        .btn-action:hover { background-color: #ff6b81; }
+        .btn-action:hover { background-color: #ff5267; }
 
         .load-more-container {
             text-align: center;
@@ -534,7 +588,7 @@
         <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Bulletins</button>
         <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News</button>
         <button class="tab-btn" onclick="switchTab('weather-tab', this)">🌤️ Weather</button>
-        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 10-Source Media Engine</button>
+        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 10-Source Reels Engine</button>
         <button class="tab-btn" onclick="switchTab('meme-tab', this)">🎭 Memes</button>
         <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 RPG Adventure</button>
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
@@ -598,7 +652,7 @@
             <div id="hourly-weather" class="weather-sub-pane active">
                 <div class="card" style="margin-bottom: 15px;">
                     <h3 style="margin-top:0;">Rolling Hourly Breakdown (Next 24 Hours - Local Time Synced)</h3>
-                    <p style="font-size:0.85rem; color:#a4b0be; margin-bottom:15px;">Displaying Metric & Imperial units simultaneously</p>
+                    <p style="font-size:0.85rem; color:#8f9bba; margin-bottom:15px;">Displaying Metric & Imperial units simultaneously</p>
                     <div id="hourly-grid-container" class="weather-grid-hourly">
                         <p style="color:#747d8c; text-align:center; grid-column:1/-1;">Loading local time hourly forecast...</p>
                     </div>
@@ -620,7 +674,7 @@
     <!-- Tab 4: Media Engine -->
     <div id="media-tab" class="tab-pane">
         <section>
-            <h2>📺 Multi-Source Immersive Media Stream</h2>
+            <h2>📺 10-Source Immersive Reels Engine</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
                     <input type="text" id="media-search-input" placeholder="Search across platforms..." value="Ottawa">
@@ -637,18 +691,18 @@
                         <option value="hackernews">💻 Hacker News</option>
                         <option value="substack">📰 Substack & Open RSS</option>
                     </select>
-                    <button onclick="runMultiSourceSearch()">Search Sources</button>
+                    <button onclick="runMultiSourceSearch()">Search Reels</button>
                 </div>
                 
-                <!-- Immersive Vertical Snap Feed Container -->
+                <!-- TikTok / Instagram Reels Style Feed Container -->
                 <div class="media-feed-wrapper">
+                    <div class="feed-hint">↕ Swipe / Scroll Reels</div>
                     <div id="multi-source-results">
-                        <p style="color:#747d8c; text-align:center; padding: 40px;">Select sources and enter a query to load vertical feed...</p>
+                        <p style="color:#8f9bba; text-align:center; padding: 40px;">Select sources and enter a query to load vertical reels stream...</p>
                     </div>
-                    <div class="feed-hint">↕ Swipe / Scroll to Doomscroll</div>
                     <div class="feed-nav-controls">
-                        <button class="feed-nav-btn" onclick="scrollMediaFeed(-1)" title="Previous Post">▲</button>
-                        <button class="feed-nav-btn" onclick="scrollMediaFeed(1)" title="Next Post">▼</button>
+                        <button class="feed-nav-btn" onclick="scrollMediaFeed(-1)" title="Previous Reel">▲</button>
+                        <button class="feed-nav-btn" onclick="scrollMediaFeed(1)" title="Next Reel">▼</button>
                     </div>
                 </div>
             </div>
@@ -667,7 +721,7 @@
                     </div>
                     <button class="btn-action" onclick="fetchMeme('wholesomememes')">New Wholesome Meme</button>
                 </div>
-                <div class="card" style="text-align: center; border-color: #ff475733;">
+                <div class="card" style="text-align: center; border-color: #ff334b33;">
                     <h3 id="dark-meme-title" style="color: var(--accent-color);">Loading Dark Meme...</h3>
                     <div id="dark-meme-container" style="min-height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
                         <p style="color:#747d8c;">Fetching...</p>
@@ -876,8 +930,8 @@
                     const dayCardContent = `
                         <div class="card">
                             <h3 style="margin-bottom:4px;">${dayDate}</h3>
-                            <p style="font-size:0.85rem; color:#ffa502; margin-bottom:6px; font-weight:bold;">${dayCondition.label} ${dayCondition.details ? '• ' + dayCondition.details : ''}</p>
-                            <p style="font-size:0.8rem; color:#a4b0be; margin-bottom:10px;">High: ${maxC.toFixed(1)}°C (${maxF.toFixed(1)}°F) | Low: ${minC.toFixed(1)}°C (${minF.toFixed(1)}°F)</p>
+                            <p style="font-size:0.85rem; color:#00f2fe; margin-bottom:6px; font-weight:bold;">${dayCondition.label} ${dayCondition.details ? '• ' + dayCondition.details : ''}</p>
+                            <p style="font-size:0.8rem; color:#8f9bba; margin-bottom:10px;">High: ${maxC.toFixed(1)}°C (${maxF.toFixed(1)}°F) | Low: ${minC.toFixed(1)}°C (${minF.toFixed(1)}°F)</p>
                             <div class="weather-period-grid">
                                 <div class="period-card"><div class="period-title">Morning</div><div class="period-val">${mornC.toFixed(1)}°C<br>${cToF(mornC).toFixed(1)}°F</div></div>
                                 <div class="period-card"><div class="period-title">Afternoon</div><div class="period-val">${aftC.toFixed(1)}°C<br>${cToF(aftC).toFixed(1)}°F</div></div>
@@ -952,7 +1006,7 @@
             let localHtml = "";
             localNewsData.forEach(item => {
                 localHtml += `
-                    <div class="card" style="border-color: #1e90ff;">
+                    <div class="card" style="border-color: #00f2fe;">
                         <div>
                             <h3>${item.title}</h3>
                             <p>${item.desc}</p>
@@ -1013,18 +1067,18 @@
             renderNewsGrids();
         }
 
-        // 10-Source Immersive Search Engine with Direct Video Embeds & Attributions
+        // 10-Source Reels Engine with TikTok/Reels UI Layout
         async function runMultiSourceSearch() {
             const query = document.getElementById('media-search-input').value.trim() || "Ottawa";
             const selectedSource = document.getElementById('source-selector').value;
             const resultsContainer = document.getElementById('multi-source-results');
-            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; padding: 40px;">Querying live immersive feeds for "${query}"...</p>`;
+            resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Loading immersive reels for "${query}"...</p>`;
             let combinedCards = [];
 
-            // 1. Reddit Integration (Live JSON Feed)
+            // 1. Reddit Integration
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=relevance`)}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=5&sort=relevance`)}`;
                     const res = await fetch(proxyUrl);
                     const data = await res.json();
                     const json = JSON.parse(data.contents);
@@ -1039,81 +1093,85 @@
                                 source: `🤖 Reddit (${post.subreddit_name_prefixed})`,
                                 sourceName: `r/${post.subreddit}`,
                                 title: post.title,
-                                caption: post.selftext ? post.selftext.substring(0, 140) + '...' : `Posted by u/${post.author}`,
+                                caption: post.selftext ? post.selftext.substring(0, 140) : `Shared in r/${post.subreddit} by u/${post.author}`,
                                 url: `https://reddit.com${post.permalink}`,
                                 videoUrl: videoUrl,
                                 thumb: (!videoUrl && post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.includes('imgur'))) ? post.url : null,
-                                stats: `⭐ ${post.score} upvotes • 💬 ${post.num_comments} comments`
+                                likes: post.score || 420,
+                                comments: post.num_comments || 69
                             });
                         }
                     });
                 } catch (e) {}
             }
 
-            // 2. Hacker News Integration
+            // 2. Hacker News
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=4`);
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=3`);
                     const data = await res.json();
                     data?.hits?.forEach(hit => {
                         combinedCards.push({
                             source: `💻 Hacker News`,
                             sourceName: `Hacker News`,
                             title: hit.title,
-                            caption: `Community discussion submitted by ${hit.author}.`,
+                            caption: `Community tech discussion submitted by ${hit.author}.`,
                             url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
                             videoUrl: null,
                             thumb: null,
-                            stats: `▲ ${hit.points} points • 💬 ${hit.num_comments} comments`
+                            likes: hit.points || 150,
+                            comments: hit.num_comments || 42
                         });
                     });
                 } catch (e) {}
             }
 
-            // 3. Mastodon Fediverse Integration
+            // 3. Mastodon
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
-                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=4`);
+                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=3`);
                     const data = await res.json();
                     data?.statuses?.forEach(status => {
                         const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
                         const att = status.media_attachments?.[0];
                         combinedCards.push({
                             source: `🐘 Mastodon (@${status.account.acct})`,
-                            sourceName: `Mastodon Feed`,
-                            title: cleanContent.substring(0, 75) + '...',
+                            sourceName: `Fediverse Stream`,
+                            title: cleanContent.substring(0, 60) + '...',
                             caption: cleanContent,
                             url: status.url,
                             videoUrl: att?.type === 'video' ? att.url : null,
                             thumb: att?.type === 'image' ? att.preview_url : null,
-                            stats: `🔄 ${status.reblogs_count} boosts • ❤️ ${status.favourites_count} favs`
+                            likes: status.favourites_count || 88,
+                            comments: status.reblogs_count || 24
                         });
                     });
                 } catch (e) {}
             }
 
-            // 4. Open Knowledge / Wiki
+            // 4. Open Knowledge / Wikipedia
             if (selectedSource === 'all' || selectedSource === 'substack') {
                 try {
                     const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
                     const data = await res.json();
-                    data?.query?.search?.slice(0, 3).forEach(item => {
+                    data?.query?.search?.slice(0, 2).forEach(item => {
                         const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
-                            source: `📰 Open Knowledge & Substack Feed`,
+                            source: `📰 Open Knowledge & Substack`,
                             sourceName: `Wikipedia Archive`,
                             title: item.title,
                             caption: snippet + '...',
                             url: `https://en.wikipedia.org/?curid=${item.pageid}`,
                             videoUrl: null,
                             thumb: null,
-                            stats: `📖 Verified Reference Archive`
+                            likes: 1337,
+                            comments: 314
                         });
                     });
                 } catch (e) {}
             }
 
-            // 5. Short-Form Video & Social Platforms (TikTok, Instagram, YouTube, X, Facebook, Tumblr)
+            // 5. Short-Form Video & Social Reels Pool (TikTok, IG, YouTube, X, Facebook, Tumblr)
             const videoSamplePool = [
                 "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
                 "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
@@ -1124,10 +1182,10 @@
 
             const platformConfigs = {
                 tiktok: { name: "🎵 TikTok", srcName: "TikTok Creator Stream" },
-                instagram: { name: "📸 Instagram", srcName: "Instagram Reel Feed" },
+                instagram: { name: "📸 Instagram", srcName: "Instagram Reels" },
                 facebook: { name: "📘 Facebook", srcName: "FB Public Discussions" },
                 twitter: { name: "🐦 X / Twitter", srcName: "X Live Timeline" },
-                youtube: { name: "▶️ YouTube", srcName: "YouTube Shorts Feed" },
+                youtube: { name: "▶️ YouTube", srcName: "YouTube Shorts" },
                 tumblr: { name: "📝 Tumblr", srcName: "Tumblr Tag Stream" }
             };
 
@@ -1138,29 +1196,30 @@
                     combinedCards.push({
                         source: p.name,
                         sourceName: p.srcName,
-                        title: `Viral video & discussion feed for "${query}"`,
+                        title: `Viral reel and discussion feed for "${query}"`,
                         caption: `Immersive vertical short-form stream tracking public reactions and trending clips on ${p.name}.`,
                         url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key)}`,
                         videoUrl: randVideo,
                         thumb: null,
-                        stats: `🔥 High Engagement • Live Autoplay Stream`
+                        likes: Math.floor(Math.random() * 8500) + 1200,
+                        comments: Math.floor(Math.random() * 450) + 45
                     });
                 }
             });
 
             if (combinedCards.length === 0) {
                 combinedCards.push({
-                    source: `🌐 Web Aggregate`, sourceName: `Google Search`, title: `Search results for "${query}" across open web channels`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, videoUrl: null, thumb: null, stats: `⚡ Instant Proxy Result`
+                    source: `🌐 Web Aggregate`, sourceName: `Google Search`, title: `Search results for "${query}"`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, videoUrl: null, thumb: null, likes: 500, comments: 50
                 });
             }
 
             let html = "";
-            combinedCards.forEach(card => {
+            combinedCards.forEach((card, index) => {
                 let mediaElement = "";
                 if (card.videoUrl) {
                     mediaElement = `
                         <div class="media-asset-container">
-                            <video src="${card.videoUrl}" class="media-video" autoplay loop muted playsinline controls></video>
+                            <video src="${card.videoUrl}" class="media-video" autoplay loop muted playsinline></video>
                         </div>
                     `;
                 } else if (card.thumb) {
@@ -1170,25 +1229,43 @@
                         </div>
                     `;
                 } else {
-                    // Fallback immersive image placeholder if neither video nor thumb present
                     mediaElement = `
                         <div class="media-asset-container">
-                            <img src="https://picsum.photos/600/350?random=${Math.floor(Math.random()*1000)}" class="media-thumb" loading="lazy" alt="Immersive Placeholder">
+                            <img src="https://picsum.photos/600/900?random=${index + 50}" class="media-thumb" loading="lazy" alt="Immersive Placeholder">
                         </div>
                     `;
                 }
 
                 html += `
                     <div class="media-result-card">
-                        <div>
+                        ${mediaElement}
+                        <div class="reels-gradient-overlay"></div>
+                        
+                        <!-- Floating TikTok / Instagram Reels Side Action Bar -->
+                        <div class="reels-action-sidebar">
+                            <div class="reel-action-btn" onclick="this.style.color='#ff334b'">
+                                <span class="reel-action-icon">❤️</span>
+                                <span class="reel-action-count">${card.likes}</span>
+                            </div>
+                            <div class="reel-action-btn">
+                                <span class="reel-action-icon">💬</span>
+                                <span class="reel-action-count">${card.comments}</span>
+                            </div>
+                            <div class="reel-action-btn" onclick="navigator.clipboard.writeText('${card.url}'); alert('Reel link copied!');">
+                                <span class="reel-action-icon">🔗</span>
+                                <span class="reel-action-count">Share</span>
+                            </div>
+                        </div>
+
+                        <!-- Reels Text & Attribution Details -->
+                        <div class="reels-content-box">
                             <span class="media-source-tag">${card.source}</span>
                             <a href="${card.url}" target="_blank" class="media-result-title">${card.title}</a>
                             <div class="media-caption">${card.caption}</div>
-                            ${mediaElement}
-                        </div>
-                        <div class="media-stats-footer">
-                            <span>${card.stats}</span>
-                            <a href="${card.url}" target="_blank" class="source-attribution-link">Source: ${card.sourceName} ↗</a>
+                            <a href="${card.url}" target="_blank" class="source-attribution-link">
+                                <span>Source: ${card.sourceName}</span>
+                                <span>↗</span>
+                            </a>
                         </div>
                     </div>
                 `;
@@ -1196,7 +1273,7 @@
             resultsContainer.innerHTML = html;
         }
 
-        // Desktop Next/Prev scroller helper for vertical snap feed
+        // Desktop Next/Prev scroller helper for vertical reels feed
         function scrollMediaFeed(direction) {
             const container = document.getElementById('multi-source-results');
             const cardHeight = container.clientHeight;
@@ -1220,7 +1297,7 @@
                 containerEl.innerHTML = `<img src="${data.url}" style="max-width:100%; max-height:280px; border-radius:6px;" alt="Meme">`;
             } catch (e) {
                 titleEl.innerText = "Failed to load";
-                containerEl.innerHTML = `<p style="color:#ff4757;">Check connection.</p>`;
+                containerEl.innerHTML = `<p style="color:#ff334b;">Check connection.</p>`;
             }
         }
         fetchMeme('wholesomememes');
@@ -1268,7 +1345,7 @@
         function progressGame(nodeKey) {
             const node = currentGame.nodes[nodeKey];
             document.getElementById('game-text').innerText = node.text;
-            let endHtml = node.win ? `<p style="color:#2ed573; font-weight:bold; width:100%;">🎉 Victory! Refresh the page to play a brand new adventure.</p>` : `<p style="color:#ff4757; font-weight:bold; width:100%;">💀 Defeat! Refresh the page to try again.</p>`;
+            let endHtml = node.win ? `<p style="color:#2ed573; font-weight:bold; width:100%;">🎉 Victory! Refresh the page to play a brand new adventure.</p>` : `<p style="color:#ff334b; font-weight:bold; width:100%;">💀 Defeat! Refresh the page to try again.</p>`;
             document.getElementById('game-choices').innerHTML = endHtml;
         }
         initGame();
