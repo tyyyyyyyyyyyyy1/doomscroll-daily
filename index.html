@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Doomscroll Daily - Native Reels Engine</title>
     <style>
         :root {
@@ -324,18 +324,22 @@
             display: flex;
             flex-direction: column;
             height: 720px;
+            height: 75vh;
+            max-height: 750px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             gap: 0;
             border-radius: 16px;
             border: 2px solid #2a2f3d;
-            background: #05070a;
+            background: #000;
             position: relative;
             box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+            -webkit-overflow-scrolling: touch;
         }
         #multi-source-results::-webkit-scrollbar { width: 0px; background: transparent; }
 
         .media-result-card {
+            width: 100%;
             height: 100%;
             min-height: 100%;
             scroll-snap-align: start;
@@ -346,6 +350,7 @@
             flex-direction: column;
             justify-content: flex-end;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .media-asset-container {
@@ -355,7 +360,7 @@
             width: 100%;
             height: 100%;
             z-index: 1;
-            background: #050508;
+            background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -364,6 +369,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            background: #000;
         }
 
         .reels-gradient-overlay {
@@ -682,7 +688,7 @@
                 </div>
                 
                 <div class="media-feed-wrapper">
-                    <div class="feed-hint">↕ TikTok / IG Swipe Stream</div>
+                    <div class="feed-hint">↕ Swipe Vertical Feed</div>
                     <div id="multi-source-results" onscroll="checkInfiniteScroll(this)">
                         <p style="color:#8f9bba; text-align:center; padding: 40px;">Select sources and enter a query to load vertical reels stream...</p>
                     </div>
@@ -1065,7 +1071,12 @@
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackSeeTheWorld.mp4",
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4"
+            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-1232-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-neon-sign-41584-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-dj-playing-music-in-a-nightclub-41583-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-tree-branches-in-the-breeze-1186-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-and-lights-42939-large.mp4"
         ];
 
         async function runMultiSourceSearch(isAppend = false) {
@@ -1075,15 +1086,17 @@
             
             if (!isAppend) {
                 reelBatchCount = 0;
-                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Scraping & generating feed for "${query}"...</p>`;
+                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Scraping live feeds for "${query}"...</p>`;
             }
 
             let combinedCards = [];
             reelBatchCount++;
 
+            // Live Reddit JSON scrape via CORS proxy
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=new&t=all`)}`;
+                    const targetUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=new&t=all`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
                     const res = await fetch(proxyUrl);
                     const data = await res.json();
                     const json = JSON.parse(data.contents);
@@ -1106,6 +1119,7 @@
                 } catch (e) {}
             }
 
+            // Live Hacker News Algolia API
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
                     const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=4`);
@@ -1125,6 +1139,7 @@
                 } catch (e) {}
             }
 
+            // Live Mastodon Fediverse API
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
                     const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=4`);
@@ -1178,7 +1193,7 @@
                 html += `
                     <div class="media-result-card" data-index="${index}">
                         <div class="media-asset-container">
-                            <video src="${card.videoUrl}" class="media-video" loop muted playsinline preload="auto"></video>
+                            <video src="${card.videoUrl}" class="media-video" loop muted playsinline autoplay preload="auto"></video>
                         </div>
                         <div class="reels-gradient-overlay"></div>
                         
@@ -1234,7 +1249,7 @@
 
             const observerOptions = {
                 root: container,
-                threshold: 0.55
+                threshold: 0.6
             };
 
             const observer = new IntersectionObserver((entries) => {
