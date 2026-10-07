@@ -316,21 +316,40 @@
         }
         .search-bar-wrapper button:hover { background: #ff6b81; }
 
-        .media-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
+        /* TikTok-Style Vertical Snap Feed Styles */
+        .media-feed-wrapper {
+            position: relative;
         }
-        @media (min-width: 600px) { .media-grid { grid-template-columns: 1fr 1fr; } }
+        #multi-source-results {
+            display: flex;
+            flex-direction: column;
+            height: 520px;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            gap: 0;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #000;
+            position: relative;
+        }
+        /* Hide scrollbar for clean app feel */
+        #multi-source-results::-webkit-scrollbar { width: 4px; }
+        #multi-source-results::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
 
         .media-result-card {
+            height: 100%;
+            min-height: 100%;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
             background: #101217;
-            border: 1px solid #2f3542;
-            border-radius: 6px;
-            padding: 15px;
+            border: none;
+            border-bottom: 1px solid #2f3542;
+            border-radius: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            box-sizing: border-box;
         }
         .media-source-tag {
             font-size: 0.75rem;
@@ -344,7 +363,7 @@
             width: fit-content;
         }
         .media-result-title {
-            font-size: 1.05rem;
+            font-size: 1.15rem;
             color: #ff6b81;
             font-weight: bold;
             margin-bottom: 8px;
@@ -352,29 +371,73 @@
         }
         .media-result-title:hover { text-decoration: underline; }
         .media-caption {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #ced6e0;
             margin-bottom: 12px;
             line-height: 1.4;
+            max-height: 120px;
+            overflow-y: auto;
         }
         .media-thumb {
             width: 100%;
-            max-height: 200px;
-            object-fit: contain;
+            max-height: 220px;
+            object-fit: cover;
             background: #000;
-            border-radius: 4px;
+            border-radius: 6px;
             margin-bottom: 10px;
         }
         .media-stats {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #747d8c;
             display: flex;
             justify-content: space-between;
             border-top: 1px solid #222;
-            padding-top: 8px;
+            padding-top: 10px;
         }
         .news-link { color: #1e90ff; text-decoration: none; font-weight: bold; }
         .news-link:hover { text-decoration: underline; }
+
+        /* Feed Overlay Hint & Desktop Controls */
+        .feed-hint {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            background: rgba(0, 0, 0, 0.75);
+            color: #ffa502;
+            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 10;
+            border: 1px solid #333;
+        }
+        .feed-nav-controls {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 15;
+        }
+        .feed-nav-btn {
+            background: rgba(34, 38, 48, 0.85);
+            color: #fff;
+            border: 1px solid #444;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+        .feed-nav-btn:hover { background: var(--accent-color); border-color: var(--accent-color); transform: scale(1.1); }
 
         .btn-action {
             background-color: var(--accent-color);
@@ -552,8 +615,17 @@
                     </select>
                     <button onclick="runMultiSourceSearch()">Search Sources</button>
                 </div>
-                <div id="multi-source-results" class="media-grid">
-                    <p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Select sources and enter a query to query live feeds...</p>
+                
+                <!-- TikTok Style Vertical Snap Feed Container -->
+                <div class="media-feed-wrapper">
+                    <div id="multi-source-results">
+                        <p style="color:#747d8c; text-align:center; padding: 40px;">Select sources and enter a query to load vertical feed...</p>
+                    </div>
+                    <div class="feed-hint">↕ Swipe / Scroll to Navigate</div>
+                    <div class="feed-nav-controls">
+                        <button class="feed-nav-btn" onclick="scrollMediaFeed(-1)" title="Previous Post">▲</button>
+                        <button class="feed-nav-btn" onclick="scrollMediaFeed(1)" title="Next Post">▼</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -976,17 +1048,17 @@
             renderNewsGrids();
         }
 
-        // 10-Source Search Engine
+        // 10-Source Search Engine & Snap Feed Navigation helper
         async function runMultiSourceSearch() {
             const query = document.getElementById('media-search-input').value.trim() || "Ottawa";
             const selectedSource = document.getElementById('source-selector').value;
             const resultsContainer = document.getElementById('multi-source-results');
-            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; grid-column: 1/-1;">Querying live feeds for "${query}"...</p>`;
+            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; padding: 40px;">Querying live feeds for "${query}"...</p>`;
             let combinedCards = [];
 
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=5&sort=relevance`)}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=relevance`)}`;
                     const res = await fetch(proxyUrl);
                     const data = await res.json();
                     const json = JSON.parse(data.contents);
@@ -996,7 +1068,7 @@
                             combinedCards.push({
                                 source: `🤖 Reddit (${post.subreddit_name_prefixed})`,
                                 title: post.title,
-                                caption: post.selftext ? post.selftext.substring(0, 100) + '...' : `Posted by u/${post.author}`,
+                                caption: post.selftext ? post.selftext.substring(0, 120) + '...' : `Posted by u/${post.author}`,
                                 url: `https://reddit.com${post.permalink}`,
                                 thumb: post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png')) ? post.url : null,
                                 stats: `⭐ ${post.score} upvotes • 💬 ${post.num_comments} comments`
@@ -1008,13 +1080,13 @@
 
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=4`);
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=5`);
                     const data = await res.json();
                     data?.hits?.forEach(hit => {
                         combinedCards.push({
                             source: `💻 Hacker News`,
                             title: hit.title,
-                            caption: `Submitted by ${hit.author}`,
+                            caption: `Submitted by ${hit.author} on Hacker News community thread.`,
                             url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
                             thumb: null,
                             stats: `▲ ${hit.points} points • 💬 ${hit.num_comments} comments`
@@ -1025,13 +1097,13 @@
 
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
-                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=3`);
+                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=4`);
                     const data = await res.json();
                     data?.statuses?.forEach(status => {
                         const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
                             source: `🐘 Mastodon (@${status.account.acct})`,
-                            title: cleanContent.substring(0, 60) + '...',
+                            title: cleanContent.substring(0, 70) + '...',
                             caption: cleanContent,
                             url: status.url,
                             thumb: status.media_attachments?.[0]?.preview_url || null,
@@ -1045,7 +1117,7 @@
                 try {
                     const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
                     const data = await res.json();
-                    data?.query?.search?.slice(0, 3).forEach(item => {
+                    data?.query?.search?.slice(0, 4).forEach(item => {
                         const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
                             source: `📰 Open Knowledge`,
@@ -1067,10 +1139,10 @@
                     const p = platformConfigs[key];
                     combinedCards.push({
                         source: p.name,
-                        title: `Live public discussions and viral media for "${query}"`,
-                        caption: `Aggregated creator stream tracking public sentiment on ${p.name}.`,
+                        title: `Trending creator feed & discussions for "${query}"`,
+                        caption: `Aggregated short-form media stream tracking real-time public sentiment on ${p.name}.`,
                         url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key)}`,
-                        thumb: `https://picsum.photos/400/225?random=${Math.floor(Math.random() * 100)}`,
+                        thumb: `https://picsum.photos/500/280?random=${Math.floor(Math.random() * 100)}`,
                         stats: `🔥 High Engagement • Live Proxy Stream`
                     });
                 }
@@ -1101,6 +1173,17 @@
             });
             resultsContainer.innerHTML = html;
         }
+
+        // Desktop Next/Prev button scroller for the vertical snap feed
+        function scrollMediaFeed(direction) {
+            const container = document.getElementById('multi-source-results');
+            const cardHeight = container.clientHeight;
+            container.scrollBy({
+                top: direction * cardHeight,
+                behavior: 'smooth'
+            });
+        }
+
         runMultiSourceSearch();
 
         // Dual Meme Fetcher
@@ -1181,7 +1264,7 @@
         initGame();
 
         // Intrusive Thoughts
-                        const thoughts = [
+        const thoughts = [
             "If you skin a potato, are you undressing it or committing a war crime against a vegetable?",
             "What if your skeleton is actually trying to escape your meat prison, and your skin is just a very stubborn straightjacket?",
             "If a pigeon stares at you for more than ten seconds, it is legally judging your credit score in bird language.",
@@ -1240,7 +1323,7 @@
             "If you wear a neon yellow jacket, do you legally become a human construction cone?",
             "What if the buzzing sound in fluorescent lights is just them whispering ancient alien secrets in Morse code?",
             "If you accidentally lock yourself out of your house, you are technically a feral creature until a locksmith arrives.",
-            "What if hand sanitizer doesn't kill 99.9% of germs, but just teleports them to an alternate dimension dimension full of tiny grief?",
+            "What if hand sanitizer doesn't kill 99.9% of germs, but just teleports them to an alternate dimension full of tiny grief?",
             "If you lick a frozen metal pole, you aren't stuck to it; the pole has chosen you as its new owner.",
             "What if squirrels aren't burying acorns, but hiding tiny nuclear launch codes under your lawn?",
             "If you put a hat on a cat, you are instantly demoted from owner to tolerated court jester.",
@@ -1283,7 +1366,6 @@
             "What if your phone battery drops 20% instantly because it saw you checking it too often and got spiteful?",
             "If you stare into the abyss, and the abyss stares back, just wave awkwardly and keep walking."
         ];
-
 
         function generateThought() {
             const rand = thoughts[Math.floor(Math.random() * thoughts.length)];
