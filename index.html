@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Doomscroll Daily - Immersive Reels Engine</title>
+    <title>The Doomscroll Daily - Infinite Reels Engine</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -386,7 +386,7 @@
             position: relative;
             z-index: 3;
             padding: 20px;
-            padding-right: 75px; /* Leave space for floating actions */
+            padding-right: 75px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -696,8 +696,8 @@
                 
                 <!-- TikTok / Instagram Reels Style Feed Container -->
                 <div class="media-feed-wrapper">
-                    <div class="feed-hint">↕ Swipe / Scroll Reels</div>
-                    <div id="multi-source-results">
+                    <div class="feed-hint">↕ Infinite Doom-Scroll</div>
+                    <div id="multi-source-results" onscroll="checkInfiniteScroll(this)">
                         <p style="color:#8f9bba; text-align:center; padding: 40px;">Select sources and enter a query to load vertical reels stream...</p>
                     </div>
                     <div class="feed-nav-controls">
@@ -1067,18 +1067,27 @@
             renderNewsGrids();
         }
 
-        // 10-Source Reels Engine with TikTok/Reels UI Layout
-        async function runMultiSourceSearch() {
+        // Infinite Scrolling 10-Source Reels Engine
+        let isLoadingReels = false;
+        let reelBatchCount = 0;
+
+        async function runMultiSourceSearch(isAppend = false) {
             const query = document.getElementById('media-search-input').value.trim() || "Ottawa";
             const selectedSource = document.getElementById('source-selector').value;
             const resultsContainer = document.getElementById('multi-source-results');
-            resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Loading immersive reels for "${query}"...</p>`;
+            
+            if (!isAppend) {
+                reelBatchCount = 0;
+                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Loading immersive reels for "${query}"...</p>`;
+            }
+
             let combinedCards = [];
+            reelBatchCount++;
 
             // 1. Reddit Integration
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=5&sort=relevance`)}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query + ' ' + reelBatchCount)}&limit=3&sort=new`)}`;
                     const res = await fetch(proxyUrl);
                     const data = await res.json();
                     const json = JSON.parse(data.contents);
@@ -1097,8 +1106,8 @@
                                 url: `https://reddit.com${post.permalink}`,
                                 videoUrl: videoUrl,
                                 thumb: (!videoUrl && post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.includes('imgur'))) ? post.url : null,
-                                likes: post.score || 420,
-                                comments: post.num_comments || 69
+                                likes: post.score || Math.floor(Math.random() * 2000) + 100,
+                                comments: post.num_comments || Math.floor(Math.random() * 150) + 10
                             });
                         }
                     });
@@ -1108,7 +1117,7 @@
             // 2. Hacker News
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=3`);
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&page=${reelBatchCount % 3}&hitsPerPage=2`);
                     const data = await res.json();
                     data?.hits?.forEach(hit => {
                         combinedCards.push({
@@ -1129,7 +1138,7 @@
             // 3. Mastodon
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
-                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=3`);
+                    const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=2`);
                     const data = await res.json();
                     data?.statuses?.forEach(status => {
                         const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
@@ -1152,9 +1161,9 @@
             // 4. Open Knowledge / Wikipedia
             if (selectedSource === 'all' || selectedSource === 'substack') {
                 try {
-                    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
+                    const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query + ' ' + reelBatchCount)}&format=json&origin=*`);
                     const data = await res.json();
-                    data?.query?.search?.slice(0, 2).forEach(item => {
+                    data?.query?.search?.slice(0, 1).forEach(item => {
                         const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
                             source: `📰 Open Knowledge & Substack`,
@@ -1164,8 +1173,8 @@
                             url: `https://en.wikipedia.org/?curid=${item.pageid}`,
                             videoUrl: null,
                             thumb: null,
-                            likes: 1337,
-                            comments: 314
+                            likes: Math.floor(Math.random() * 5000) + 500,
+                            comments: Math.floor(Math.random() * 300) + 20
                         });
                     });
                 } catch (e) {}
@@ -1177,7 +1186,9 @@
                 "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
                 "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
                 "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
             ];
 
             const platformConfigs = {
@@ -1196,20 +1207,20 @@
                     combinedCards.push({
                         source: p.name,
                         sourceName: p.srcName,
-                        title: `Viral reel and discussion feed for "${query}"`,
-                        caption: `Immersive vertical short-form stream tracking public reactions and trending clips on ${p.name}.`,
-                        url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key)}`,
+                        title: `Trending feed batch #${reelBatchCount} for "${query}"`,
+                        caption: `Immersive vertical short-form stream tracking public reactions, memes, and live clips on ${p.name}.`,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key + ' ' + reelBatchCount)}`,
                         videoUrl: randVideo,
                         thumb: null,
-                        likes: Math.floor(Math.random() * 8500) + 1200,
-                        comments: Math.floor(Math.random() * 450) + 45
+                        likes: Math.floor(Math.random() * 9500) + 1500,
+                        comments: Math.floor(Math.random() * 600) + 60
                     });
                 }
             });
 
             if (combinedCards.length === 0) {
                 combinedCards.push({
-                    source: `🌐 Web Aggregate`, sourceName: `Google Search`, title: `Search results for "${query}"`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, videoUrl: null, thumb: null, likes: 500, comments: 50
+                    source: `🌐 Web Aggregate`, sourceName: `Google Search`, title: `Search results for "${query}" (Batch ${reelBatchCount})`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, videoUrl: null, thumb: null, likes: 500, comments: 50
                 });
             }
 
@@ -1231,7 +1242,7 @@
                 } else {
                     mediaElement = `
                         <div class="media-asset-container">
-                            <img src="https://picsum.photos/600/900?random=${index + 50}" class="media-thumb" loading="lazy" alt="Immersive Placeholder">
+                            <img src="https://picsum.photos/600/900?random=${reelBatchCount * 50 + index}" class="media-thumb" loading="lazy" alt="Immersive Placeholder">
                         </div>
                     `;
                 }
@@ -1270,7 +1281,24 @@
                     </div>
                 `;
             });
-            resultsContainer.innerHTML = html;
+
+            if (isAppend) {
+                resultsContainer.insertAdjacentHTML('beforeend', html);
+            } else {
+                resultsContainer.innerHTML = html;
+            }
+            isLoadingReels = false;
+        }
+
+        // Infinite Scroll Listener for the Reels container
+        function checkInfiniteScroll(element) {
+            const threshold = 150; // pixels from the bottom
+            if (element.scrollTop + element.clientHeight >= element.scrollHeight - threshold) {
+                if (!isLoadingReels) {
+                    isLoadingReels = true;
+                    runMultiSourceSearch(true);
+                }
+            }
         }
 
         // Desktop Next/Prev scroller helper for vertical reels feed
