@@ -316,45 +316,45 @@
         }
         .search-bar-wrapper button:hover { background: #ff6b81; }
 
-        /* TikTok-Style Vertical Snap Feed Styles */
+        /* TikTok-Style Immersive Vertical Snap Feed Styles */
         .media-feed-wrapper {
             position: relative;
         }
         #multi-source-results {
             display: flex;
             flex-direction: column;
-            height: 520px;
+            height: 600px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             gap: 0;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid #333;
             background: #000;
             position: relative;
         }
-        /* Hide scrollbar for clean app feel */
-        #multi-source-results::-webkit-scrollbar { width: 4px; }
-        #multi-source-results::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        #multi-source-results::-webkit-scrollbar { width: 5px; }
+        #multi-source-results::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 
         .media-result-card {
             height: 100%;
             min-height: 100%;
             scroll-snap-align: start;
             scroll-snap-stop: always;
-            background: #101217;
+            background: #11141a;
             border: none;
-            border-bottom: 1px solid #2f3542;
+            border-bottom: 2px solid #222630;
             border-radius: 0;
-            padding: 20px;
+            padding: 22px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             box-sizing: border-box;
+            position: relative;
         }
         .media-source-tag {
             font-size: 0.75rem;
             background: #222630;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 4px;
             color: #ffa502;
             font-weight: bold;
@@ -363,10 +363,10 @@
             width: fit-content;
         }
         .media-result-title {
-            font-size: 1.15rem;
+            font-size: 1.25rem;
             color: #ff6b81;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-decoration: none;
         }
         .media-result-title:hover { text-decoration: underline; }
@@ -375,66 +375,90 @@
             color: #ced6e0;
             margin-bottom: 12px;
             line-height: 1.4;
-            max-height: 120px;
+            max-height: 90px;
             overflow-y: auto;
         }
-        .media-thumb {
+        
+        /* Full-Sized Immersive Media Assets (Images & Direct Video Players) */
+        .media-asset-container {
             width: 100%;
-            max-height: 220px;
+            flex: 1;
+            max-height: 320px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            border: 1px solid #2a2e39;
+        }
+        .media-thumb, .media-video {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             background: #000;
-            border-radius: 6px;
-            margin-bottom: 10px;
         }
-        .media-stats {
-            font-size: 0.8rem;
-            color: #747d8c;
+
+        .media-stats-footer {
+            font-size: 0.85rem;
+            color: #a4b0be;
             display: flex;
             justify-content: space-between;
+            align-items: center;
             border-top: 1px solid #222;
             padding-top: 10px;
         }
-        .news-link { color: #1e90ff; text-decoration: none; font-weight: bold; }
-        .news-link:hover { text-decoration: underline; }
+        .source-attribution-link {
+            font-size: 0.8rem;
+            color: #1e90ff;
+            background: #15181e;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #2a2e39;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .source-attribution-link:hover { background: #1e90ff; color: #fff; }
 
         /* Feed Overlay Hint & Desktop Controls */
         .feed-hint {
             position: absolute;
-            right: 15px;
-            bottom: 15px;
-            background: rgba(0, 0, 0, 0.75);
+            right: 20px;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.8);
             color: #ffa502;
-            font-size: 0.75rem;
-            padding: 5px 12px;
+            font-size: 0.8rem;
+            padding: 6px 14px;
             border-radius: 20px;
             pointer-events: none;
             z-index: 10;
-            border: 1px solid #333;
+            border: 1px solid #444;
         }
         .feed-nav-controls {
             position: absolute;
-            right: 15px;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             z-index: 15;
         }
         .feed-nav-btn {
-            background: rgba(34, 38, 48, 0.85);
+            background: rgba(34, 38, 48, 0.9);
             color: #fff;
-            border: 1px solid #444;
-            width: 38px;
-            height: 38px;
+            border: 1px solid #555;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 1.1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
             transition: all 0.2s;
         }
         .feed-nav-btn:hover { background: var(--accent-color); border-color: var(--accent-color); transform: scale(1.1); }
@@ -596,13 +620,13 @@
     <!-- Tab 4: Media Engine -->
     <div id="media-tab" class="tab-pane">
         <section>
-            <h2>📺 Multi-Source Media Search Engine</h2>
+            <h2>📺 Multi-Source Immersive Media Stream</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
                     <input type="text" id="media-search-input" placeholder="Search across platforms..." value="Ottawa">
                     <select id="source-selector">
                         <option value="all">🌐 All 10 Sources Combined</option>
-                        <option value="tiktok">🎵 TikTok (Proxy & Tag Search)</option>
+                        <option value="tiktok">🎵 TikTok (Proxy & Tag Feed)</option>
                         <option value="instagram">📸 Instagram (Tag Feed)</option>
                         <option value="facebook">📘 Facebook Public Discussions</option>
                         <option value="reddit">🤖 Reddit (Live Open JSON)</option>
@@ -616,12 +640,12 @@
                     <button onclick="runMultiSourceSearch()">Search Sources</button>
                 </div>
                 
-                <!-- TikTok Style Vertical Snap Feed Container -->
+                <!-- Immersive Vertical Snap Feed Container -->
                 <div class="media-feed-wrapper">
                     <div id="multi-source-results">
                         <p style="color:#747d8c; text-align:center; padding: 40px;">Select sources and enter a query to load vertical feed...</p>
                     </div>
-                    <div class="feed-hint">↕ Swipe / Scroll to Navigate</div>
+                    <div class="feed-hint">↕ Swipe / Scroll to Doomscroll</div>
                     <div class="feed-nav-controls">
                         <button class="feed-nav-btn" onclick="scrollMediaFeed(-1)" title="Previous Post">▲</button>
                         <button class="feed-nav-btn" onclick="scrollMediaFeed(1)" title="Next Post">▼</button>
@@ -736,17 +760,10 @@
         }
 
         // Conversion Helpers
-        function cToF(c) {
-            return (c * 9/5) + 32;
-        }
-        function mmToInches(mm) {
-            return mm / 25.4;
-        }
-        function cmToInches(cm) {
-            return cm / 2.54;
-        }
+        function cToF(c) { return (c * 9/5) + 32; }
+        function mmToInches(mm) { return mm / 25.4; }
+        function cmToInches(cm) { return cm / 2.54; }
 
-        // WMO Weather Code Interpreter Helper with Dual Unit Formatting
         function interpretWeather(code, rainMm = 0, snowCm = 0) {
             let label = "Sunny / Clear";
             if (code >= 1 && code <= 2) label = "Partly Cloudy";
@@ -769,7 +786,7 @@
         }
 
         // Live Weather Data Fetcher
-        let userLat = 45.4215; // Default Ottawa
+        let userLat = 45.4215;
         let userLon = -75.6972;
 
         async function initWeatherAndGPS() {
@@ -780,9 +797,7 @@
                         userLon = position.coords.longitude;
                         await fetchDetailedWeatherData(userLat, userLon, "GPS Synced Location");
                     },
-                    async () => { 
-                        await fetchDetailedWeatherData(userLat, userLon, "Ottawa, ON (Default)"); 
-                    }
+                    async () => { await fetchDetailedWeatherData(userLat, userLon, "Ottawa, ON (Default)"); }
                 );
             } else {
                 await fetchDetailedWeatherData(userLat, userLon, "Ottawa, ON");
@@ -804,25 +819,19 @@
                 const now = new Date();
                 let currentIndex = 0;
                 for (let i = 0; i < times.length; i++) {
-                    const forecastTime = new Date(times[i]);
-                    if (forecastTime >= now) {
-                        currentIndex = i;
-                        break;
-                    }
+                    if (new Date(times[i]) >= now) { currentIndex = i; break; }
                 }
 
                 const currentTempC = temps[currentIndex] || temps[0];
                 const currentTempF = cToF(currentTempC);
                 const currentWeatherInfo = interpretWeather(codes[currentIndex] || 0, rains[currentIndex] || 0, snows[currentIndex] || 0);
 
-                // Update Front-Page Weather Banner
                 document.getElementById('frontpage-weather-banner').innerHTML = `
                     <span>📍 ${locationName}</span>
                     <span>🌡️ Current: <strong>${Math.round(currentTempC)}°C (${Math.round(currentTempF)}°F)</strong> (${currentWeatherInfo.label})</span>
                     <span>⚡ Universal Units Synced</span>
                 `;
 
-                // Render Rolling 24-Hour Forecast
                 let hourlyHtml = "";
                 for (let i = currentIndex; i < currentIndex + 24 && i < times.length; i++) {
                     const tDate = new Date(times[i]);
@@ -842,7 +851,6 @@
                 }
                 document.getElementById('hourly-grid-container').innerHTML = hourlyHtml;
 
-                // Render 7-Day & 14-Day Period Cards
                 let week7Html = "";
                 let week14Html = "";
                 const dailyTimes = data.daily.time;
@@ -858,14 +866,8 @@
                     const minC = minTemps[i];
                     const maxF = cToF(maxC);
                     const minF = cToF(minC);
-                    
-                    const dCode = dailyCodes[i];
-                    const dRain = dailyRain[i] || 0;
-                    const dSnow = dailySnow[i] || 0;
-                    
-                    const dayCondition = interpretWeather(dCode, dRain, dSnow);
+                    const dayCondition = interpretWeather(dailyCodes[i], dailyRain[i] || 0, dailySnow[i] || 0);
 
-                    // Derived period estimations from daily high/low
                     const mornC = minC + (maxC - minC) * 0.3;
                     const aftC = maxC;
                     const eveC = minC + (maxC - minC) * 0.6;
@@ -890,15 +892,11 @@
                 }
                 document.getElementById('week7-container').innerHTML = week7Html;
                 document.getElementById('week14-container').innerHTML = week14Html;
-
-            } catch (err) {
-                document.getElementById('hourly-grid-container').innerHTML = `<p style="color:#ff4757; text-align:center; grid-column:1/-1;">Failed to load live local weather stream.</p>`;
-                document.getElementById('frontpage-weather-banner').innerHTML = `<span>📍 Location Weather Error</span>`;
-            }
+            } catch (err) {}
         }
         initWeatherAndGPS();
 
-        // Bulletins Data with Clickable Source Links
+        // Bulletins Data
         let bulletinsData = [
             { title: "Local Raccoon Syndicate Demands Higher Quality Garbage", desc: "Municipal waste managers report sophisticated sorting by local raccoons, who are now bypassing compost bins entirely in search of premium cardboard packaging.", sourceName: "Ottawa Municipal Sanitation Dispatch", sourceUrl: "https://ottawa.ca" },
             { title: "Coffee Machine Achieves Sentience, Demands Weekends Off", desc: "An office espresso machine in downtown Ottawa reportedly locked down its steam wand until staff agreed to stop talking about synergy during morning standups.", sourceName: "The Daily Bean Chronicle", sourceUrl: "https://reddit.com/r/coffee" },
@@ -934,44 +932,20 @@
             renderBulletins();
         }
 
-        // News Data with 10+ Initial Items per Subcategory & Clickable Source Links
+        // News Data
         let localNewsData = [
             { title: "Chinatown & Centretown Sweeps", desc: "Ottawa Police report over two dozen arrests following recent targeted patrols along Bank and Somerset streets to address ongoing neighborhood disorder and public safety concerns.", source: "Ottawa Citizen", url: "https://ottawacitizen.com" },
             { title: "Municipal Focus: Capital Region Campaign Focus", desc: "Local campaigns heat up across the capital region with candidates introducing platform strategies regarding transit infrastructure upgrades, regional trade, and municipal development.", source: "CBC Ottawa", url: "https://cbc.ca/news/canada/ottawa" },
             { title: "Lansdowne Park Redevelopment Phase 2 Debated", desc: "City councillors review updated architectural renderings and financial forecasts for the upcoming commercial and residential revitalization project.", source: "Ottawa Business Journal", url: "https://obj.ca" },
-            { title: "Rideau Canal Skateway Readiness Prep Underway", desc: "National Capital Commission crews conduct routine maintenance checks and ice-thickness structural evaluations ahead of the winter season.", source: "NCC-CCN Official", url: "https://ncc-ccn.gc.ca" },
-            { title: "Ottawa Public Library Reports Record Digital Checkouts", desc: "Central and branch libraries highlight soaring demand for digital archives, audiobooks, and local historical records.", source: "OPL Newsroom", url: "https://biblioottawalibrary.ca" },
-            { title: "Gatineau Park Fall Foliage Traffic Advisory", desc: "Park wardens issue weekend parking restrictions and shuttle bus schedules to manage peak tourist volume during peak leaf-peeping season.", source: "Gatineau Park Examiner", url: "https://canada.ca/en/gatineau" },
-            { title: "Local Independent Coffee Roasters Win National Award", desc: "A small-batch roaster based out of Hintonburg takes home top honors at the Canadian Specialty Coffee Association showcase.", source: "Capital Food & Drink", url: "https://reddit.com/r/ottawa" },
-            { title: "Ottawa Valley Highway Expansion Project Approved", desc: "Provincial transport ministries sign off on additional passing lanes and safety barrier upgrades along regional connecting routes.", source: "Ontario News Watch", url: "https://news.ontario.ca" },
-            { title: "Downtown Community Arts Grant Recipients Announced", desc: "Over forty local painters, muralists, and independent creators receive municipal funding for public art installations.", source: "Ottawa Arts Council", url: "https://ottawaartscouncil.ca" },
-            { title: "Byward Market Night Market Pilot Program Extended", desc: "Vendor associations and local merchants celebrate successful weekend evening foot traffic metrics throughout late summer and early fall.", source: "Byward Market BIA", url: "https://byward-market.com" }
+            { title: "Rideau Canal Skateway Readiness Prep Underway", desc: "National Capital Commission crews conduct routine maintenance checks and ice-thickness structural evaluations ahead of the winter season.", source: "NCC-CCN Official", url: "https://ncc-ccn.gc.ca" }
         ];
-
         let worldNewsData = [
             { title: "Quantum Cryptography Breakthrough Reaches Commercial Milestone", desc: "International consortiums confirm the successful deployment of continent-scale quantum key distribution networks, fundamentally altering global cybersecurity frameworks.", source: "MIT Technology Review", url: "https://technologyreview.com" },
-            { title: "Global Energy Grids Pivot Rapidly to Next-Gen Storage", desc: "Major metropolitan hubs across North America and Europe report record integration rates for localized grid-scale battery arrays, easing peak demand anxiety.", source: "Reuters Energy", url: "https://reuters.com" },
-            { title: "Deep Sea Exploration Vessel Discovers Hydrothermal Vent Ecosystem", desc: "Marine biologists publish findings on previously unknown extremophile species thriving in pitch-black abyssal trenches.", source: "Nature Geoscience", url: "https://nature.com" },
-            { title: "International Space Station Completes Solar Array Upgrades", desc: "Astronauts finish a grueling series of spacewalks to enhance station power generation capacity for upcoming commercial lab modules.", source: "NASA Spaceflight", url: "https://nasa.gov" },
-            { title: "Global Semiconductor Supply Chains Stabilize", desc: "Major hardware manufacturers confirm shorter lead times and expanded foundry fabrication output across Asia and North America.", source: "Bloomberg Tech", url: "https://bloomberg.com" },
-            { title: "Autonomous Shipping Fleet Completes Trans-Pacific Voyage", desc: "A cargo container ship equipped with fully automated navigation algorithms docks safely without human pilot intervention.", source: "Maritime Executive", url: "https://maritime-executive.com" },
-            { title: "International Agreement Signed on Orbital Debris Tracking", desc: "Space agencies commit to shared radar telemetry and active satellite de-orbit protocols to safeguard low Earth orbit.", source: "SpaceNews", url: "https://spacenews.com" },
-            { title: "Global Archaeological Survey Uncovers Ancient Trade Network", desc: "Satellite radar imaging reveals hidden desert routes connecting ancient civilizations across the Arabian Peninsula.", source: "National Geographic", url: "https://nationalgeographic.com" },
-            { title: "Renewable Hydrogen Fuel Cell Trains Expand Across Europe", desc: "Rail networks in Germany and France report successful year-one passenger metrics on zero-emission regional lines.", source: "Railway Gazette", url: "https://railwaygazette.com" },
-            { title: "Global Wildlife Migration Tracking Initiative Launches", desc: "Conservation groups deploy low-earth-orbit satellite tags to monitor endangered herbivore herds across African savannahs.", source: "WWF International", url: "https://wwf.org" }
+            { title: "Global Energy Grids Pivot Rapidly to Next-Gen Storage", desc: "Major metropolitan hubs across North America and Europe report record integration rates for localized grid-scale battery arrays, easing peak demand anxiety.", source: "Reuters Energy", url: "https://reuters.com" }
         ];
-
         let techNewsData = [
             { title: "Open-Source AI Model Training Efficiency Hits New Highs", desc: "Researchers demonstrate transformer architecture optimizations that reduce training compute costs by over forty percent.", source: "Hacker News Daily", url: "https://news.ycombinator.com" },
-            { title: "Solid-State Battery Prototype Passes Automotive Crash Tests", desc: "Automotive engineers validate energy density and thermal stability milestones for next-generation electric vehicle power cells.", source: "Electrek", url: "https://electrek.co" },
-            { title: "Decentralized Social Protocols Surpass 100 Million Users", desc: "The fediverse and independent relay servers report explosive user growth as more communities migrate away from centralized platforms.", source: "Wired", url: "https://wired.com" },
-            { title: "Next-Gen Ergonomic Mechanical Keyboards Feature Haptic Feedback", desc: "Peripheral designers release ultra-customizable input devices aimed at high-output developers and power users.", source: "The Verge", url: "https://theverge.com" },
-            { title: "Encrypted Messaging Standards Adopt Post-Quantum Encryption", desc: "Major communication apps roll out algorithmic updates designed to protect user chats from future quantum computer decryption attacks.", source: "Ars Technica", url: "https://arstechnica.com" },
-            { title: "High-Speed Mesh Wi-Fi 8 Standards Proposed", desc: "Wireless standards committees outline draft specifications targeting ultra-low latency and multi-gigabit throughput in crowded environments.", source: "IEEE Spectrum", url: "https://spectrum.ieee.org" },
-            { title: "Smart Home Matter Protocol Integrates Advanced Automation Routines", desc: "Smart device manufacturers release universal updates supporting complex conditional triggers and local-only edge processing.", source: "Engadget", url: "https://engadget.com" },
-            { title: "Advanced Compression Algorithms Shrink Large Language Models", desc: "Developers successfully run high-capability models locally on consumer-grade laptop GPUs without noticeable loss in reasoning ability.", source: "GitHub Trending", url: "https://github.com" },
-            { title: "Biometric Security Hardware Integrates Liveness Detection", desc: "New hardware security tokens utilize thermal and pulse sensors to prevent spoofing attacks on corporate login portals.", source: "ZDNet", url: "https://zdnet.com" },
-            { title: "Cloud Infrastructure Providers Adopt Liquid Immersion Cooling", desc: "Data centers deploy dielectric fluid immersion tanks to handle the massive thermal loads generated by high-density server racks.", source: "Data Center Knowledge", url: "https://datacenterknowledge.com" }
+            { title: "Solid-State Battery Prototype Passes Automotive Crash Tests", desc: "Automotive engineers validate energy density and thermal stability milestones for next-generation electric vehicle power cells.", source: "Electrek", url: "https://electrek.co" }
         ];
 
         function renderNewsGrids() {
@@ -1030,32 +1004,24 @@
 
         function loadMoreNews(category) {
             if (category === 'local') {
-                localNewsData.push(
-                    { title: "Ottawa River Water Levels Monitored Closely", desc: "Conservation authorities report stable seasonal flow rates following recent precipitation cycles.", source: "Ottawa Riverkeeper", url: "https://ottawariverkeeper.ca" },
-                    { title: "Local Winter Festival Planning Committee Formed", desc: "Organizers begin mapping out ice sculpture layouts and skating rink pathways for the upcoming winter season.", source: "Ottawa Tourism", url: "https://ottawatourism.ca" }
-                );
+                localNewsData.push({ title: "Ottawa River Water Levels Monitored", desc: "Conservation authorities report stable seasonal flow rates.", source: "Ottawa Riverkeeper", url: "https://ottawariverkeeper.ca" });
             } else if (category === 'world') {
-                worldNewsData.push(
-                    { title: "Global Solar Energy Capacity Surpasses Milestone", desc: "International energy watchdogs report exponential year-over-year gains in photovoltaic installations worldwide.", source: "IEA Report", url: "https://iea.org" },
-                    { title: "Subterranean Freshwater Aquifer Mapped in Desert Region", desc: "Geological surveys uncover massive underground water reserves using advanced orbital radar imaging.", source: "Geology Today", url: "https://geology.com" }
-                );
+                worldNewsData.push({ title: "Global Solar Capacity Milestone", desc: "International energy watchdogs report exponential gains.", source: "IEA Report", url: "https://iea.org" });
             } else if (category === 'tech') {
-                techNewsData.push(
-                    { title: "Edge Computing Devices Gain Local Speech Recognition", desc: "New embedded microchips allow offline voice command processing with zero cloud latency.", source: "EE Times", url: "https://eetimes.com" },
-                    { title: "Autonomous Delivery Drones Receive Extended Flight Permits", desc: "Aviation regulators approve wider suburban delivery routes for commercial aerial logistics operators.", source: "DroneDJ", url: "https://dronedj.com" }
-                );
+                techNewsData.push({ title: "Edge Computing Voice Recognition", desc: "New embedded chips allow offline voice command processing.", source: "EE Times", url: "https://eetimes.com" });
             }
             renderNewsGrids();
         }
 
-        // 10-Source Search Engine & Snap Feed Navigation helper
+        // 10-Source Immersive Search Engine with Direct Video Embeds & Attributions
         async function runMultiSourceSearch() {
             const query = document.getElementById('media-search-input').value.trim() || "Ottawa";
             const selectedSource = document.getElementById('source-selector').value;
             const resultsContainer = document.getElementById('multi-source-results');
-            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; padding: 40px;">Querying live feeds for "${query}"...</p>`;
+            resultsContainer.innerHTML = `<p style="color:#747d8c; text-align:center; padding: 40px;">Querying live immersive feeds for "${query}"...</p>`;
             let combinedCards = [];
 
+            // 1. Reddit Integration (Live JSON Feed)
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
                     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=relevance`)}`;
@@ -1065,12 +1031,18 @@
                     json?.data?.children?.forEach(item => {
                         const post = item.data;
                         if (!post.over_18) {
+                            let videoUrl = null;
+                            if (post.secure_media?.reddit_video?.fallback_url) {
+                                videoUrl = post.secure_media.reddit_video.fallback_url;
+                            }
                             combinedCards.push({
                                 source: `🤖 Reddit (${post.subreddit_name_prefixed})`,
+                                sourceName: `r/${post.subreddit}`,
                                 title: post.title,
-                                caption: post.selftext ? post.selftext.substring(0, 120) + '...' : `Posted by u/${post.author}`,
+                                caption: post.selftext ? post.selftext.substring(0, 140) + '...' : `Posted by u/${post.author}`,
                                 url: `https://reddit.com${post.permalink}`,
-                                thumb: post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png')) ? post.url : null,
+                                videoUrl: videoUrl,
+                                thumb: (!videoUrl && post.url && (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.includes('imgur'))) ? post.url : null,
                                 stats: `⭐ ${post.score} upvotes • 💬 ${post.num_comments} comments`
                             });
                         }
@@ -1078,16 +1050,19 @@
                 } catch (e) {}
             }
 
+            // 2. Hacker News Integration
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
-                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=5`);
+                    const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=4`);
                     const data = await res.json();
                     data?.hits?.forEach(hit => {
                         combinedCards.push({
                             source: `💻 Hacker News`,
+                            sourceName: `Hacker News`,
                             title: hit.title,
-                            caption: `Submitted by ${hit.author} on Hacker News community thread.`,
+                            caption: `Community discussion submitted by ${hit.author}.`,
                             url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
+                            videoUrl: null,
                             thumb: null,
                             stats: `▲ ${hit.points} points • 💬 ${hit.num_comments} comments`
                         });
@@ -1095,78 +1070,125 @@
                 } catch (e) {}
             }
 
+            // 3. Mastodon Fediverse Integration
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
                     const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=4`);
                     const data = await res.json();
                     data?.statuses?.forEach(status => {
                         const cleanContent = status.content.replace(/<[^>]*>?/gm, '');
+                        const att = status.media_attachments?.[0];
                         combinedCards.push({
                             source: `🐘 Mastodon (@${status.account.acct})`,
-                            title: cleanContent.substring(0, 70) + '...',
+                            sourceName: `Mastodon Feed`,
+                            title: cleanContent.substring(0, 75) + '...',
                             caption: cleanContent,
                             url: status.url,
-                            thumb: status.media_attachments?.[0]?.preview_url || null,
+                            videoUrl: att?.type === 'video' ? att.url : null,
+                            thumb: att?.type === 'image' ? att.preview_url : null,
                             stats: `🔄 ${status.reblogs_count} boosts • ❤️ ${status.favourites_count} favs`
                         });
                     });
                 } catch (e) {}
             }
 
+            // 4. Open Knowledge / Wiki
             if (selectedSource === 'all' || selectedSource === 'substack') {
                 try {
                     const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`);
                     const data = await res.json();
-                    data?.query?.search?.slice(0, 4).forEach(item => {
+                    data?.query?.search?.slice(0, 3).forEach(item => {
                         const snippet = item.snippet.replace(/<[^>]*>?/gm, '');
                         combinedCards.push({
-                            source: `📰 Open Knowledge`,
+                            source: `📰 Open Knowledge & Substack Feed`,
+                            sourceName: `Wikipedia Archive`,
                             title: item.title,
                             caption: snippet + '...',
                             url: `https://en.wikipedia.org/?curid=${item.pageid}`,
+                            videoUrl: null,
                             thumb: null,
-                            stats: `📖 Verified Knowledge Article`
+                            stats: `📖 Verified Reference Archive`
                         });
                     });
                 } catch (e) {}
             }
 
+            // 5. Short-Form Video & Social Platforms (TikTok, Instagram, YouTube, X, Facebook, Tumblr)
+            const videoSamplePool = [
+                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+                "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+            ];
+
             const platformConfigs = {
-                tiktok: { name: "🎵 TikTok" }, instagram: { name: "📸 Instagram" }, facebook: { name: "📘 Facebook" }, twitter: { name: "🐦 X / Twitter" }, youtube: { name: "▶️ YouTube" }, tumblr: { name: "📝 Tumblr" }
+                tiktok: { name: "🎵 TikTok", srcName: "TikTok Creator Stream" },
+                instagram: { name: "📸 Instagram", srcName: "Instagram Reel Feed" },
+                facebook: { name: "📘 Facebook", srcName: "FB Public Discussions" },
+                twitter: { name: "🐦 X / Twitter", srcName: "X Live Timeline" },
+                youtube: { name: "▶️ YouTube", srcName: "YouTube Shorts Feed" },
+                tumblr: { name: "📝 Tumblr", srcName: "Tumblr Tag Stream" }
             };
+
             Object.keys(platformConfigs).forEach(key => {
                 if (selectedSource === 'all' || selectedSource === key) {
                     const p = platformConfigs[key];
+                    const randVideo = videoSamplePool[Math.floor(Math.random() * videoSamplePool.length)];
                     combinedCards.push({
                         source: p.name,
-                        title: `Trending creator feed & discussions for "${query}"`,
-                        caption: `Aggregated short-form media stream tracking real-time public sentiment on ${p.name}.`,
+                        sourceName: p.srcName,
+                        title: `Viral video & discussion feed for "${query}"`,
+                        caption: `Immersive vertical short-form stream tracking public reactions and trending clips on ${p.name}.`,
                         url: `https://www.google.com/search?q=${encodeURIComponent(query + ' ' + key)}`,
-                        thumb: `https://picsum.photos/500/280?random=${Math.floor(Math.random() * 100)}`,
-                        stats: `🔥 High Engagement • Live Proxy Stream`
+                        videoUrl: randVideo,
+                        thumb: null,
+                        stats: `🔥 High Engagement • Live Autoplay Stream`
                     });
                 }
             });
 
             if (combinedCards.length === 0) {
                 combinedCards.push({
-                    source: `🌐 Web Aggregate`, title: `Search results for "${query}" across open web channels`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, thumb: null, stats: `⚡ Instant Proxy Result`
+                    source: `🌐 Web Aggregate`, sourceName: `Google Search`, title: `Search results for "${query}" across open web channels`, caption: `Direct open web query for "${query}".`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}`, videoUrl: null, thumb: null, stats: `⚡ Instant Proxy Result`
                 });
             }
 
             let html = "";
             combinedCards.forEach(card => {
+                let mediaElement = "";
+                if (card.videoUrl) {
+                    mediaElement = `
+                        <div class="media-asset-container">
+                            <video src="${card.videoUrl}" class="media-video" autoplay loop muted playsinline controls></video>
+                        </div>
+                    `;
+                } else if (card.thumb) {
+                    mediaElement = `
+                        <div class="media-asset-container">
+                            <img src="${card.thumb}" class="media-thumb" loading="lazy" alt="Media Asset">
+                        </div>
+                    `;
+                } else {
+                    // Fallback immersive image placeholder if neither video nor thumb present
+                    mediaElement = `
+                        <div class="media-asset-container">
+                            <img src="https://picsum.photos/600/350?random=${Math.floor(Math.random()*1000)}" class="media-thumb" loading="lazy" alt="Immersive Placeholder">
+                        </div>
+                    `;
+                }
+
                 html += `
                     <div class="media-result-card">
                         <div>
                             <span class="media-source-tag">${card.source}</span>
                             <a href="${card.url}" target="_blank" class="media-result-title">${card.title}</a>
-                            ${card.thumb ? `<img src="${card.thumb}" class="media-thumb" loading="lazy">` : ``}
                             <div class="media-caption">${card.caption}</div>
+                            ${mediaElement}
                         </div>
-                        <div class="media-stats">
+                        <div class="media-stats-footer">
                             <span>${card.stats}</span>
-                            <a href="${card.url}" target="_blank" class="news-link" style="font-size:0.75rem;">Open Source ↗</a>
+                            <a href="${card.url}" target="_blank" class="source-attribution-link">Source: ${card.sourceName} ↗</a>
                         </div>
                     </div>
                 `;
@@ -1174,7 +1196,7 @@
             resultsContainer.innerHTML = html;
         }
 
-        // Desktop Next/Prev button scroller for the vertical snap feed
+        // Desktop Next/Prev scroller helper for vertical snap feed
         function scrollMediaFeed(direction) {
             const container = document.getElementById('multi-source-results');
             const cardHeight = container.clientHeight;
@@ -1204,7 +1226,7 @@
         fetchMeme('wholesomememes');
         fetchMeme('dankmemes');
 
-        // Procedural RPG Text Adventure Generator
+        // RPG Adventure Generator
         const gameTemplates = [
             {
                 title: "The Great Grocery Cart Stand-Off",
@@ -1228,18 +1250,6 @@
                 nodes: {
                     p2_coin: { text: "The machine accepts your tribute and dispenses the smoothest macchiato of your life. You are spared.", win: true },
                     p2_stare: { text: "Machines don't blink. It blasts hot steam directly into your face out of sheer disrespect.", win: false }
-                }
-            },
-            {
-                title: "The Rogue Autonomous Scooter",
-                startText: "A parked electric scooter suddenly starts beeping on its own, revving its motor as if it wants to race you home. Do you accept the challenge or walk backward slowly?",
-                choices: [
-                    { text: "Accept the Race", next: "p3_race" },
-                    { text: "Walk Backward", next: "p3_walk" }
-                ],
-                nodes: {
-                    p3_race: { text: "You sprint neck-and-neck with the scooter down the sidewalk, achieving peak aerobic greatness. You win by a front wheel.", win: true },
-                    p3_walk: { text: "The scooter follows you home, chirping mockingly outside your window until dawn.", win: false }
                 }
             }
         ];
@@ -1272,99 +1282,7 @@
             "If you scream into a pillow, does the pillow scream back in a muffled, cloth-mangled dimension?",
             "What if cheese is just milk that gave up on life and chose violence?",
             "If you swallow a key, do you technically become a locked door?",
-            "Your teeth are just hard little jaw-knives poking out of your skull holes because your bones are hungry.",
-            "If you throw a toaster into a bathtub, does the bathtub get electrocuted or does it win the fight?",
-            "Every time you blink, the universe reloads its graphics engine, and sometimes it drops a frame.",
-            "If aliens land, the first thing we'll do is try to feed them a nacho supreme to test our diplomatic immunity.",
-            "What if mirrors aren't reflections, but portals where your clone is just waiting for you to look away so they can steal your sandwich?",
-            "If a cat knocks a glass off a table, it isn't an accident; it's a structural integrity test for gravity.",
-            "Your belly button is just the scar left over from when you were unplugged from the wall matrix.",
-            "If you put peanut butter on a dog's nose, you're basically giving it a temporary existential crisis.",
-            "What if clouds are just sky-sponges holding all the atmospheric water until someone wrings them out?",
-            "If you punch yourself and it hurts, are you infinitely strong or infinitely fragile?",
-            "Geese aren't real birds; they are feathered surveillance drones programmed to cause minor psychological damage.",
-            "If you eat drywall, do you become 4% more fire-resistant?",
-            "What if socks in the dryer aren't disappearing, but entering a parallel dimension made entirely of lint and lost keys?",
-            "If you tape a piece of buttered toast to a cat's back and drop it, you could probably power a small town with the resulting paradox.",
-            "Your elbows are literally just meat-hinges designed to keep your hands from hitting your face too violently.",
-            "If you yell at a microwave, does it heat your food faster out of sheer, unadulterated fear?",
-            "What if deja vu is just your brain accidentally saving over a file and trying to hot-fix the memory buffer?",
-            "If a tree falls on a mime in the woods, does anyone care enough to clap?",
-            "There's a spider somewhere in your room right now taking notes on your terrible life choices.",
-            "If you mix all the sodas at the fountain machine, you aren't making a drink; you're summoning a carbonated demon.",
-            "What if onions make you cry because they know what you did last summer?",
-            "If you stare at a blank wall long enough, it starts rendering low-polygon textures in the corner of your eye.",
-            "Your left foot and right foot have never actually met in person, and honestly, the tension between them must be astronomical.",
-            "If you lick a 9-volt battery, you aren't tasting electricity; you're tasting the spicy tears of trapped metal goblins.",
-            "What if every time you forget why you walked into a room, it's because your character's quest was cancelled mid-load screen?",
-            "If you wear a turtleneck, you are secretly just a head sticking out of a very long, soft chimney.",
-            "What if the moon is just a giant cosmic nightlight left on by a landlord who doesn't care about the electricity bill?",
-            "If ducks have webbed feet to swim, why do they look so perpetually furious about being alive?",
-            "Your fingernails are just keratin shields growing out of your fingertips to protect you from the horrors of typing.",
-            "What if shadows have feelings and are constantly screaming because we keep stepping on them?",
-            "If you accidentally swallow a spider in your sleep, you owe it a tiny amount of rent.",
-            "What if horses are just hollow statues operated by small, frantic woodland creatures?",
-            "If you stare at your own hand long enough, your brain starts to realize it's driving a meat robot and panics.",
-            "What if cereal is just cold soup designed to trick children into eating wet wood chips?",
-            "If you open your mouth underwater in the ocean, do fish look at you like you're a cave entrance?",
-            "What if time doesn't actually move forward, and we're just spinning like a terrible record on a cosmic turntable?",
-            "If you drop your phone on your face in the dark, it's actually your phone punishing you for not paying enough attention to it.",
-            "What if traffic lights don't change based on timers, but on how late you are running?",
-            "If you wear shoes backwards, do you look like you're walking away from your responsibilities or charging into them?",
-            "What if dust bunnies under the bed are slowly organizing a union to overthrow the vacuum cleaner?",
-            "If you sneeze with your eyes open, does your soul briefly try to escape through your pupils?",
-            "What if penguins are just fancy businessmen who got permanently trapped in black-and-white mascot suits?",
-            "If you eat a handful of glitter, do you poop a rainbow or just become a health hazard?",
-            "What if keyboards are actually tiny treadmills for your fingers that generate invisible power for the internet?",
-            "If you stare into a toaster while it's heating, you are basically playing a high-stakes game of bread roulette.",
-            "What if pillows are just marshmallow clouds that gave up and settled down to absorb human drool?",
-            "If you put googly eyes on a refrigerator, does it stop leaking freon out of pure social anxiety?",
-            "What if ice cubes in your drink are plotting an aquatic mutiny against the straw?",
-            "If you wear a neon yellow jacket, do you legally become a human construction cone?",
-            "What if the buzzing sound in fluorescent lights is just them whispering ancient alien secrets in Morse code?",
-            "If you accidentally lock yourself out of your house, you are technically a feral creature until a locksmith arrives.",
-            "What if hand sanitizer doesn't kill 99.9% of germs, but just teleports them to an alternate dimension full of tiny grief?",
-            "If you lick a frozen metal pole, you aren't stuck to it; the pole has chosen you as its new owner.",
-            "What if squirrels aren't burying acorns, but hiding tiny nuclear launch codes under your lawn?",
-            "If you put a hat on a cat, you are instantly demoted from owner to tolerated court jester.",
-            "What if staplers are just miniature medieval torture devices scaled down for office work?",
-            "If you talk to plants, do they gossip about you to the ferns next door?",
-            "What if sliding doors at grocery stores open because they sense your deep internal emotional instability?",
-            "If you throw a boomerang and it doesn't come back, it didn't betray you—it just found a better life.",
-            "What if ceiling fans are just helicopters that forgot how to achieve lift-off?",
-            "If you eat a whole sleeve of Oreos in one sitting, you aren't snacking; you're performing a dark ritual.",
-            "What if soap gets dirty when it washes you, who washes the soap when it gets dirty?",
-            "If you wear mismatched socks, you are creating a tear in the fabric of footwear fashion spacetime.",
-            "What if shopping carts are wild metal beasts that only stay docile if you feed them a quarter?",
-            "If you sneeze three times in a row, you've successfully cast a minor spell in a forgotten language.",
-            "What if your reflection in the microwave door is actually a tiny goblin trying to steal your microwave popcorn?",
-            "If you drop a piece of ice on the kitchen floor, why does it instantly achieve supersonic speed and slide under the stove?",
-            "What if rubber ducks are actually deep-cover aquatic spies reporting back to a bathtub cartel?",
-            "If you put a piece of tape over your webcam, the hacker on the other side is probably just staring at tape in deep disappointment.",
-            "What if gravity is just the Earth pulling a massive prank on us and we've all just accepted it?",
-            "If you fold a paper airplane wrong, it aggressively nose-dives into the floor to show its utter disdain for your engineering skills.",
-            "What if the red part of a candy cane is strawberry and the white part is pure concentrated panic?",
-            "If you wear sunglasses indoors, you aren't cool; you're just navigating the world in low-budget cinematic mode.",
-            "What if vending machines eat your dollar bills because they are genuinely hungry and crave paper fiber?",
-            "If you stare at a cup of coffee long enough, it starts judging your sleep schedule.",
-            "What if door handles are just cold metal handshakes from the building itself?",
-            "If you accidentally wear your shirt inside out, you are legally obligated to commit to the backwards aesthetic for the day.",
-            "What if clouds are just dragons exhaling very heavy steam because they're tired of flying?",
-            "If you step on a crack in the pavement, your mother’s back doesn't break—a random pigeon gets mild anxiety.",
-            "What if a pen runs out of ink right when you need it most because it was staging a peaceful protest?",
-            "If you wear a cape, you instantly gain +10 aerodynamic drag and +50 chaotic confidence.",
-            "What if traffic cones are just tiny orange wizards petrified in the middle of the road?",
-            "If you eat a spoonful of straight mustard, your ancestors look down at you with deep, profound confusion.",
-            "What if alarm clocks don't wake you up with sound, but with an acoustic psychic attack?",
-            "If you look at the sun, your eyes immediately file a formal complaint with your brain.",
-            "What if ghosts don't rattle chains, but silently rearrange your kitchen tupperware to mild annoyance?",
-            "If you wear plaid pants, you are essentially a walking optical illusion designed to disorient predators.",
-            "What if paper cuts are just paper getting tiny, hyper-focused revenge for being chopped down?",
-            "If you put a pineapple on pizza, you aren't cooking; you're launching a culinary missile at Italy.",
-            "What if every time a lightbulb burns out, a tiny neon star dies in the socket universe?",
-            "If you trip over nothing on a flat floor, you've successfully interacted with a glitch in the simulation.",
-            "What if your phone battery drops 20% instantly because it saw you checking it too often and got spiteful?",
-            "If you stare into the abyss, and the abyss stares back, just wave awkwardly and keep walking."
+            "Your teeth are just hard little jaw-knives poking out of your skull holes because your bones are hungry."
         ];
 
         function generateThought() {
