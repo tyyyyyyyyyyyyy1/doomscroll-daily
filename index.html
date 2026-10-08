@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Doomscroll Daily - Native Reels Engine</title>
+    <title>The Doomscroll Daily - Bulletproof Reels Engine</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -759,7 +759,9 @@
             btnElement.classList.add('active');
             
             if(tabId !== 'media-tab') {
-                document.querySelectorAll('.media-video').forEach(v => v.pause());
+                document.querySelectorAll('.media-video').forEach(v => {
+                    try { v.pause(); } catch(e) {}
+                });
             } else {
                 handleScrollPlay();
             }
@@ -1074,9 +1076,7 @@
             "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
             "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-1232-large.mp4",
             "https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-neon-sign-41584-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-dj-playing-music-in-a-nightclub-41583-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-tree-branches-in-the-breeze-1186-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-and-lights-42939-large.mp4"
+            "https://assets.mixkit.co/videos/preview/mixkit-dj-playing-music-in-a-nightclub-41583-large.mp4"
         ];
 
         async function runMultiSourceSearch(isAppend = false) {
@@ -1092,7 +1092,6 @@
             let combinedCards = [];
             reelBatchCount++;
 
-            // Live Reddit JSON scrape via CORS proxy
             if (selectedSource === 'all' || selectedSource === 'reddit') {
                 try {
                     const targetUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=new&t=all`;
@@ -1119,7 +1118,6 @@
                 } catch (e) {}
             }
 
-            // Live Hacker News Algolia API
             if (selectedSource === 'all' || selectedSource === 'hackernews') {
                 try {
                     const res = await fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&hitsPerPage=4`);
@@ -1139,7 +1137,6 @@
                 } catch (e) {}
             }
 
-            // Live Mastodon Fediverse API
             if (selectedSource === 'all' || selectedSource === 'mastodon') {
                 try {
                     const res = await fetch(`https://mastodon.social/api/v2/search?q=${encodeURIComponent(query)}&type=statuses&limit=4`);
@@ -1193,7 +1190,7 @@
                 html += `
                     <div class="media-result-card" data-index="${index}">
                         <div class="media-asset-container">
-                            <video src="${card.videoUrl}" class="media-video" loop muted playsinline autoplay preload="auto"></video>
+                            <video src="${card.videoUrl}" class="media-video" loop muted playsinline preload="auto"></video>
                         </div>
                         <div class="reels-gradient-overlay"></div>
                         
@@ -1232,24 +1229,56 @@
             }
             isLoadingReels = false;
             
-            initializeVideoBuffers();
+            initializeFailSafeVideoEngine();
         }
 
-        function initializeVideoBuffers() {
+        /* BULLETPROOF FAIL-SAFE REELS ENGINE INITIALIZER */
+        function initializeFailSafeVideoEngine() {
             const container = document.getElementById('multi-source-results');
-            if(!container) return;
+            if (!container) return;
+
             const cards = container.querySelectorAll('.media-result-card');
-            
-            cards.forEach(card => {
+
+            cards.forEach((card, index) => {
                 const video = card.querySelector('video');
-                if (video) {
-                    video.load();
-                }
+                if (!video) return;
+
+                // Enforce safety properties programmatically
+                video.muted = true;
+                video.playsInline = true;
+                video.preload = "auto";
+                video.style.backgroundColor = "#111"; // Fallback color backing
+
+                const playSafe = async () => {
+                    try {
+                        // Ensure data stream is buffered before command dispatch
+                        if (video.readyState < 2) {
+                            await new Promise((resolve) => {
+                                video.addEventListener('loadeddata', resolve, { once: true });
+                                setTimeout(resolve, 2500); // Fail-safe timeout shield
+                            });
+                        }
+
+                        const playPromise = video.play();
+                        if (playPromise !== undefined) {
+                            await playPromise;
+                        }
+                    } catch (err) {
+                        // Soft-catch blocks policy errors or network interruptions without breaking script execution
+                        setTimeout(() => {
+                            video.muted = true;
+                            video.play().catch(() => {});
+                        }, 400);
+                    }
+                };
+
+                playSafe();
             });
 
+            // Intersection Observer to intelligently play/pause active viewport reel
             const observerOptions = {
                 root: container,
-                threshold: 0.6
+                threshold: 0.55
             };
 
             const observer = new IntersectionObserver((entries) => {
@@ -1258,7 +1287,10 @@
                     if (!video) return;
 
                     if (entry.isIntersecting) {
-                        video.play().catch(() => {});
+                        video.play().catch(() => {
+                            video.muted = true;
+                            video.play().catch(() => {});
+                        });
                     } else {
                         video.pause();
                     }
@@ -1269,7 +1301,7 @@
         }
 
         function handleScrollPlay() {
-            initializeVideoBuffers();
+            initializeFailSafeVideoEngine();
         }
 
         function checkInfiniteScroll(element) {
