@@ -1239,32 +1239,28 @@
 
             const cards = container.querySelectorAll('.media-result-card');
 
-            cards.forEach((card, index) => {
+            cards.forEach((card) => {
                 const video = card.querySelector('video');
                 if (!video) return;
 
-                // Enforce safety properties programmatically
                 video.muted = true;
                 video.playsInline = true;
                 video.preload = "auto";
-                video.style.backgroundColor = "#111"; // Fallback color backing
+                video.style.backgroundColor = "#111";
 
                 const playSafe = async () => {
                     try {
-                        // Ensure data stream is buffered before command dispatch
                         if (video.readyState < 2) {
                             await new Promise((resolve) => {
                                 video.addEventListener('loadeddata', resolve, { once: true });
-                                setTimeout(resolve, 2500); // Fail-safe timeout shield
+                                setTimeout(resolve, 2500);
                             });
                         }
-
                         const playPromise = video.play();
                         if (playPromise !== undefined) {
                             await playPromise;
                         }
                     } catch (err) {
-                        // Soft-catch blocks policy errors or network interruptions without breaking script execution
                         setTimeout(() => {
                             video.muted = true;
                             video.play().catch(() => {});
@@ -1275,7 +1271,6 @@
                 playSafe();
             });
 
-            // Intersection Observer to intelligently play/pause active viewport reel
             const observerOptions = {
                 root: container,
                 threshold: 0.55
