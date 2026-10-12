@@ -908,7 +908,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (RACE CONDITION FIX) ---
+        // --- MULTI-PLATFORM STREAM ENGINE ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -1044,7 +1044,6 @@
                 } catch (e) { console.error("Pixabay image search error:", e); }
             }
 
-            // If still empty after search, show error message
             if (reelCards.length === 0 && !isAppend) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
@@ -1092,8 +1091,6 @@
 
             container.innerHTML = html;
             isLoadingEmbeds = false;
-            
-            // Immediately trigger playback detection so videos start instantly without needing a scroll kick
             updateActiveReelPlayback();
         }
 
@@ -1143,7 +1140,7 @@
         function checkEmbedInfiniteScroll(element) {
             if (element.scrollTop + element.clientHeight >= element.scrollHeight - 200) {
                 if (!isLoadingEmbeds) {
-                    isLoadingEmbeds> = true;
+                    isLoadingEmbeds = true;
                     streamPage++;
                     setTimeout(() => loadMultiPlatformStream(true), 300);
                 }
