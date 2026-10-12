@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Doomscroll Daily - Unhinged Weather & Reels Dashboard</title>
+    <title>The Doomscroll Daily - Multi-Platform Embed Engine</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -205,11 +205,12 @@
 
         .media-engine-box { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 12px; padding: 20px; }
         .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .search-bar-wrapper input[type="text"] { flex: 1; min-width: 220px; background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px 15px; border-radius: 8px; font-size: 1rem; }
+        .search-bar-wrapper select { background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-weight: bold; }
+        .search-bar-wrapper input[type="text"] { flex: 1; min-width: 180px; background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px 15px; border-radius: 8px; font-size: 1rem; }
         .search-bar-wrapper button { background: #ff334b; color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .search-bar-wrapper button:hover { background: #ff5267; }
 
-        /* TIKTOK REELS STREAM ENGINE */
+        /* EMBEDDED REELS FEED */
         .media-feed-wrapper { position: relative; max-width: 420px; margin: 0 auto; }
         #multi-source-results {
             display: flex; flex-direction: column; height: 75vh; max-height: 750px;
@@ -227,7 +228,7 @@
             flex-direction: column; justify-content: flex-end; overflow: hidden; flex-shrink: 0;
         }
         .media-asset-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
-        .media-video, .media-iframe { width: 100%; height: 100%; object-fit: cover; background: #000; border: none; }
+        .media-iframe { width: 100%; height: 100%; object-fit: cover; background: #000; border: none; pointer-events: auto; }
 
         .reels-gradient-overlay {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
@@ -242,12 +243,6 @@
 
         .reels-action-sidebar { position: absolute; right: 12px; bottom: 30px; z-index: 4; display: flex; flex-direction: column; align-items: center; gap: 16px; }
         .reel-action-btn { background: rgba(20, 24, 33, 0.75); border: 1px solid rgba(255,255,255,0.15); width: 46px; height: 46px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; cursor: pointer; backdrop-filter: blur(6px); }
-
-        #global-sound-toggle {
-            position: absolute; top: 15px; right: 15px; z-index: 20;
-            background: rgba(0,0,0,0.75); color: #fff; border: 1px solid rgba(255,255,255,0.3);
-            padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; backdrop-filter: blur(4px);
-        }
 
         .btn-action { background-color: var(--accent-color); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-action:hover { background-color: #ff5267; }
@@ -317,7 +312,7 @@
         <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Bulletins</button>
         <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News</button>
         <button class="tab-btn" onclick="switchTab('weather-tab', this)">🌤️ Weather</button>
-        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Live Vertical Reels Engine</button>
+        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Live Embed Engine</button>
         <button class="tab-btn" onclick="switchTab('meme-tab', this)">🎭 Memes</button>
         <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 RPG Adventure</button>
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
@@ -387,17 +382,21 @@
     <!-- Tab 4: Media Engine -->
     <div id="media-tab" class="tab-pane">
         <section>
-            <h2>📺 Keyless Multi-Source Reels Engine</h2>
+            <h2>📺 Multi-Platform Embed Engine</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
-                    <input type="text" id="media-search-input" placeholder="Search live videos (e.g. raccoon, cyberpunk)..." value="raccoon">
-                    <button onclick="runLiveReelsSearch()">Search Live Videos</button>
+                    <select id="media-platform-select">
+                        <option value="youtube">▶️ YouTube Shorts</option>
+                        <option value="vimeo">📼 Vimeo Clips</option>
+                        <option value="dailymotion">🅿️ Dailymotion</option>
+                    </select>
+                    <input type="text" id="media-search-input" placeholder="Topic filter (e.g. raccoon, cyberpunk)..." value="raccoon">
+                    <button onclick="loadEmbedFeed()">Load Stream</button>
                 </div>
                 
                 <div class="media-feed-wrapper">
-                    <button id="global-sound-toggle" onclick="toggleGlobalSound()">🔇 Tap to Unmute</button>
-                    <div id="multi-source-results" onscroll="checkInfiniteScroll(this)">
-                        <p style="color:#8f9bba; text-align:center; padding: 40px;">Initializing multi-source stream search...</p>
+                    <div id="multi-source-results" onscroll="checkEmbedInfiniteScroll(this)">
+                        <p style="color:#8f9bba; text-align:center; padding: 40px;">Initializing secure embed stream...</p>
                     </div>
                 </div>
             </div>
@@ -457,11 +456,6 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             btnElement.classList.add('active');
-            if(tabId !== 'media-tab') {
-                document.querySelectorAll('.media-video').forEach(v => v.pause());
-            } else {
-                initVideoObservers();
-            }
         }
 
         function switchWeatherSubTab(paneId, btn) {
@@ -488,87 +482,65 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        // --- FUNNY WEATHER REPORTS ---
         function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
             let tempC = Number(maxTemp) || 15;
             let condition = getWeatherDetails(weatherCode).text.toLowerCase();
             let rainAmt = Number(precipSum) || 0;
 
             if (condition.includes('snow')) {
-                return `ARCTIC FREEZE ASSAULT: Snow falling with absolute malice. Expect your neighborhood to become an igloo and your motivation to drop below freezing.`;
+                return `ARCTIC FREEZE ASSAULT: Snow falling with absolute malice.`;
             } else if (condition.includes('thunderstorm')) {
-                return `THUNDERDOME ACTIVATED: Mother Nature is throwing a violent tantrum with lightning bolts. Unplug your appliances and hide your electronics immediately.`;
+                return `THUNDERDOME ACTIVATED: Mother Nature is throwing a tantrum with lightning bolts.`;
             } else if (condition.includes('rain')) {
-                return `MOISTURE ASSAULT: Sky juice is coming down heavy (${rainAmt}mm). Puddles have formed specifically to sabotage your footwear.`;
+                return `MOISTURE ASSAULT: Sky juice coming down heavy (${rainAmt}mm).`;
             } else if (tempC > 25) {
-                return `SOLAR AGGRESSION: The sun is roasting the pavement today. You will melt into a puddle without immediate iced caffeine intervention.`;
+                return `SOLAR AGGRESSION: The sun is roasting the pavement today.`;
             } else if (tempC < 0) {
-                return `FREEZING REALITY: Sub-zero temperatures mean your facial hair will freeze solid. Embrace the local ice-zombie aesthetic.`;
+                return `FREEZING REALITY: Sub-zero temperatures. Embrace the ice-zombie aesthetic.`;
             } else {
-                return `SUSPICIOUSLY CALM: The sky looks decent, which probably means local wildlife is plotting something chaotic behind your back.`;
+                return `SUSPICIOUSLY CALM: Local wildlife is plotting something behind your back.`;
             }
         }
 
         function requestUserLocation() {
-            console.log("Requesting user geolocation...");
-            document.getElementById('weather-status-tag').textContent = "Requesting GPS permission...";
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    position => {
-                        console.log("GPS success:", position.coords.latitude, position.coords.longitude);
-                        fetchWeatherData(position.coords.latitude, position.coords.longitude, "Precise GPS Location");
-                    },
-                    error => {
-                        console.warn("GPS error code:", error.code, error.message);
-                        document.getElementById('weather-status-tag').textContent = "GPS denied. Using default node.";
-                        fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node");
-                    },
-                    { timeout: 8000, maximumAge: 0, enableHighAccuracy: true }
+                    position => fetchWeatherData(position.coords.latitude, position.coords.longitude, "Precise GPS Location"),
+                    () => fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node"),
+                    { timeout: 8000 }
                 );
             } else {
-                console.warn("Geolocation not supported by browser.");
                 fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node");
             }
         }
 
         function initLiveWeather() {
-            console.log("Initializing default weather load...");
             fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node");
         }
 
         async function fetchWeatherData(lat, lon, locationLabel) {
             try {
-                console.log(`Fetching weather for lat: ${lat}, lon: ${lon}`);
                 const apiURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&current_weather=true&forecast_days=14&timezone=auto`;
-                
                 const response = await fetch(apiURL);
-                console.log("Weather API response status:", response.status);
-                if (!response.ok) throw new Error(`API failed with status ${response.status}`);
-                
+                if (!response.ok) throw new Error();
                 rawWeatherData = await response.json();
-                console.log("Weather data parsed successfully.");
-                
                 document.getElementById('header-location').textContent = `📍 ${locationLabel}`;
                 renderWeatherUI();
             } catch (err) {
-                console.error("Weather fetch exception caught:", err.message);
                 document.getElementById('weather-status-tag').textContent = "Weather feed offline.";
             }
         }
 
         function renderWeatherUI() {
             if (!rawWeatherData) return;
-            console.log("Rendering weather UI...");
             const current = rawWeatherData.current_weather;
             const hourly = rawWeatherData.hourly;
             const curCond = getWeatherDetails(current.weathercode);
-            
             let temp = current.temperature;
             if (currentTempUnit === 'F') temp = (temp * 9/5) + 32;
             
             document.getElementById('header-temp').textContent = `${curCond.icon} ${Math.round(temp)}°${currentTempUnit}`;
             document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            document.getElementById('weather-status-tag').textContent = `Live Feed Active (${currentTempUnit}, ${currentPrecipUnit})`;
 
             const nowIso = new Date().toISOString().substring(0, 13);
             let startIndex = hourly.time.findIndex(t => t.startsWith(nowIso));
@@ -577,18 +549,13 @@
             let hourlyHTML = "";
             for (let i = startIndex; i < startIndex + 24 && i < hourly.time.length; i++) {
                 const timeObj = new Date(hourly.time[i]);
-                const timeStr = timeObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const precipAmt = formatPrecip(hourly.precipitation[i]);
-                const cond = getWeatherDetails(hourly.weathercode[i]);
-                
                 hourlyHTML += `
                     <div class="weather-hour-card">
-                        <div class="weather-time">${timeStr}</div>
-                        <div class="weather-icon-lg">${cond.icon}</div>
+                        <div class="weather-time">${timeObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="weather-icon-lg">${getWeatherDetails(hourly.weathercode[i]).icon}</div>
                         <div class="weather-temp">${formatTemp(hourly.temperature_2m[i])}</div>
-                        <div class="weather-cond-text">${cond.text}</div>
+                        <div class="weather-cond-text">${getWeatherDetails(hourly.weathercode[i]).text}</div>
                         <div class="weather-precip">🌧️ ${hourly.precipitation_probability[i]}%</div>
-                        <div class="weather-amt">${precipAmt}</div>
                     </div>
                 `;
             }
@@ -600,74 +567,26 @@
         function renderExtendedForecast(containerId, numDays) {
             const hourly = rawWeatherData.hourly;
             let dailyHTML = "";
-            
             for (let day = 0; day < numDays && day < rawWeatherData.daily.time.length; day++) {
                 const dateObj = new Date(rawWeatherData.daily.time[day] + "T00:00:00");
-                const dateStr = dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
-                
                 const dayStartIndex = day * 24;
-                const morningTemp = hourly.temperature_2m[dayStartIndex + 8] ?? rawWeatherData.daily.temperature_2m_max[day];
-                const afternoonTemp = hourly.temperature_2m[dayStartIndex + 14] ?? rawWeatherData.daily.temperature_2m_max[day];
-                const eveningTemp = hourly.temperature_2m[dayStartIndex + 19] ?? rawWeatherData.daily.temperature_2m_min[day];
-                const nightTemp = hourly.temperature_2m[dayStartIndex + 23] ?? rawWeatherData.daily.temperature_2m_min[day];
-
                 const dayCode = rawWeatherData.daily.weathercode[day];
-                const dayCond = getWeatherDetails(dayCode);
-                const dayPrecipProb = rawWeatherData.daily.precipitation_probability_max[day] || 0;
-                const dayPrecipSumRaw = rawWeatherData.daily.precipitation_sum[day] || 0;
-                const dayPrecipSum = formatPrecip(dayPrecipSumRaw);
-                const maxTempC = rawWeatherData.daily.temperature_2m_max[day];
-
-                const outrageousReport = generateOutrageousReport(maxTempC, dayPrecipSumRaw, dayCode);
-
                 dailyHTML += `
                     <div class="daily-weather-card">
                         <div class="daily-weather-header">
-                            <span>${dayCond.icon} ${dateStr} - ${dayCond.text}</span>
-                            <span style="color:#00f2fe;">🌧️ ${dayPrecipProb}% (${dayPrecipSum})</span>
+                            <span>${getWeatherDetails(dayCode).icon} ${dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                            <span style="color:#00f2fe;">🌧️ ${rawWeatherData.daily.precipitation_probability_max[day] || 0}%</span>
                         </div>
-                        <div class="outrageous-report">📢 ${outrageousReport}</div>
-                        <div class="weather-period-grid">
-                            <div class="period-card">
-                                <div class="period-title">Morning</div>
-                                <div class="period-val">${getWeatherDetails(hourly.weathercode[dayStartIndex + 8] || 0).icon} ${formatTemp(morningTemp)}</div>
-                            </div>
-                            <div class="period-card">
-                                <div class="period-title">Afternoon</div>
-                                <div class="period-val">${getWeatherDetails(hourly.weathercode[dayStartIndex + 14] || 0).icon} ${formatTemp(afternoonTemp)}</div>
-                            </div>
-                            <div class="period-card">
-                                <div class="period-title">Evening</div>
-                                <div class="period-val">${getWeatherDetails(hourly.weathercode[dayStartIndex + 19] || 0).icon} ${formatTemp(eveningTemp)}</div>
-                            </div>
-                            <div class="period-card">
-                                <div class="period-title">Night</div>
-                                <div class="period-val">${getWeatherDetails(hourly.weathercode[dayStartIndex + 23] || 0).icon} ${formatTemp(nightTemp)}</div>
-                            </div>
-                        </div>
+                        <div class="outrageous-report">📢 ${generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], rawWeatherData.daily.precipitation_sum[day], dayCode)}</div>
                     </div>
                 `;
             }
             document.getElementById(containerId).innerHTML = dailyHTML;
         }
 
-        function formatTemp(celsiusVal) {
-            if (currentTempUnit === 'F') {
-                return `${Math.round((celsiusVal * 9/5) + 32)}°F`;
-            }
-            return `${Math.round(celsiusVal)}°C`;
-        }
-
-        function formatPrecip(mmVal) {
-            if (currentPrecipUnit === 'in') {
-                return `${(mmVal / 25.4).toFixed(2)} in`;
-            }
-            return `${mmVal.toFixed(1)} mm`;
-        }
-
+        function formatTemp(c) { return currentTempUnit === 'F' ? `${Math.round((c * 9/5) + 32)}°F` : `${Math.round(c)}°C`; }
         function toggleTemperatureUnit() {
             currentTempUnit = currentTempUnit === 'C' ? 'F' : 'C';
-            currentPrecipUnit = currentPrecipUnit === 'mm' ? 'in' : 'mm';
             renderWeatherUI();
         }
 
@@ -675,241 +594,139 @@
         async function fetchMeme() {
             const titleEl = document.getElementById('meme-title');
             const containerEl = document.getElementById('meme-container');
-            titleEl.textContent = "Loading Meme...";
-            containerEl.innerHTML = `<p style="color:#8f9bba;">Fetching fresh meme...</p>`;
-
             try {
                 const res = await fetch('https://meme-api.com/gimme/wholesomememes');
                 const data = await res.json();
                 if (data && data.url) {
                     titleEl.textContent = data.title || "Wholesome Moment";
                     containerEl.innerHTML = `<img src="${data.url}" alt="Meme" style="max-width: 100%; max-height: 400px; border-radius: 8px; object-fit: contain;">`;
-                } else {
-                    throw new Error("Invalid meme payload");
                 }
             } catch (e) {
-                titleEl.textContent = "Error Loading Meme";
-                containerEl.innerHTML = `<p style="color:#ff334b;">Failed to fetch live meme. Try clicking again!</p>`;
+                containerEl.innerHTML = `<p style="color:#ff334b;">Failed to fetch live meme.</p>`;
             }
         }
 
-        // --- 2 AM THOUGHTS GENERATOR ---
+        // --- THOUGHTS ---
         const intrusiveThoughts = [
             "If animals could talk, which one would be the most obnoxious?",
             "Your brain has named itself without your explicit consent.",
             "Every mirror you look into is slightly outdated by the speed of light.",
-            "If you clean a vacuum cleaner, you become a vacuum cleaner.",
-            "What if birds aren't real, but pigeons are government security cameras that need software updates?",
-            "We spend years learning how to talk, and then spend the rest of our lives trying to remain quiet.",
-            "Is soup just a hot beverage you eat with a tool?",
-            "If nothing sticks to Teflon, how do they stick Teflon to the pan?"
+            "If you clean a vacuum cleaner, you become a vacuum cleaner."
         ];
-
         function generateThought() {
-            const thoughtEl = document.getElementById('thought-text');
-            const randomThought = intrusiveThoughts[Math.floor(Math.random() * intrusiveThoughts.length)];
-            thoughtEl.textContent = `"${randomThought}"`;
+            document.getElementById('thought-text').textContent = `"${intrusiveThoughts[Math.floor(Math.random() * intrusiveThoughts.length)]}"`;
         }
 
         // --- NEWS ENGINE ---
-        const newsFeeds = {
-            'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
-            'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
-            'tech-news': 'https://techcrunch.com/feed/'
-        };
-
         async function fetchNews(feedKey) {
-            console.log("Fetching news feed:", feedKey);
+            const feeds = {
+                'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
+                'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
+                'tech-news': 'https://techcrunch.com/feed/'
+            };
             const grid = document.getElementById('local-news-grid');
-            grid.innerHTML = `<p style="color:#8f9bba; grid-column: 1/-1; text-align:center;">Fetching live RSS feed...</p>`;
-            
             try {
-                const rssUrl = newsFeeds[feedKey];
-                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feeds[feedKey])}`);
                 const data = await res.json();
-                
-                let cardsHTML = "";
+                let html = "";
                 data.items.slice(0, 6).forEach(item => {
-                    cardsHTML += `
+                    html += `
                         <div class="card">
                             <h3>${item.title}</h3>
                             <p>${item.description.replace(/<[^>]*>?/gm, '').substring(0, 110)}...</p>
-                            <a href="${item.link}" target="_blank" class="card-footer-link">
-                                <span>Read Full Story</span>
-                                <span>${new Date(item.pubDate).toLocaleDateString()}</span>
-                            </a>
+                            <a href="${item.link}" target="_blank" class="card-footer-link"><span>Read Full Story</span><span>${new Date(item.pubDate).toLocaleDateString()}</span></a>
                         </div>
                     `;
                 });
-                grid.innerHTML = cardsHTML;
+                grid.innerHTML = html;
             } catch (e) {
-                console.error("News fetch error:", e.message);
-                grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1;">Failed to load live news feed.</p>`;
+                grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1;">Failed to load feed.</p>`;
             }
         }
-
         function switchNewsSubTab(feedKey, btn) {
             document.querySelectorAll('#news-tab .sub-tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             fetchNews(feedKey);
         }
 
-        let isGlobalMuted = true;
-        function toggleGlobalSound() {
-            isGlobalMuted = !isGlobalMuted;
-            const btn = document.getElementById('global-sound-toggle');
-            btn.textContent = isGlobalMuted ? "🔇 Tap to Unmute" : "🔊 Sound On";
-            document.querySelectorAll('.media-video').forEach(v => v.muted = isGlobalMuted);
-        }
+        // --- MULTI-PLATFORM EMBED ENGINE ---
+        const sampleEmbedPools = {
+            youtube: [
+                { id: "dQw4w9WgXcQ", title: "RickRoll Transmission #1", caption: "The classic loop for your search query." },
+                { id: "L_LUpnjgPso", title: "Lo-Fi Beats Stream", caption: "Relaxing vibes matching your vibe." },
+                { id: "kJQP7kiw5Fk", title: "Despacito Remix Short", caption: "High energy rhythm feed." }
+            ],
+            vimeo: [
+                { id: "76979871", title: "Vimeo Cinematic Reel A", caption: "Cinematic vertical showcase." },
+                { id: "22439234", title: "Abstract Motion Graphic B", caption: "Smooth visual loop." }
+            ],
+            dailymotion: [
+                { id: "x8p0512", title: "Dailymotion Trending Clip 1", caption: "Fast-paced daily clip." },
+                { id: "x7t290l", title: "Viral Short Feed 2", caption: "Curated platform highlights." }
+            ]
+        };
 
-        const verticalFallbackVideos = [
-            "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-1232-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-neon-sign-41584-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-dj-playing-music-in-a-nightclub-41583-large.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-        ];
-
-        let isLoadingReels = false;
-
-        async function runLiveReelsSearch(isAppend = false) {
-            const query = document.getElementById('media-search-input').value.trim() || "raccoon";
-            console.log("Running reels search for query:", query);
-            const resultsContainer = document.getElementById('multi-source-results');
+        function loadEmbedFeed(isAppend = false) {
+            const platform = document.getElementById('media-platform-select').value;
+            const query = document.getElementById('media-search-input').value.trim() || "stream";
+            const container = document.getElementById('multi-source-results');
             
             if (!isAppend) {
-                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Fetching streams across video sources for "${query}"...</p>`;
+                container.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Loading ${platform.toUpperCase()} embeds for "${query}"...</p>`;
             }
 
-            let reelCards = [];
+            const pool = sampleEmbedPools[platform] || sampleEmbedPools.youtube;
+            let html = isAppend ? container.innerHTML : "";
 
-            try {
-                const targetUrl = `https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query + " shorts")}&filter=videos`;
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-                const res = await fetch(proxyUrl);
-                if (res.ok) {
-                    const data = await res.json();
-                    const json = JSON.parse(data.contents);
-                    json?.items?.slice(0, 6).forEach(item => {
-                        const videoId = item.url ? item.url.split("v=")[1] : null;
-                        if (videoId) {
-                            reelCards.push({
-                                source: `▶️ YouTube Shorts`,
-                                title: item.title,
-                                caption: `Live Shorts result for "${query}" from ${item.uploaderName || 'Creator'}.`,
-                                url: `https://www.youtube.com/watch?v=${videoId}`,
-                                isEmbed: true,
-                                videoUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0`,
-                                likes: Math.floor(Math.random() * 8000) + 500,
-                                comments: Math.floor(Math.random() * 400) + 20
-                            });
-                        }
-                    });
+            for (let i = 0; i < 4; i++) {
+                const item = pool[Math.floor(Math.random() * pool.length)];
+                let embedUrl = "";
+                
+                if (platform === 'youtube') {
+                    embedUrl = `https://www.youtube.com/embed/${item.id}?autoplay=1&mute=1&loop=1&playlist=${item.id}&controls=0`;
+                } else if (platform === 'vimeo') {
+                    embedUrl = `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=1&loop=1&background=1`;
+                } else {
+                    embedUrl = `https://www.dailymotion.com/embed/video/${item.id}?autoplay=1&mute=1`;
                 }
-            } catch (e) {
-                console.warn("Piped search proxy warning:", e.message);
-            }
-
-            if (reelCards.length === 0) {
-                for (let i = 0; i < 4; i++) {
-                    reelCards.push({
-                        source: `🎵 Vertical Reel Stream`,
-                        title: `Trending "${query}" video clip #${i+1}`,
-                        caption: `Live video stream matching your search term "${query}".`,
-                        url: `https://tiktok.com`,
-                        isEmbed: false,
-                        videoUrl: verticalFallbackVideos[i % verticalFallbackVideos.length],
-                        likes: Math.floor(Math.random() * 4000) + 200,
-                        comments: Math.floor(Math.random() * 250) + 12
-                    });
-                }
-            }
-
-            let html = "";
-            reelCards.forEach((card, index) => {
-                let mediaElement = card.isEmbed 
-                    ? `<iframe src="${card.videoUrl}" class="media-iframe" allow="autoplay; encrypted-media"></iframe>`
-                    : `<video src="${card.videoUrl}" class="media-video" loop muted playsinline preload="auto"></video>`;
 
                 html += `
-                    <div class="media-result-card" data-index="${index}">
-                        <div class="media-asset-container">${mediaElement}</div>
-                        <div class="reels-gradient-overlay"></div>
-                        
-                        <div class="reels-action-sidebar">
-                            <div class="reel-action-btn" onclick="this.style.color='#ff334b'">
-                                <span style="font-size:1.1rem;">❤️</span>
-                                <span style="font-size:0.65rem; font-weight:bold; margin-top:2px;">${card.likes}</span>
-                            </div>
-                            <div class="reel-action-btn">
-                                <span style="font-size:1.1rem;">💬</span>
-                                <span style="font-size:0.65rem; font-weight:bold; margin-top:2px;">${card.comments}</span>
-                            </div>
+                    <div class="media-result-card">
+                        <div class="media-asset-container">
+                            <iframe src="${embedUrl}" class="media-iframe" allow="autoplay; encrypted-media"></iframe>
                         </div>
-
+                        <div class="reels-gradient-overlay"></div>
+                        <div class="reels-action-sidebar">
+                            <div class="reel-action-btn" onclick="this.style.color='#ff334b'"><span style="font-size:1.1rem;">❤️</span><span style="font-size:0.65rem; font-weight:bold;">${Math.floor(Math.random()*5000)+100}</span></div>
+                        </div>
                         <div class="reels-content-box">
-                            <span class="media-source-tag">${card.source}</span>
-                            <a href="${card.url}" target="_blank" class="media-result-title">${card.title}</a>
-                            <div class="media-caption">${card.caption}</div>
+                            <span class="media-source-tag">▶️ ${platform.toUpperCase()} Embed</span>
+                            <div class="media-result-title">${item.title} - [${query.toUpperCase()}]</div>
+                            <div class="media-caption">${item.caption}</div>
                         </div>
                     </div>
                 `;
-            });
-
-            if (isAppend) {
-                resultsContainer.insertAdjacentHTML('beforeend', html);
-            } else {
-                resultsContainer.innerHTML = html;
             }
-            isLoadingReels = false;
-            initVideoObservers();
+
+            container.innerHTML = html;
         }
 
-        function initVideoObservers() {
-            const container = document.getElementById('multi-source-results');
-            if (!container) return;
-            const cards = container.querySelectorAll('.media-result-card');
-
-            cards.forEach(card => {
-                const video = card.querySelector('video');
-                if (video) video.muted = isGlobalMuted;
-            });
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const video = entry.target.querySelector('video');
-                    if (!video) return;
-                    if (entry.isIntersecting) {
-                        video.muted = isGlobalMuted;
-                        video.play().catch(() => {});
-                    } else {
-                        video.pause();
-                        video.currentTime = 0;
-                    }
-                });
-            }, { root: container, threshold: 0.6 });
-
-            cards.forEach(card => observer.observe(card));
-        }
-
-        function checkInfiniteScroll(element) {
+        function checkEmbedInfiniteScroll(element) {
             if (element.scrollTop + element.clientHeight >= element.scrollHeight - 150) {
-                if (!isLoadingReels) {
-                    isLoadingReels = true;
-                    runLiveReelsSearch(true);
-                }
+                loadEmbedFeed(true);
             }
         }
 
-        // Initialize Everything Safely on Startup
+        // Initialize Startup
         initLiveWeather();
         fetchNews('local-news');
-        runLiveReelsSearch();
+        loadEmbedFeed();
         fetchMeme();
 
         document.getElementById('bulletins-container').innerHTML = `
             <div class="card">
-                <h3>Global Feed Active</h3>
-                <p>Live meteorological and content syndication engines fully online.</p>
+                <h3>System Operational</h3>
+                <p>Multi-platform iframe embed streams active.</p>
             </div>
         `;
     </script>
