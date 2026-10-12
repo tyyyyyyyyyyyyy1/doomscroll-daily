@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Doomscroll Daily - Multi-Source Reels Engine</title>
+    <title>The Doomscroll Daily - Complete Dashboard</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -143,6 +143,11 @@
         .tab-btn:hover { background-color: #242b3b; }
         .tab-btn.active { background-color: var(--tab-active); color: #fff; border-color: var(--tab-active); box-shadow: 0 4px 12px rgba(255, 51, 75, 0.3); }
 
+        .sub-tab-nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .sub-tab-btn { background: #12161f; color: #8f9bba; border: 1px solid #2a2f3d; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+        .sub-tab-btn:hover { background: #1a1f2c; color: #fff; }
+        .sub-tab-btn.active { background: #00f2fe; color: #000; border-color: #00f2fe; }
+
         .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
         .tab-pane.active { display: block; }
 
@@ -154,6 +159,23 @@
         .card { background-color: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
         .card h3 { margin-top: 0; color: var(--secondary-accent); font-size: 1.1rem; }
         .card p { font-size: 0.95rem; line-height: 1.4; color: #ced6e0; margin-bottom: 15px; }
+        
+        .card-footer-link { font-size: 0.8rem; color: #00f2fe; text-decoration: none; font-weight: bold; align-self: flex-start; border-top: 1px solid #1f2533; padding-top: 8px; width: 100%; display: flex; justify-content: space-between; }
+        .card-footer-link:hover { text-decoration: underline; }
+
+        /* Restored Weather Styling */
+        .weather-grid-hourly { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        .weather-hour-card { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 6px; padding: 12px; text-align: center; }
+        .weather-time { font-size: 0.8rem; color: #00f2fe; font-weight: bold; margin-bottom: 5px; }
+        .weather-temp { font-size: 1.2rem; color: #fff; font-weight: bold; margin: 4px 0; }
+        .weather-cond { font-size: 0.8rem; color: #8f9bba; font-weight: bold; margin-top: 4px; }
+        .weather-precip { font-size: 0.75rem; color: #00f2fe; margin-top: 2px; }
+
+        .weather-period-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
+        @media (max-width: 768px) { .weather-period-grid { grid-template-columns: repeat(2, 1fr); } }
+        .period-card { background: #0b0e14; border: 1px solid #1f2533; border-radius: 6px; padding: 10px; text-align: center; }
+        .period-title { font-size: 0.75rem; color: #00f2fe; font-weight: bold; text-transform: uppercase; }
+        .period-val { font-size: 1rem; color: #fff; font-weight: bold; margin-top: 4px; }
 
         .media-engine-box { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 12px; padding: 20px; }
         .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
@@ -237,9 +259,9 @@
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     
     <div id="frontpage-weather-banner">
-        <span>📍 Locating GPS...</span>
-        <span>🌡 Loading live temp...</span>
-        <span>🌤️ Synced Local Time</span>
+        <span id="header-location">📍 Locating GPS...</span>
+        <span id="header-temp">🌡 Loading live temp...</span>
+        <span id="header-time">🌤️ Synced Local Time</span>
     </div>
 
     <div class="tab-nav">
@@ -260,18 +282,36 @@
         </section>
     </div>
 
-    <!-- Tab 2: News -->
+    <!-- Tab 2: News (Restored Sub-Tabs) -->
     <div id="news-tab" class="tab-pane">
         <section>
-            <h2>📰 News Feed</h2>
+            <h2>📰 Real-Time News Feeds</h2>
+            <div class="sub-tab-nav">
+                <button class="sub-tab-btn active" onclick="switchNewsSubTab('local-news', this)">🇨🇦 Ottawa Local</button>
+                <button class="sub-tab-btn" onclick="switchNewsSubTab('world-news', this)">🌐 World Headlines</button>
+                <button class="sub-tab-btn" onclick="switchNewsSubTab('tech-news', this)">💻 Tech & Science</button>
+            </div>
             <div id="local-news-grid" class="card-grid"></div>
         </section>
     </div>
 
-    <!-- Tab 3: Weather -->
+    <!-- Tab 3: Weather (Restored Detail Grid) -->
     <div id="weather-tab" class="tab-pane">
         <section>
-            <h2>🌤️ Weather Forecast</h2>
+            <h2>🌤️ Live Weather Forecast</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Syncing Open-Meteo Satellite...</span>
+                <button class="btn-action" style="margin:0; padding:6px 12px; font-size:0.8rem;" onclick="toggleTemperatureUnit()">Switch °C / °F</button>
+            </div>
+            
+            <div class="weather-period-grid">
+                <div class="period-card"><div class="period-title">Morning</div><div id="temp-morning" class="period-val">--</div></div>
+                <div class="period-card"><div class="period-title">Afternoon</div><div id="temp-afternoon" class="period-val">--</div></div>
+                <div class="period-card"><div class="period-title">Evening</div><div id="temp-evening" class="period-val">--</div></div>
+                <div class="period-card"><div class="period-title">Night</div><div id="temp-night" class="period-val">--</div></div>
+            </div>
+
+            <h3 style="color:#00f2fe; margin-top:25px; margin-bottom:10px;">24-Hour Rolling Hourly Outlook</h3>
             <div id="hourly-grid-container" class="weather-grid-hourly"></div>
         </section>
     </div>
@@ -279,10 +319,10 @@
     <!-- Tab 4: Media Engine -->
     <div id="media-tab" class="tab-pane">
         <section>
-            <h2>📺 Live Vertical Reels Engine (Pexels + Keyless YouTube Proxy)</h2>
+            <h2>📺 Live Vertical Reels Engine (Pexels + Keyless YouTube)</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
-                    <input type="text" id="media-search-input" placeholder="Search live videos (e.g. raccoon, ottawa)..." value="raccoon">
+                    <input type="text" id="media-search-input" placeholder="Search live videos (e.g. raccoon, Ottawa)..." value="raccoon">
                     <button onclick="runLiveReelsSearch()">Search Live Videos</button>
                 </div>
                 
@@ -341,6 +381,9 @@
         // PASTE YOUR PEXELS API KEY BETWEEN THE QUOTES BELOW:
         const PEXELS_API_KEY = "YOUR_PEXELS_API_KEY_HERE";
 
+        let currentTempUnit = 'C';
+        let rawWeatherData = null;
+
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -356,6 +399,120 @@
         function toggleCorporatePanic() { document.body.classList.toggle('panic-mode'); }
         function toggleRaccoonChaos() { document.body.classList.toggle('raccoon-mode'); }
 
+        // --- RESTORED WEATHER ENGINE ---
+        async function initLiveWeather() {
+            let lat = 45.4215, lon = -75.6972, locName = "Ottawa, ON"; // Default Ottawa
+            
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => { fetchWeather(pos.coords.latitude, pos.coords.longitude, "Local GPS"); },
+                    err => { fetchWeather(lat, lon, locName); }
+                );
+            } else {
+                fetchWeather(lat, lon, locName);
+            }
+        }
+
+        async function fetchWeather(lat, lon, locName) {
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,weathercode&current_weather=true&timezone=auto`;
+                const res = await fetch(url);
+                rawWeatherData = await res.json();
+                
+                document.getElementById('header-location').textContent = `📍 ${locName}`;
+                renderWeatherUI();
+            } catch (e) {
+                document.getElementById('weather-status-tag').textContent = "Weather offline.";
+            }
+        }
+
+        function renderWeatherUI() {
+            if (!rawWeatherData) return;
+            const current = rawWeatherData.current_weather;
+            const hourly = rawWeatherData.hourly;
+            
+            let temp = current.temperature;
+            if (currentTempUnit === 'F') temp = (temp * 9/5) + 32;
+            
+            document.getElementById('header-temp').textContent = `🌡 ${Math.round(temp)}°${currentTempUnit}`;
+            document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            document.getElementById('weather-status-tag').textContent = `Live Satellite Synced (${currentTempUnit})`;
+
+            // Period cards
+            document.getElementById('temp-morning').textContent = `${formatTemp(hourly.temperature_2m[8])}`;
+            document.getElementById('temp-afternoon').textContent = `${formatTemp(hourly.temperature_2m[14])}`;
+            document.getElementById('temp-evening').textContent = `${formatTemp(hourly.temperature_2m[19])}`;
+            document.getElementById('temp-night').textContent = `${formatTemp(hourly.temperature_2m[23])}`;
+
+            // Hourly 24-hr grid
+            let hourlyHTML = "";
+            for (let i = 0; i < 24; i++) {
+                const timeStr = new Date(hourly.time[i]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                hourlyHTML += `
+                    <div class="weather-hour-card">
+                        <div class="weather-time">${timeStr}</div>
+                        <div class="weather-temp">${formatTemp(hourly.temperature_2m[i])}</div>
+                        <div class="weather-precip">🌧️ ${hourly.precipitation_probability[i]}%</div>
+                    </div>
+                `;
+            }
+            document.getElementById('hourly-grid-container').innerHTML = hourlyHTML;
+        }
+
+        function formatTemp(celsiusVal) {
+            if (currentTempUnit === 'F') {
+                return `${Math.round((celsiusVal * 9/5) + 32)}°F`;
+            }
+            return `${Math.round(celsiusVal)}°C`;
+        }
+
+        function toggleTemperatureUnit() {
+            currentTempUnit = currentTempUnit === 'C' ? 'F' : 'C';
+            renderWeatherUI();
+        }
+
+        // --- RESTORED NEWS ENGINE ---
+        const newsFeeds = {
+            'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
+            'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
+            'tech-news': 'https://techcrunch.com/feed/'
+        };
+
+        async function fetchNews(feedKey) {
+            const grid = document.getElementById('local-news-grid');
+            grid.innerHTML = `<p style="color:#8f9bba; grid-column: 1/-1; text-align:center;">Fetching live RSS feed...</p>`;
+            
+            try {
+                const rssUrl = newsFeeds[feedKey];
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+                const data = await res.json();
+                
+                let cardsHTML = "";
+                data.items.slice(0, 6).forEach(item => {
+                    cardsHTML += `
+                        <div class="card">
+                            <h3>${item.title}</h3>
+                            <p>${item.description.replace(/<[^>]*>?/gm, '').substring(0, 110)}...</p>
+                            <a href="${item.link}" target="_blank" class="card-footer-link">
+                                <span>Read Full Story</span>
+                                <span>${new Date(item.pubDate).toLocaleDateString()}</span>
+                            </a>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = cardsHTML;
+            } catch (e) {
+                grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1;">Failed to load live news feed.</p>`;
+            }
+        }
+
+        function switchNewsSubTab(feedKey, btn) {
+            document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            fetchNews(feedKey);
+        }
+
+        // --- MULTI-SOURCE REELS ENGINE ---
         let isGlobalMuted = true;
         function toggleGlobalSound() {
             isGlobalMuted = !isGlobalMuted;
@@ -387,63 +544,53 @@
             if (PEXELS_API_KEY && PEXELS_API_KEY !== "YOUR_PEXELS_API_KEY_HERE") {
                 try {
                     const pexelsUrl = `https://api.pexels.com/v1/videos/search?query=${encodeURIComponent(query)}&orientation=portrait&per_page=6`;
-                    const res = await fetch(pexelsUrl, {
-                        headers: { Authorization: PEXELS_API_KEY }
-                    });
+                    const res = await fetch(pexelsUrl, { headers: { Authorization: PEXELS_API_KEY } });
                     if (res.ok) {
                         const data = await res.json();
-                        if (data.videos) {
-                            data.videos.forEach(v => {
-                                const videoFile = v.video_files.find(f => f.quality === 'hd' || f.quality === 'sd') || v.video_files[0];
-                                if (videoFile) {
-                                    reelCards.push({
-                                        source: `🎥 Pexels HD (${v.user.name})`,
-                                        title: `HD Reel: ${query}`,
-                                        caption: `High definition vertical video provided by Pexels creator ${v.user.name}.`,
-                                        url: v.url,
-                                        isEmbed: false,
-                                        videoUrl: videoFile.link,
-                                        likes: v.duration * 120 + 450,
-                                        comments: Math.floor(v.duration * 4.2) + 12
-                                    });
-                                }
-                            });
-                        }
+                        data?.videos?.forEach(v => {
+                            const videoFile = v.video_files.find(f => f.quality === 'hd' || f.quality === 'sd') || v.video_files[0];
+                            if (videoFile) {
+                                reelCards.push({
+                                    source: `🎥 Pexels HD (${v.user.name})`,
+                                    title: `HD Reel: ${query}`,
+                                    caption: `High definition vertical video provided by Pexels creator ${v.user.name}.`,
+                                    url: v.url,
+                                    isEmbed: false,
+                                    videoUrl: videoFile.link,
+                                    likes: v.duration * 120 + 450,
+                                    comments: Math.floor(v.duration * 4.2) + 12
+                                });
+                            }
+                        });
                     }
-                } catch (e) {
-                    console.log("Pexels fetch skipped or failed.");
-                }
+                } catch (e) {}
             }
 
-            // 2. Keyless YouTube Proxy (Piped API Search)
+            // 2. Keyless YouTube Proxy
             try {
                 const pipedUrl = `https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query + " shorts")}&filter=videos`;
                 const res = await fetch(pipedUrl);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.items) {
-                        data.items.slice(0, 4).forEach(item => {
-                            const videoId = item.url ? item.url.split("v=")[1] : null;
-                            if (videoId) {
-                                reelCards.push({
-                                    source: `▶️ YouTube Shorts (Keyless)`,
-                                    title: item.title,
-                                    caption: `Live YouTube Shorts result for "${query}" from ${item.uploaderName || 'Creator'}.`,
-                                    url: `https://www.youtube.com/watch?v=${videoId}`,
-                                    isEmbed: true,
-                                    videoUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0`,
-                                    likes: Math.floor(Math.random() * 8000) + 500,
-                                    comments: Math.floor(Math.random() * 400) + 20
-                                });
-                            }
-                        });
-                    }
+                    data?.items?.slice(0, 4).forEach(item => {
+                        const videoId = item.url ? item.url.split("v=")[1] : null;
+                        if (videoId) {
+                            reelCards.push({
+                                source: `▶️ YouTube Shorts (Keyless)`,
+                                title: item.title,
+                                caption: `Live YouTube Shorts result for "${query}" from ${item.uploaderName || 'Creator'}.`,
+                                url: `https://www.youtube.com/watch?v=${videoId}`,
+                                isEmbed: true,
+                                videoUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0`,
+                                likes: Math.floor(Math.random() * 8000) + 500,
+                                comments: Math.floor(Math.random() * 400) + 20
+                            });
+                        }
+                    });
                 }
-            } catch (e) {
-                console.log("Keyless YouTube Proxy unavailable, continuing chain.");
-            }
+            } catch (e) {}
 
-            // 3. Reddit Open JSON API Search
+            // 3. Reddit Open JSON Search
             if (reelCards.length < 8) {
                 try {
                     const targetUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=new&type=link`;
@@ -471,7 +618,7 @@
                 } catch (e) {}
             }
 
-            // 4. Fallback Array Safeguard
+            // 4. CORS Safeguard
             if (reelCards.length === 0) {
                 for (let i = 0; i < 4; i++) {
                     reelCards.push({
@@ -495,9 +642,7 @@
 
                 html += `
                     <div class="media-result-card" data-index="${index}">
-                        <div class="media-asset-container">
-                            ${mediaElement}
-                        </div>
+                        <div class="media-asset-container">${mediaElement}</div>
                         <div class="reels-gradient-overlay"></div>
                         
                         <div class="reels-action-sidebar">
@@ -526,14 +671,12 @@
                 resultsContainer.innerHTML = html;
             }
             isLoadingReels = false;
-            
             initVideoObservers();
         }
 
         function initVideoObservers() {
             const container = document.getElementById('multi-source-results');
             if (!container) return;
-
             const cards = container.querySelectorAll('.media-result-card');
 
             cards.forEach(card => {
@@ -545,7 +688,6 @@
                 entries.forEach(entry => {
                     const video = entry.target.querySelector('video');
                     if (!video) return;
-
                     if (entry.isIntersecting) {
                         video.muted = isGlobalMuted;
                         video.play().catch(() => {});
@@ -568,6 +710,9 @@
             }
         }
 
+        // Initialize Everything
+        initLiveWeather();
+        fetchNews('local-news');
         runLiveReelsSearch();
 
         document.getElementById('bulletins-container').innerHTML = `
