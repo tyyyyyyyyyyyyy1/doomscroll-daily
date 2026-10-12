@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Doomscroll Daily - Unhinged Weather & Reels Engine</title>
+    <title>The Doomscroll Daily - Multi-Platform Embed Engine</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -195,7 +195,6 @@
         .daily-weather-card { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 18px; margin-bottom: 20px; }
         .daily-weather-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-bottom: 1px dashed #2a2f3d; padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 5px; }
         
-        /* EXPANDED UNHINGED REPORT BOX */
         .outrageous-report-box { 
             background: rgba(255, 51, 75, 0.08); 
             border-left: 4px solid var(--accent-color); 
@@ -239,7 +238,8 @@
 
         .media-engine-box { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 12px; padding: 20px; }
         .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .search-bar-wrapper input[type="text"] { flex: 1; min-width: 200px; background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px 15px; border-radius: 8px; font-size: 1rem; }
+        .search-bar-wrapper select { background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-weight: bold; }
+        .search-bar-wrapper input[type="text"] { flex: 1; min-width: 180px; background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px 15px; border-radius: 8px; font-size: 1rem; }
         .search-bar-wrapper button { background: #ff334b; color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .search-bar-wrapper button:hover { background: #ff5267; }
 
@@ -285,7 +285,7 @@
 </head>
 <body>
 
-    <!-- VISUAL DEBUGGER CONSOLE BOX -->
+    <!-- VISUAL DEBUG LOGGER BOX -->
     <div id="visual-debugger"><b>🖥️ Visual Logger Initialized...</b><br></div>
 
     <script>
@@ -345,7 +345,7 @@
         <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Bulletins</button>
         <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News</button>
         <button class="tab-btn" onclick="switchTab('weather-tab', this)">🌤️ Weather</button>
-        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Live YouTube Shorts</button>
+        <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Multi-Platform Stream</button>
         <button class="tab-btn" onclick="switchTab('meme-tab', this)">🎭 Memes</button>
         <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 RPG Adventure</button>
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
@@ -415,16 +415,21 @@
     <!-- Tab 4: Media Engine -->
     <div id="media-tab" class="tab-pane">
         <section>
-            <h2>📺 Live YouTube Shorts Stream</h2>
+            <h2>📺 Multi-Platform Stream Engine</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
-                    <input type="text" id="media-search-input" placeholder="Search YouTube Shorts (e.g. raccoon, cyberpunk)..." value="raccoon">
-                    <button onclick="runLiveYouTubeSearch()">Search Shorts</button>
+                    <select id="media-platform-select">
+                        <option value="youtube">▶️ YouTube Shorts</option>
+                        <option value="dailymotion">🅿️ Dailymotion</option>
+                        <option value="vimeo">📼 Vimeo Showcase</option>
+                    </select>
+                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. raccoon, cyberpunk)..." value="raccoon">
+                    <button onclick="loadMultiPlatformStream()">Load Stream</button>
                 </div>
                 
                 <div class="media-feed-wrapper">
                     <div id="multi-source-results" onscroll="checkEmbedInfiniteScroll(this)">
-                        <p style="color:#8f9bba; text-align:center; padding: 40px;">Initializing live stream search...</p>
+                        <p style="color:#8f9bba; text-align:center; padding: 40px;">Initializing stream search...</p>
                     </div>
                 </div>
             </div>
@@ -513,7 +518,6 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        // --- EXPANDED UNHINGED & LENGTHY OUTRAGEOUS WEATHER REPORT GENERATOR ---
         function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
             let tempC = Number(maxTemp) || 15;
             let condition = getWeatherDetails(weatherCode).text.toLowerCase();
@@ -765,21 +769,23 @@
             fetchNews(feedKey);
         }
 
-        // --- LIVE YOUTUBE API SEARCH ENGINE ---
+        // --- MULTI-PLATFORM STREAM ENGINE ---
         let isLoadingEmbeds = false;
 
-        async function runLiveYouTubeSearch(isAppend = false) {
+        async function loadMultiPlatformStream(isAppend = false) {
+            const platform = document.getElementById('media-platform-select').value;
             const query = document.getElementById('media-search-input').value.trim() || "raccoon";
-            console.log(`Querying YouTube API for: ${query}`);
+            console.log(`Loading stream for platform: ${platform}, query: ${query}`);
             const container = document.getElementById('multi-source-results');
 
             if (!isAppend) {
-                container.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Searching YouTube Shorts for "${query}"...</p>`;
+                container.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Searching ${platform.toUpperCase()} for "${query}"...</p>`;
             }
 
             let reelCards = [];
 
-            if (YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
+            // 1. YOUTUBE API SEARCH
+            if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
                 try {
                     const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
                     const res = await fetch(ytUrl);
@@ -790,24 +796,58 @@
                             if (videoId) {
                                 reelCards.push({
                                     title: item.snippet.title,
-                                    caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `Live Shorts result for "${query}"`,
-                                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1`
+                                    caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `YouTube result for "${query}"`,
+                                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1`,
+                                    tag: "▶️ YouTube Shorts"
                                 });
                             }
                         });
-                    } else {
-                        console.warn("YouTube API error status:", res.status);
                     }
-                } catch (e) {
-                    console.error("YouTube API fetch error:", e);
-                }
+                } catch (e) { console.error("YouTube search error:", e); }
+            }
+
+            // 2. DAILYMOTION PUBLIC SEARCH API
+            else if (platform === 'dailymotion') {
+                try {
+                    const dmUrl = `https://api.dailymotion.com/videos?search=${encodeURIComponent(query)}&limit=6&fields=id,title,channel.title`;
+                    const res = await fetch(dmUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.list) {
+                            data.list.forEach(item => {
+                                reelCards.push({
+                                    title: item.title,
+                                    caption: `Dailymotion Feed stream`,
+                                    embedUrl: `https://www.dailymotion.com/embed/video/${item.id}?autoplay=1&mute=1`,
+                                    tag: "🅿️ Dailymotion"
+                                });
+                            });
+                        }
+                    }
+                } catch (e) { console.error("Dailymotion search error:", e); }
+            }
+
+            // 3. VIMEO SHOWCASE FALLBACK / CURATED POOL
+            else {
+                const vimeoPool = [
+                    { id: "76979871", title: `Cinematic Showcase: ${query}`, caption: "High definition vertical cinematic." },
+                    { id: "22439234", title: `Motion Art Loop: ${query}`, caption: "Smooth visual loop artwork." }
+                ];
+                vimeoPool.forEach(item => {
+                    reelCards.push({
+                        title: item.title,
+                        caption: item.caption,
+                        embedUrl: `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=1&loop=1`,
+                        tag: "📼 Vimeo Showcase"
+                    });
+                });
             }
 
             if (reelCards.length === 0) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
-                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ YouTube API Key Required</p>
-                        <p style="color: #8f9bba; font-size: 0.9rem;">To see live search results for <b>"${query}"</b>, paste your YouTube Data API v3 key into line 386 of index.html.</p>
+                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found or API limit reached.</p>
+                        <p style="color: #8f9bba; font-size: 0.9rem;">Try searching another keyword or platform.</p>
                     </div>
                 `;
                 isLoadingEmbeds = false;
@@ -829,7 +869,7 @@
                             </div>
                         </div>
                         <div class="reels-content-box">
-                            <span class="media-source-tag">▶️ YouTube Shorts</span>
+                            <span class="media-source-tag">${card.tag}</span>
                             <div class="media-result-title">${card.title}</div>
                             <div class="media-caption">${card.caption}</div>
                         </div>
@@ -845,7 +885,7 @@
             if (element.scrollTop + element.clientHeight >= element.scrollHeight - 150) {
                 if (!isLoadingEmbeds) {
                     isLoadingEmbeds = true;
-                    setTimeout(() => runLiveYouTubeSearch(true), 300);
+                    setTimeout(() => loadMultiPlatformStream(true), 300);
                 }
             }
         }
@@ -853,13 +893,13 @@
         // Initialize Startup
         initLiveWeather();
         fetchNews('local-news');
-        runLiveYouTubeSearch();
+        loadMultiPlatformStream();
         fetchMeme();
 
         document.getElementById('bulletins-container').innerHTML = `
             <div class="card">
                 <h3>System Operational</h3>
-                <p>Live YouTube Data API search stream initialized.</p>
+                <p>Multi-platform proxy-free stream engine active.</p>
             </div>
         `;
     </script>
