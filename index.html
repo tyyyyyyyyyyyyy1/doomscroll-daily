@@ -320,8 +320,6 @@
 
         footer { text-align: center; padding: 30px 10px; color: #747d8c; border-top: 1px solid #222; margin-top: 50px; font-size: 0.9rem; }
     </style>
-    <!-- Load Official YouTube IFrame API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
 
@@ -555,19 +553,16 @@
         let loadedEmbedUrls = new Set();
         let youtubeNextPageToken = "";
         let scrollTimeout = null;
-        let globalAudioUnmuted = false; // Tracks mute/unmute state
-        
-        let ytPlayers = {}; // Stores YouTube Player instances for direct API control
+        let globalAudioUnmuted = false; // Tracks global mute state
 
         function resetStreamPagination() {
             streamPage = 1;
             loadedEmbedUrls.clear();
             youtubeNextPageToken = "";
-            ytPlayers = {};
             loadMultiPlatformStream(false);
         }
 
-        // --- GLOBAL MUTE/UNMUTE BUTTON WITH 40MS DELAYED COMMAND ---
+        // --- GLOBAL MUTE/UNMUTE BUTTON WITH 40MS DELAYED POSTMESSAGE ---
         function toggleGlobalAudio() {
             globalAudioUnmuted = !globalAudioUnmuted;
             const btn = document.getElementById('global-audio-toggle-btn');
@@ -580,21 +575,10 @@
                 btn.classList.remove('unmuted');
             }
 
-            // Apply mute/unmute state with a 40ms delay to all active players
+            // Immediately send 40ms delayed audio command to all active elements
             setTimeout(() => {
-                Object.values(ytPlayers).forEach(player => {
-                    if (player && typeof player.setVolume === 'function') {
-                        if (globalAudioUnmuted) {
-                            player.unMute();
-                            player.setVolume(100);
-                        } else {
-                            player.mute();
-                        }
-                    }
-                });
+                updateActiveReelPlayback();
             }, 40);
-
-            updateActiveReelPlayback();
         }
 
         function switchTab(tabId, btnElement) {
@@ -958,7 +942,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (REBUILT WITH YOUTUBE API) ---
+        // --- MULTI-PLATFORM STREAM ENGINE ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -971,12 +955,11 @@
                 streamPage = 1;
                 loadedEmbedUrls.clear();
                 youtubeNextPageToken = "";
-                ytPlayers = {};
             }
 
             let reelCards = [];
 
-            // 1. YOUTUBE SHORTS API INTEGRATION
+            // 1. YOUTUBE SHORTS (Safely muted by default, enabled with jsapi for 40ms postMessage unmute)
             if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
                 try {
                     let ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
@@ -987,18 +970,18 @@
                         const data = await res.json();
                         youtubeNextPageToken = data.nextPageToken || "";
                         if (data.items) {
-                            data.items.forEach((item, index) => {
+                            data.items.forEach(item => {
                                 const videoId = item.id.videoId;
                                 if (videoId) {
-                                    const uniqueKey = `yt-player-${streamPage}-${index}-${videoId}`;
-                                    if (!loadedEmbedUrls.has(videoId)) {
-                                        loadedEmbedUrls.add(videoId);
+                                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&enablejsapi=1`;
+                                    
+                                    if (!loadedEmbedUrls.has(embedUrl)) {
+                                        loadedEmbedUrls.add(embedUrl);
                                         reelCards.push({
                                             title: item.snippet.title,
                                             caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `YouTube result for "${query}"`,
-                                            videoId: videoId,
-                                            domId: uniqueKey,
-                                            type: "youtube",
+                                            embedUrl: embedUrl,
+                                            type: "iframe",
                                             tag: "▶️ YouTube Shorts"
                                         });
                                     }
@@ -1039,7 +1022,7 @@
                 } catch (e) { console.error("Wikimedia search error:", e); }
             }
 
-            // 3. PIXABAY VIDEOS
+            // 3. PIXABAY VIDEOS (Fixed corrected Endpoint)
             else if (platform === 'pixabay-video') {
                 try {
                     const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&per_page=10&page=${streamPage}`;
@@ -1111,11 +1094,11 @@
                 } else if (card.type === "image") {
                     mediaMarkup = `<img src="${card.embedUrl}" class="media-image" alt="Pixabay Image">`;
                 } else {
-                    mediaMarkup = `<div id="${card.domId}" class="media-iframe" data-videoid="${card.videoId}"></div>`;
+                    mediaMarkup = `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
                 }
 
                 html += `
-                    <div class="media-result-card" data-type="${card.type}" data-domid="${card.domId || ''}">
+                    <div class="media-result-card">
                         <div class="media-asset-container">
                             ${mediaMarkup}
                         </div>
@@ -1136,31 +1119,6 @@
             });
 
             container.innerHTML = html;
-            
-            // Initialize YouTube API players for any newly added placeholder elements
-            if (platform === 'youtube' && typeof YT !== 'undefined' && YT.Player) {
-                reelCards.forEach(card => {
-                    if (card.type === "youtube") {
-                        ytPlayers[card.domId] = new YT.Player(card.domId, {
-                            videoId: card.videoId,
-                            playerVars: {
-                                'autoplay': 0,
-                                'controls': 1,
-                                'loop': 1,
-                                'playlist': card.videoId,
-                                'playsinline': 1,
-                                'enablejsapi': 1
-                            },
-                            events: {
-                                'onReady': (event) => {
-                                    event.target.mute(); // Load safely muted to prevent black screens
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-
             isLoadingEmbeds = false;
         }
 
@@ -1182,9 +1140,8 @@
 
             cards.forEach(card => {
                 const rect = card.getBoundingClientRect();
-                const type = card.getAttribute('data-type');
-                const domId = card.getAttribute('data-domid');
                 const video = card.querySelector('video');
+                const iframe = card.querySelector('iframe');
 
                 const isVisible = rect.top >= containerTop - 150 && rect.top <= containerTop + 250;
 
@@ -1198,20 +1155,31 @@
                     }
                 }
                 
-                if (type === 'youtube' && domId && ytPlayers[domId]) {
-                    const player = ytPlayers[domId];
-                    if (typeof player.playVideo === 'function') {
-                        if (isVisible) {
-                            if (globalAudioUnmuted) {
-                                player.unMute();
-                                player.setVolume(100);
-                            } else {
-                                player.mute();
+                if (iframe) {
+                    const src = iframe.src;
+                    if (!isVisible && src && src.includes('autoplay=1')) {
+                        iframe.src = src.replace('autoplay=1', 'autoplay=0');
+                    } else if (isVisible && src && src.includes('autoplay=0')) {
+                        iframe.src = src.replace('autoplay=0', 'autoplay=1');
+                    }
+
+                    // Handle 40ms delayed postMessage command for YouTube Shorts unmuting/muting on scroll & toggle
+                    if (isVisible) {
+                        setTimeout(() => {
+                            if (globalAudioUnmuted && iframe && iframe.contentWindow) {
+                                iframe.contentWindow.postMessage(JSON.stringify({
+                                    event: 'command',
+                                    func: 'unMute',
+                                    args: ''
+                                }), '*');
+                            } else if (!globalAudioUnmuted && iframe && iframe.contentWindow) {
+                                iframe.contentWindow.postMessage(JSON.stringify({
+                                    event: 'command',
+                                    func: 'mute',
+                                    args: ''
+                                }), '*');
                             }
-                            player.playVideo();
-                        } else {
-                            player.pauseVideo();
-                        }
+                        }, 40);
                     }
                 }
             });
