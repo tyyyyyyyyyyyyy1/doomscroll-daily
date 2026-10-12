@@ -575,7 +575,6 @@
                 btn.classList.remove('unmuted');
             }
 
-            // Immediately send 40ms delayed audio command to all active elements
             setTimeout(() => {
                 updateActiveReelPlayback();
             }, 40);
@@ -895,6 +894,7 @@
                     containerEl.innerHTML = `<img src="${data.url}" alt="Meme" style="max-width: 100%; max-height: 400px; border-radius: 8px; object-fit: contain;">`;
                 }
             } catch (e) {
+                console.error("Meme API error:", e);
                 containerEl.innerHTML = `<p style="color:#ff334b;">Failed to fetch live meme.</p>`;
             }
         }
@@ -933,6 +933,7 @@
                 });
                 grid.innerHTML = html;
             } catch (e) {
+                console.error("News API error:", e);
                 grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1;">Failed to load feed.</p>`;
             }
         }
@@ -942,7 +943,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE ---
+        // --- MULTI-PLATFORM STREAM ENGINE WITH EXPLICIT ERROR LOGGING ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -959,127 +960,127 @@
 
             let reelCards = [];
 
-            // 1. YOUTUBE SHORTS (Safely muted by default, enabled with jsapi for 40ms postMessage unmute)
-            if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
-                try {
+            try {
+                // 1. YOUTUBE SHORTS
+                if (platform === 'youtube') {
+                    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "YOUR_KEY_HERE") {
+                        console.error("YouTube API Key missing or invalid.");
+                        return;
+                    }
                     let ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
                     if (youtubeNextPageToken) ytUrl += `&pageToken=${youtubeNextPageToken}`;
                     
+                    console.log("Fetching YouTube API:", ytUrl);
                     const res = await fetch(ytUrl);
-                    if (res.ok) {
-                        const data = await res.json();
-                        youtubeNextPageToken = data.nextPageToken || "";
-                        if (data.items) {
-                            data.items.forEach(item => {
-                                const videoId = item.id.videoId;
-                                if (videoId) {
-                                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&enablejsapi=1`;
-                                    
-                                    if (!loadedEmbedUrls.has(embedUrl)) {
-                                        loadedEmbedUrls.add(embedUrl);
-                                        reelCards.push({
-                                            title: item.snippet.title,
-                                            caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `YouTube result for "${query}"`,
-                                            embedUrl: embedUrl,
-                                            type: "iframe",
-                                            tag: "▶️ YouTube Shorts"
-                                        });
-                                    }
+                    if (!res.ok) throw new Error(`YouTube HTTP error! status: ${res.status}`);
+                    const data = await res.json();
+                    youtubeNextPageToken = data.nextPageToken || "";
+                    if (data.items) {
+                        data.items.forEach(item => {
+                            const videoId = item.id.videoId;
+                            if (videoId) {
+                                const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&enablejsapi=1`;
+                                if (!loadedEmbedUrls.has(embedUrl)) {
+                                    loadedEmbedUrls.add(embedUrl);
+                                    reelCards.push({
+                                        title: item.snippet.title,
+                                        caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `YouTube result for "${query}"`,
+                                        embedUrl: embedUrl,
+                                        type: "iframe",
+                                        tag: "▶️ YouTube Shorts"
+                                    });
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
-                } catch (e) { console.error("YouTube search error:", e); }
-            }
+                }
 
-            // 2. WIKIMEDIA COMMONS VIDEO API
-            else if (platform === 'wikimedia') {
-                try {
+                // 2. WIKIMEDIA COMMONS VIDEO API
+                else if (platform === 'wikimedia') {
                     const sroffset = (streamPage - 1) * 5;
                     const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + " filetype:video")}&gsrnamespace=6&gsrlimit=5&gsroffset=${sroffset}&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
+                    console.log("Fetching Wikimedia API:", wikiUrl);
                     const res = await fetch(wikiUrl);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && data.query && data.query.pages) {
-                            Object.values(data.query.pages).forEach(page => {
-                                if (page.imageinfo && page.imageinfo[0]) {
-                                    const info = page.imageinfo[0];
-                                    if (info.url && !loadedEmbedUrls.has(info.url)) {
-                                        loadedEmbedUrls.add(info.url);
-                                        reelCards.push({
-                                            title: page.title.replace(/^File:/i, ''),
-                                            caption: `Wikimedia Commons search result`,
-                                            embedUrl: info.url,
-                                            mimeType: info.mime || "video/webm",
-                                            type: "video",
-                                            tag: "🌐 Wikimedia Video"
-                                        });
-                                    }
+                    if (!res.ok) throw new Error(`Wikimedia HTTP error! status: ${res.status}`);
+                    const data = await res.json();
+                    if (data && data.query && data.query.pages) {
+                        Object.values(data.query.pages).forEach(page => {
+                            if (page.imageinfo && page.imageinfo[0]) {
+                                const info = page.imageinfo[0];
+                                if (info.url && !loadedEmbedUrls.has(info.url)) {
+                                    loadedEmbedUrls.add(info.url);
+                                    reelCards.push({
+                                        title: page.title.replace(/^File:/i, ''),
+                                        caption: `Wikimedia Commons search result`,
+                                        embedUrl: info.url,
+                                        mimeType: info.mime || "video/webm",
+                                        type: "video",
+                                        tag: "🌐 Wikimedia Video"
+                                    });
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
-                } catch (e) { console.error("Wikimedia search error:", e); }
-            }
+                }
 
-            // 3. PIXABAY VIDEOS (Fixed corrected Endpoint)
-            else if (platform === 'pixabay-video') {
-                try {
+                // 3. PIXABAY VIDEOS
+                else if (platform === 'pixabay-video') {
                     const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&per_page=10&page=${streamPage}`;
+                    console.log("Fetching Pixabay Video API:", pixabayVidUrl);
                     const res = await fetch(pixabayVidUrl);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && data.hits) {
-                            data.hits.forEach(video => {
-                                if (video && video.videos) {
-                                    const vUrl = video.videos.medium?.url || video.videos.small?.url || video.videos.large?.url;
-                                    if (vUrl && !loadedEmbedUrls.has(vUrl)) {
-                                        loadedEmbedUrls.add(vUrl);
-                                        reelCards.push({
-                                            title: `Pixabay Video: ${query}`,
-                                            caption: `Tags: ${video.tags || query} | By ${video.user || 'Unknown'}`,
-                                            embedUrl: vUrl,
-                                            mimeType: "video/mp4",
-                                            type: "video",
-                                            tag: "🎥 Pixabay Video"
-                                        });
-                                    }
+                    if (!res.ok) throw new Error(`Pixabay Video HTTP error! status: ${res.status}`);
+                    const data = await res.json();
+                    if (data && data.hits) {
+                        data.hits.forEach(video => {
+                            if (video && video.videos) {
+                                const vUrl = video.videos.medium?.url || video.videos.small?.url || video.videos.large?.url;
+                                if (vUrl && !loadedEmbedUrls.has(vUrl)) {
+                                    loadedEmbedUrls.add(vUrl);
+                                    reelCards.push({
+                                        title: `Pixabay Video: ${query}`,
+                                        caption: `Tags: ${video.tags || query} | By ${video.user || 'Unknown'}`,
+                                        embedUrl: vUrl,
+                                        mimeType: "video/mp4",
+                                        type: "video",
+                                        tag: "🎥 Pixabay Video"
+                                    });
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
-                } catch (e) { console.error("Pixabay video search error:", e); }
-            }
+                }
 
-            // 4. PIXABAY IMAGES
-            else if (platform === 'pixabay-image') {
-                try {
+                // 4. PIXABAY IMAGES
+                else if (platform === 'pixabay-image') {
                     const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&image_type=photo&per_page=10&page=${streamPage}`;
+                    console.log("Fetching Pixabay Image API:", pixabayImgUrl);
                     const res = await fetch(pixabayImgUrl);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && data.hits) {
-                            data.hits.forEach(img => {
-                                if (img) {
-                                    const imgUrl = img.largeImageURL || img.webformatURL;
-                                    if (imgUrl && !loadedEmbedUrls.has(imgUrl)) {
-                                        loadedEmbedUrls.add(imgUrl);
-                                        reelCards.push({
-                                            title: `Pixabay Photo: ${query}`,
-                                            caption: `Tags: ${img.tags || query} | By ${img.user || 'Unknown'}`,
-                                            embedUrl: imgUrl,
-                                            type: "image",
-                                            tag: "🖼️ Pixabay Image"
-                                        });
-                                    }
+                    if (!res.ok) throw new Error(`Pixabay Image HTTP error! status: ${res.status}`);
+                    const data = await res.json();
+                    if (data && data.hits) {
+                        data.hits.forEach(img => {
+                            if (img) {
+                                const imgUrl = img.largeImageURL || img.webformatURL;
+                                if (imgUrl && !loadedEmbedUrls.has(imgUrl)) {
+                                    loadedEmbedUrls.add(imgUrl);
+                                    reelCards.push({
+                                        title: `Pixabay Photo: ${query}`,
+                                        caption: `Tags: ${img.tags || query} | By ${img.user || 'Unknown'}`,
+                                        embedUrl: imgUrl,
+                                        type: "image",
+                                        tag: "🖼️ Pixabay Image"
+                                    });
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
-                } catch (e) { console.error("Pixabay image search error:", e); }
+                }
+            } catch (err) {
+                console.error(`[STREAM FETCH ERROR - ${platform}]:`, err.message);
             }
 
             if (reelCards.length === 0 && !isAppend) {
+                container.innerHTML = `<div style="padding: 40px; text-align: center; color: #ff334b;">No items found or API request failed. Check debugger above.</div>`;
                 isLoadingEmbeds = false;
                 return;
             }
@@ -1163,7 +1164,6 @@
                         iframe.src = src.replace('autoplay=0', 'autoplay=1');
                     }
 
-                    // Handle 40ms delayed postMessage command for YouTube Shorts unmuting/muting on scroll & toggle
                     if (isVisible) {
                         setTimeout(() => {
                             if (globalAudioUnmuted && iframe && iframe.contentWindow) {
