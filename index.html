@@ -693,6 +693,24 @@
             }
         }
 
+        // --- 2 AM THOUGHTS GENERATOR ---
+        const intrusiveThoughts = [
+            "If animals could talk, which one would be the most obnoxious?",
+            "Your brain has named itself without your explicit consent.",
+            "Every mirror you look into is slightly outdated by the speed of light.",
+            "If you clean a vacuum cleaner, you become a vacuum cleaner.",
+            "What if birds aren't real, but pigeons are government security cameras that need software updates?",
+            "We spend years learning how to talk, and then spend the rest of our lives trying to remain quiet.",
+            "Is soup just a hot beverage you eat with a tool?",
+            "If nothing sticks to Teflon, how do they stick Teflon to the pan?"
+        ];
+
+        function generateThought() {
+            const thoughtEl = document.getElementById('thought-text');
+            const randomThought = intrusiveThoughts[Math.floor(Math.random() * intrusiveThoughts.length)];
+            thoughtEl.textContent = `"${randomThought}"`;
+        }
+
         // --- NEWS ENGINE ---
         const newsFeeds = {
             'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
@@ -789,7 +807,6 @@
                 console.warn("Piped search bypassed or blocked via CORS.");
             }
 
-            // Fallback streams guarantee the video feed is never empty even if external APIs block CORS
             if (reelCards.length === 0) {
                 for (let i = 0; i < 4; i++) {
                     reelCards.push({
