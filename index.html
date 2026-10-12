@@ -24,7 +24,6 @@
         }
         @media (min-width: 768px) { body { padding: 20px; } }
         
-        /* VISUAL DEBUG LOGGER BOX */
         #visual-debugger {
             background: #1a0000;
             border: 2px solid #ff334b;
@@ -61,7 +60,6 @@
         .panic-btn.raccoon { background: #ffa502; color: #000; }
         .panic-btn:hover { transform: scale(1.05); }
 
-        /* Corporate Panic Mode */
         body.panic-mode header, 
         body.panic-mode .tab-nav, 
         body.panic-mode .tab-pane, 
@@ -83,7 +81,6 @@
         }
         body.panic-mode #corporate-panic { display: block !important; }
 
-        /* Raccoon Chaos Mode */
         body.raccoon-mode header, 
         body.raccoon-mode .tab-nav, 
         body.raccoon-mode .tab-pane, 
@@ -261,7 +258,7 @@
             flex-direction: column; justify-content: flex-end; overflow: hidden; flex-shrink: 0;
         }
         .media-asset-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
-        .media-iframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
+        .media-iframe, .media-video { width: 100%; height: 100%; border: none; pointer-events: auto; object-fit: cover; }
 
         .reels-gradient-overlay {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
@@ -285,7 +282,6 @@
 </head>
 <body>
 
-    <!-- VISUAL DEBUGGER CONSOLE BOX -->
     <div id="visual-debugger"><b>🖥️ Visual Logger Initialized...</b><br></div>
 
     <script>
@@ -421,7 +417,7 @@
                     <select id="media-platform-select">
                         <option value="youtube">▶️ YouTube Shorts</option>
                         <option value="dailymotion">🅿️ Dailymotion</option>
-                        <option value="vimeo">📼 Vimeo Showcase</option>
+                        <option value="wikimedia">🌐 Wikimedia Commons API</option>
                     </select>
                     <input type="text" id="media-search-input" placeholder="Search topic (e.g. raccoon, cyberpunk)..." value="raccoon">
                     <button onclick="loadMultiPlatformStream()">Load Stream</button>
@@ -588,7 +584,6 @@
             `;
         }
 
-        // --- LOCALIZED IP & GPS GEOLOCATION ENGINE ---
         async function fetchIPLocation() {
             const statusTag = document.getElementById('weather-status-tag');
             if (statusTag) statusTag.textContent = "🌐 Detecting location via IP network...";
@@ -627,7 +622,6 @@
         }
 
         function initLiveWeather() {
-            // Automatically detect local weather wherever viewer is located without assuming Ottawa
             requestUserLocation();
         }
 
@@ -658,7 +652,7 @@
         }
 
         function renderWeatherUI() {
-            if (!rawWeatherData) return;
+            if (!rawWeatherData || !rawWeatherData.hourly) return;
             const current = rawWeatherData.current_weather;
             const hourly = rawWeatherData.hourly;
             const curCond = getWeatherDetails(current.weathercode);
@@ -668,8 +662,12 @@
             document.getElementById('header-temp').textContent = `${curCond.icon} ${Math.round(temp)}°${currentTempUnit}`;
             document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: 'numeric', minute:'2-digit', hour12: true})}`;
 
-            const nowIso = new Date().toISOString().substring(0, 13);
-            let startIndex = hourly.time.findIndex(t => t.startsWith(nowIso));
+            // Match exact local hour matching user's current viewing time zone
+            const nowLocalHour = new Date().getHours();
+            let startIndex = hourly.time.findIndex(t => {
+                const hourVal = new Date(t).getHours();
+                return hourVal === nowLocalHour;
+            });
             if (startIndex === -1) startIndex = 0;
 
             let hourlyHTML = "";
@@ -812,7 +810,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE ---
+        // --- MULTI-PLATFORM STREAM ENGINE (YOUTUBE, DAILYMOTION & WIKIMEDIA API) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -841,6 +839,7 @@
                                     title: item.snippet.title,
                                     caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `YouTube result for "${query}"`,
                                     embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1`,
+                                    type: "iframe",
                                     tag: "▶️ YouTube Shorts"
                                 });
                             }
@@ -849,48 +848,60 @@
                 } catch (e) { console.error("YouTube search error:", e); }
             }
 
-            // 2. DAILYMOTION PUBLIC SEARCH API
+            // 2. DAILYMOTION API SEARCH
             else if (platform === 'dailymotion') {
                 try {
-                    const dmUrl = `https://api.dailymotion.com/videos?search=${encodeURIComponent(query)}&limit=6&fields=id,title,channel.title`;
+                    const dmUrl = `https://api.dailymotion.com/videos?q=${encodeURIComponent(query)}&limit=6&fields=id,title`;
                     const res = await fetch(dmUrl);
                     if (res.ok) {
                         const data = await res.json();
-                        if (data && data.list) {
-                            data.list.forEach(item => {
+                        const items = data.list || data.data || [];
+                        items.forEach(item => {
+                            const vidId = item.id || item.video_id;
+                            if (vidId) {
                                 reelCards.push({
-                                    title: item.title,
-                                    caption: `Dailymotion Feed stream`,
-                                    embedUrl: `https://www.dailymotion.com/embed/video/${item.id}?autoplay=1&mute=1`,
+                                    title: item.title || `Dailymotion ${query} clip`,
+                                    caption: `Live Dailymotion Stream`,
+                                    embedUrl: `https://www.dailymotion.com/embed/video/${vidId}?autoplay=1&mute=1`,
+                                    type: "iframe",
                                     tag: "🅿️ Dailymotion"
                                 });
-                            });
-                        }
+                            }
+                        });
                     }
                 } catch (e) { console.error("Dailymotion search error:", e); }
             }
 
-            // 3. VIMEO SHOWCASE FALLBACK / CURATED POOL
-            else {
-                const vimeoPool = [
-                    { id: "76979871", title: `Cinematic Showcase: ${query}`, caption: "High definition vertical cinematic." },
-                    { id: "22439234", title: `Motion Art Loop: ${query}`, caption: "Smooth visual loop artwork." }
-                ];
-                vimeoPool.forEach(item => {
-                    reelCards.push({
-                        title: item.title,
-                        caption: item.caption,
-                        embedUrl: `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=1&loop=1`,
-                        tag: "📼 Vimeo Showcase"
-                    });
-                });
+            // 3. WIKIMEDIA COMMONS PUBLIC VIDEO SEARCH (Zero Keys Required)
+            else if (platform === 'wikimedia') {
+                try {
+                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gteqtitle=${encodeURIComponent(query)}&gsrsearch=filetype:video%20${encodeURIComponent(query)}&gsrlimit=6&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;
+                    const res = await fetch(wikiUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.query && data.query.pages) {
+                            Object.values(data.query.pages).forEach(page => {
+                                if (page.imageinfo && page.imageinfo[0]) {
+                                    const mediaUrl = page.imageinfo[0].url;
+                                    reelCards.push({
+                                        title: page.title.replace('File:', ''),
+                                        caption: `Wikimedia Public Domain Video Stream`,
+                                        embedUrl: mediaUrl,
+                                        type: "video",
+                                        tag: "🌐 Wikimedia Video"
+                                    });
+                                }
+                            });
+                        }
+                    }
+                } catch (e) { console.error("Wikimedia search error:", e); }
             }
 
             if (reelCards.length === 0) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
-                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found or API limit reached.</p>
-                        <p style="color: #8f9bba; font-size: 0.9rem;">Try searching another keyword or platform.</p>
+                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found for "${query}".</p>
+                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a different keyword or platform selector.</p>
                     </div>
                 `;
                 isLoadingEmbeds = false;
@@ -899,10 +910,14 @@
 
             let html = isAppend ? container.innerHTML : "";
             reelCards.forEach(card => {
+                const mediaMarkup = card.type === "video" 
+                    ? `<video src="${card.embedUrl}" class="media-video" autoplay loop muted playsinline></video>`
+                    : `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+
                 html += `
                     <div class="media-result-card">
                         <div class="media-asset-container">
-                            <iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                            ${mediaMarkup}
                         </div>
                         <div class="reels-gradient-overlay"></div>
                         <div class="reels-action-sidebar">
