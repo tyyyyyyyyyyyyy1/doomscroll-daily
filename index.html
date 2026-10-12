@@ -148,6 +148,9 @@
         .sub-tab-btn:hover { background: #1a1f2c; color: #fff; }
         .sub-tab-btn.active { background: #00f2fe; color: #000; border-color: #00f2fe; }
 
+        .weather-sub-pane { display: none; }
+        .weather-sub-pane.active { display: block; }
+
         .tab-pane { display: none; max-width: 900px; margin: 0 auto; }
         .tab-pane.active { display: block; }
 
@@ -163,8 +166,8 @@
         .card-footer-link { font-size: 0.8rem; color: #00f2fe; text-decoration: none; font-weight: bold; align-self: flex-start; border-top: 1px solid #1f2533; padding-top: 8px; width: 100%; display: flex; justify-content: space-between; }
         .card-footer-link:hover { text-decoration: underline; }
 
-        /* Advanced Weather Styling */
-        .weather-grid-hourly { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        /* Weather Styling */
+        .weather-grid-hourly { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 500px; overflow-y: auto; padding-right: 5px; }
         .weather-hour-card { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 12px; text-align: center; }
         .weather-time { font-size: 0.8rem; color: #00f2fe; font-weight: bold; margin-bottom: 5px; }
         .weather-icon-lg { font-size: 1.8rem; margin: 2px 0; }
@@ -265,7 +268,7 @@
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     
     <div id="frontpage-weather-banner">
-        <span id="header-location">📍 Locating Viewer...</span>
+        <span id="header-location">📍 Locating Viewer Worldwide...</span>
         <span id="header-temp">🌡 Loading live temp...</span>
         <span id="header-time">🌤️ Synced Local Time</span>
     </div>
@@ -301,14 +304,15 @@
         </section>
     </div>
 
-    <!-- Tab 3: Advanced Synchronized Weather -->
+    <!-- Tab 3: Advanced Weather Sub-Tabs -->
     <div id="weather-tab" class="tab-pane">
         <section>
             <h2>🌤️ Live Weather & Outrageous Reports</h2>
             
             <div class="sub-tab-nav">
-                <button class="sub-tab-btn active" onclick="switchWeatherDays(7, this)">7-Day Forecast</button>
-                <button class="sub-tab-btn" onclick="switchWeatherDays(14, this)">14-Day Forecast</button>
+                <button class="sub-tab-btn active" onclick="switchWeatherSubTab('hourly-pane', this)">🕒 24-Hour Outlook</button>
+                <button class="sub-tab-btn" onclick="switchWeatherSubTab('seven-pane', this)">📅 7-Day Forecast</button>
+                <button class="sub-tab-btn" onclick="switchWeatherSubTab('fourteen-pane', this)">📆 14-Day Forecast</button>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
@@ -316,11 +320,23 @@
                 <button class="btn-action" style="margin:0; padding:6px 12px; font-size:0.8rem;" onclick="toggleTemperatureUnit()">Toggle °C / °F & mm / in</button>
             </div>
 
-            <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:10px;">24-Hour Rolling Outlook (Starting Now)</h3>
-            <div id="hourly-grid-container" class="weather-grid-hourly"></div>
+            <!-- Pane 1: 24 Hour Outlook -->
+            <div id="hourly-pane" class="weather-sub-pane active">
+                <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:10px;">24-Hour Rolling Outlook (Starting from Current Hour)</h3>
+                <div id="hourly-grid-container" class="weather-grid-hourly"></div>
+            </div>
 
-            <h3 style="color:#00f2fe; margin-top:25px; margin-bottom:15px;">Extended Outrageous Weather Forecasts</h3>
-            <div id="extended-daily-container"></div>
+            <!-- Pane 2: 7 Day Forecast -->
+            <div id="seven-pane" class="weather-sub-pane">
+                <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:15px;">7-Day Extended Forecast</h3>
+                <div id="seven-daily-container"></div>
+            </div>
+
+            <!-- Pane 3: 14 Day Forecast -->
+            <div id="fourteen-pane" class="weather-sub-pane">
+                <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:15px;">14-Day Extended Forecast</h3>
+                <div id="fourteen-daily-container"></div>
+            </div>
         </section>
     </div>
 
@@ -389,7 +405,6 @@
         let currentTempUnit = 'C'; 
         let currentPrecipUnit = 'mm'; 
         let rawWeatherData = null;
-        let selectedForecastDays = 7;
 
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
@@ -401,6 +416,13 @@
             } else {
                 initVideoObservers();
             }
+        }
+
+        function switchWeatherSubTab(paneId, btn) {
+            document.querySelectorAll('.weather-sub-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('#weather-tab .sub-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(paneId).classList.add('active');
+            btn.classList.add('active');
         }
 
         function toggleCorporatePanic() { document.body.classList.toggle('panic-mode'); }
@@ -420,16 +442,28 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        const outrageousReportTemplates = [
-            "UNHINGED SKY CHAOS: High chance of localized existential panic and wet socks.",
-            "SUNAPOCALYPSE: The sun is aggressively staring at you today. Hydrate or succumb.",
-            "MOISTURE ASSAULT: Sky juice incoming. Prepare your umbrellas or accept the dampness.",
-            "ARCTIC REVENGE: Frosty breeze designed specifically to ruin your motivation.",
-            "ATMOSPHERIC THREAT: Cloud formations look suspicious. Proceed with extreme caution.",
-            "PERFECT SLOTH WEATHER: High probability of staying in bed and canceling all social obligations."
-        ];
+        // --- CONTEXT-AWARE OUTRAGEOUS WEATHER REPORTS ---
+        function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
+            let tempC = Number(maxTemp) || 15;
+            let condition = getWeatherDetails(weatherCode).text.toLowerCase();
+            let rainAmt = Number(precipSum) || 0;
 
-        // --- GLOBAL TWO-TIER LOCATOR (GPS FIRST -> DYNAMIC IP FALLBACK) ---
+            if (condition.includes('snow')) {
+                return `ARCTIC FREEZE ASSAULT: Snow falling with absolute malice. Expect your neighborhood to become an igloo and your motivation to drop below freezing.`;
+            } else if (condition.includes('thunderstorm')) {
+                return `THUNDERDOME ACTIVATED: Mother Nature is throwing a violent tantrum with lightning bolts. Unplug your appliances and hide your electronics immediately.`;
+            } else if (condition.includes('rain')) {
+                return `MOISTURE ASSAULT: Sky juice is coming down heavy (${rainAmt}mm). Puddles have formed specifically to sabotage your footwear.`;
+            } else if (tempC > 25) {
+                return `SOLAR AGGRESSION: The sun is roasting the pavement today. You will melt into a puddle without immediate iced caffeine intervention.`;
+            } else if (tempC < 0) {
+                return `FREEZING REALITY: Sub-zero temperatures mean your facial hair will freeze solid. Embrace the local ice-zombie aesthetic.`;
+            } else {
+                return `SUSPICIOUSLY CALM: The sky looks decent, which probably means local wildlife is plotting something chaotic behind your back.`;
+            }
+        }
+
+        // --- GLOBAL TWO-TIER LOCATOR (GPS FIRST -> IP FALLBACK) ---
         async function initLiveWeather() {
             document.getElementById('weather-status-tag').textContent = "Requesting precise GPS...";
             
@@ -494,7 +528,7 @@
             document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
             document.getElementById('weather-status-tag').textContent = `Localized Live Feed (${currentTempUnit}, ${currentPrecipUnit})`;
 
-            // 1. DYNAMIC 24-HOUR ROLLING OUTLOOK STARTING FROM CURRENT HOUR
+            // 1. DYNAMIC 24-HOUR ROLLING OUTLOOK STARTING FROM CURRENT HOUR OF VIEWER'S LOCAL TIMEZONE
             const nowIso = new Date().toISOString().substring(0, 13);
             let startIndex = hourly.time.findIndex(t => t.startsWith(nowIso));
             if (startIndex === -1) startIndex = 0;
@@ -519,9 +553,16 @@
             }
             document.getElementById('hourly-grid-container').innerHTML = hourlyHTML;
 
-            // 2. EXTENDED MULTI-DAY PERIOD BREAKDOWN WITH OUTRAGEOUS REPORTS
+            // 2. BUILD 7-DAY & 14-DAY FORECAST PANES WITH OUTRAGEOUS WEATHER REPORTS
+            renderExtendedForecast('seven-daily-container', 7);
+            renderExtendedForecast('fourteen-daily-container', 14);
+        }
+
+        function renderExtendedForecast(containerId, numDays) {
+            const hourly = rawWeatherData.hourly;
             let dailyHTML = "";
-            for (let day = 0; day < selectedForecastDays && day < rawWeatherData.daily.time.length; day++) {
+            
+            for (let day = 0; day < numDays && day < rawWeatherData.daily.time.length; day++) {
                 const dateObj = new Date(rawWeatherData.daily.time[day] + "T00:00:00");
                 const dateStr = dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
                 
@@ -531,11 +572,14 @@
                 const eveningTemp = hourly.temperature_2m[dayStartIndex + 19] ?? rawWeatherData.daily.temperature_2m_min[day];
                 const nightTemp = hourly.temperature_2m[dayStartIndex + 23] ?? rawWeatherData.daily.temperature_2m_min[day];
 
-                const dayCond = getWeatherDetails(rawWeatherData.daily.weathercode[day]);
+                const dayCode = rawWeatherData.daily.weathercode[day];
+                const dayCond = getWeatherDetails(dayCode);
                 const dayPrecipProb = rawWeatherData.daily.precipitation_probability_max[day] || 0;
-                const dayPrecipSum = formatPrecip(rawWeatherData.daily.precipitation_sum[day] || 0);
+                const dayPrecipSumRaw = rawWeatherData.daily.precipitation_sum[day] || 0;
+                const dayPrecipSum = formatPrecip(dayPrecipSumRaw);
+                const maxTempC = rawWeatherData.daily.temperature_2m_max[day];
 
-                const outrageReport = outrageousReportTemplates[day % outrageousReportTemplates.length];
+                const outrageousText = generateOutrageousReport(maxTempC, dayPrecipSumRaw, dayCode);
 
                 dailyHTML += `
                     <div class="daily-weather-card">
@@ -543,7 +587,7 @@
                             <span>${dayCond.icon} ${dateStr} - ${dayCond.text}</span>
                             <span style="color:#00f2fe;">🌧️ ${dayPrecipProb}% (${dayPrecipSum})</span>
                         </div>
-                        <div class="outrageous-report">📢 ${outrageReport}</div>
+                        <div class="outrageous-report">📢 ${outrageText}</div>
                         <div class="weather-period-grid">
                             <div class="period-card">
                                 <div class="period-title">Morning</div>
@@ -565,7 +609,7 @@
                     </div>
                 `;
             }
-            document.getElementById('extended-daily-container').innerHTML = dailyHTML;
+            document.getElementById(containerId).innerHTML = dailyHTML;
         }
 
         function formatTemp(celsiusVal) {
@@ -585,13 +629,6 @@
         function toggleTemperatureUnit() {
             currentTempUnit = currentTempUnit === 'C' ? 'F' : 'C';
             currentPrecipUnit = currentPrecipUnit === 'mm' ? 'in' : 'mm';
-            renderWeatherUI();
-        }
-
-        function switchWeatherDays(days, btn) {
-            selectedForecastDays = days;
-            document.querySelectorAll('#weather-tab .sub-tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
             renderWeatherUI();
         }
 
