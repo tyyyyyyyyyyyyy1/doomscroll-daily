@@ -535,7 +535,6 @@
         let currentLat = 45.4215;
         let currentLon = -75.6972;
 
-        // Pagination & Duplicate Tracker State
         let streamPage = 1;
         let loadedEmbedUrls = new Set();
         let youtubeNextPageToken = "";
@@ -908,7 +907,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (PAGINATED & DUPLICATE FREE) ---
+        // --- MULTI-PLATFORM STREAM ENGINE (PIXABAY SEARCH REPAIRED) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -925,7 +924,7 @@
 
             let reelCards = [];
 
-            // 1. YOUTUBE SHORTS (Paginated via pageToken)
+            // 1. YOUTUBE SHORTS
             if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
                 try {
                     let ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
@@ -957,7 +956,7 @@
                 } catch (e) { console.error("YouTube search error:", e); }
             }
 
-            // 2. WIKIMEDIA COMMONS VIDEO API (Paginated via sroffset)
+            // 2. WIKIMEDIA COMMONS VIDEO API
             else if (platform === 'wikimedia') {
                 try {
                     const sroffset = (streamPage - 1) * 6;
@@ -987,32 +986,26 @@
                 } catch (e) { console.error("Wikimedia search error:", e); }
             }
 
-            // 3. PIXABAY VIDEOS (Paginated via page parameter)
+            // 3. PIXABAY VIDEOS (REPAIRED & OPENED SEARCH)
             else if (platform === 'pixabay-video') {
                 try {
-                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&editors_choice=true&per_page=12&page=${streamPage}`;
+                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&per_page=15&page=${streamPage}`;
                     const res = await fetch(pixabayVidUrl);
                     if (res.ok) {
                         const data = await res.json();
                         if (data.hits) {
                             data.hits.forEach(video => {
-                                const tags = video.tags ? video.tags.toLowerCase() : "";
-                                const titleText = video.pageURL ? video.pageURL.toLowerCase() : "";
-                                const qLower = query.toLowerCase();
-                                
-                                if (tags.includes(qLower) || titleText.includes(qLower)) {
-                                    const vUrl = video.videos.medium?.url || video.videos.small?.url;
-                                    if (vUrl && !loadedEmbedUrls.has(vUrl)) {
-                                        loadedEmbedUrls.add(vUrl);
-                                        reelCards.push({
-                                            title: `Pixabay: ${query} clip`,
-                                            caption: `Tags: ${video.tags} | By ${video.user}`,
-                                            embedUrl: vUrl,
-                                            mimeType: "video/mp4",
-                                            type: "video",
-                                            tag: "🎥 Pixabay Video"
-                                        });
-                                    }
+                                const vUrl = video.videos.medium?.url || video.videos.small?.url;
+                                if (vUrl && !loadedEmbedUrls.has(vUrl)) {
+                                    loadedEmbedUrls.add(vUrl);
+                                    reelCards.push({
+                                        title: `Pixabay: ${query} clip`,
+                                        caption: `Tags: ${video.tags || query} | By ${video.user}`,
+                                        embedUrl: vUrl,
+                                        mimeType: "video/mp4",
+                                        type: "video",
+                                        tag: "🎥 Pixabay Video"
+                                    });
                                 }
                             });
                         }
@@ -1020,30 +1013,25 @@
                 } catch (e) { console.error("Pixabay video search error:", e); }
             }
 
-            // 4. PIXABAY IMAGES (Paginated via page parameter)
+            // 4. PIXABAY IMAGES (REPAIRED & OPENED SEARCH)
             else if (platform === 'pixabay-image') {
                 try {
-                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&image_type=photo&editors_choice=true&per_page=12&page=${streamPage}`;
+                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&image_type=photo&per_page=15&page=${streamPage}`;
                     const res = await fetch(pixabayImgUrl);
                     if (res.ok) {
                         const data = await res.json();
                         if (data.hits) {
                             data.hits.forEach(img => {
-                                const tags = img.tags ? img.tags.toLowerCase() : "";
-                                const qLower = query.toLowerCase();
-
-                                if (tags.includes(qLower)) {
-                                    const imgUrl = img.largeImageURL || img.webformatURL;
-                                    if (imgUrl && !loadedEmbedUrls.has(imgUrl)) {
-                                        loadedEmbedUrls.add(imgUrl);
-                                        reelCards.push({
-                                            title: `Pixabay Photo: ${query}`,
-                                            caption: `Tags: ${img.tags} | By ${img.user}`,
-                                            embedUrl: imgUrl,
-                                            type: "image",
-                                            tag: "🖼️ Pixabay Image"
-                                        });
-                                    }
+                                const imgUrl = img.largeImageURL || img.webformatURL;
+                                if (imgUrl && !loadedEmbedUrls.has(imgUrl)) {
+                                    loadedEmbedUrls.add(imgUrl);
+                                    reelCards.push({
+                                        title: `Pixabay Photo: ${query}`,
+                                        caption: `Tags: ${img.tags || query} | By ${img.user}`,
+                                        embedUrl: imgUrl,
+                                        type: "image",
+                                        tag: "🖼️ Pixabay Image"
+                                    });
                                 }
                             });
                         }
@@ -1054,8 +1042,8 @@
             if (reelCards.length === 0 && !isAppend) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
-                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No strict streams found for "${query}".</p>
-                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a more specific search term or check other platforms.</p>
+                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found for "${query}".</p>
+                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a different keyword or check other platforms.</p>
                     </div>
                 `;
                 isLoadingEmbeds = false;
@@ -1144,7 +1132,7 @@
             if (element.scrollTop + element.clientHeight >= element.scrollHeight - 150) {
                 if (!isLoadingEmbeds) {
                     isLoadingEmbeds = true;
-                    streamPage++; // Advance page number to load fresh content
+                    streamPage++;
                     setTimeout(() => loadMultiPlatformStream(true), 300);
                 }
             }
