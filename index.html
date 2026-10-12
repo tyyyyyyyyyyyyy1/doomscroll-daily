@@ -409,10 +409,10 @@
         <section>
             <h2>🎭 Dank & Dark Meme Feed</h2>
             <div class="card-grid">
-                <div class="card" style="text-align: center;">
+                <div class="card" style="text-align: center; grid-column: 1 / -1;">
                     <h3 id="meme-title">Loading Wholesome Meme...</h3>
-                    <div id="meme-container" style="min-height: 200px;"></div>
-                    <button class="btn-action" onclick="fetchMeme('wholesomememes')">New Wholesome Meme</button>
+                    <div id="meme-container" style="min-height: 250px; display: flex; justify-content: center; align-items: center; margin: 15px 0;"></div>
+                    <button class="btn-action" onclick="fetchMeme()">New Wholesome Meme</button>
                 </div>
             </div>
         </section>
@@ -618,7 +618,6 @@
                 const dayPrecipSum = formatPrecip(dayPrecipSumRaw);
                 const maxTempC = rawWeatherData.daily.temperature_2m_max[day];
 
-                // FIXED: Now calling the correct function name
                 const outrageousReport = generateOutrageousReport(maxTempC, dayPrecipSumRaw, dayCode);
 
                 dailyHTML += `
@@ -672,6 +671,29 @@
             renderWeatherUI();
         }
 
+        // --- MEME ENGINE ---
+        async function fetchMeme() {
+            const titleEl = document.getElementById('meme-title');
+            const containerEl = document.getElementById('meme-container');
+            titleEl.textContent = "Loading Meme...";
+            containerEl.innerHTML = `<p style="color:#8f9bba;">Fetching fresh meme...</p>`;
+
+            try {
+                const res = await fetch('https://meme-api.com/gimme/wholesomememes');
+                const data = await res.json();
+                if (data && data.url) {
+                    titleEl.textContent = data.title || "Wholesome Moment";
+                    containerEl.innerHTML = `<img src="${data.url}" alt="Meme" style="max-width: 100%; max-height: 400px; border-radius: 8px; object-fit: contain;">`;
+                } else {
+                    throw new Error("Invalid meme payload");
+                }
+            } catch (e) {
+                titleEl.textContent = "Error Loading Meme";
+                containerEl.innerHTML = `<p style="color:#ff334b;">Failed to fetch live meme. Try clicking again!</p>`;
+            }
+        }
+
+        // --- NEWS ENGINE ---
         const newsFeeds = {
             'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
             'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
@@ -737,7 +759,7 @@
             const resultsContainer = document.getElementById('multi-source-results');
             
             if (!isAppend) {
-                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Fetching streams across YouTube Shorts & Reddit for "${query}"...</p>`;
+                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Fetching streams across video sources for "${query}"...</p>`;
             }
 
             let reelCards = [];
@@ -751,9 +773,9 @@
                         const videoId = item.url ? item.url.split("v=")[1] : null;
                         if (videoId) {
                             reelCards.push({
-                                source: `▶️ YouTube Shorts (Keyless)`,
+                                source: `▶️ YouTube Shorts`,
                                 title: item.title,
-                                caption: `Live YouTube Shorts result for "${query}" from ${item.uploaderName || 'Creator'}.`,
+                                caption: `Live Shorts result for "${query}" from ${item.uploaderName || 'Creator'}.`,
                                 url: `https://www.youtube.com/watch?v=${videoId}`,
                                 isEmbed: true,
                                 videoUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0`,
@@ -764,36 +786,10 @@
                     });
                 }
             } catch (e) {
-                console.warn("Piped search warning:", e.message);
+                console.warn("Piped search bypassed or blocked via CORS.");
             }
 
-            try {
-                const targetUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=new&type=link`;
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-                const res = await fetch(proxyUrl);
-                const data = await res.json();
-                const json = JSON.parse(data.contents);
-                
-                json?.data?.children?.forEach((item, idx) => {
-                    const post = item.data;
-                    if (!post.over_18) {
-                        let directVidUrl = post.media?.reddit_video?.fallback_url || verticalFallbackVideos[idx % verticalFallbackVideos.length];
-                        reelCards.push({
-                            source: `🤖 Reddit (r/${post.subreddit})`,
-                            title: post.title,
-                            caption: `Live match for keyword "${query}" in community discussions.`,
-                            url: `https://reddit.com${post.permalink}`,
-                            isEmbed: false,
-                            videoUrl: directVidUrl,
-                            likes: post.score || 420,
-                            comments: post.num_comments || 38
-                        });
-                    }
-                });
-            } catch (e) {
-                console.warn("Reddit search warning:", e.message);
-            }
-
+            // Fallback streams guarantee the video feed is never empty even if external APIs block CORS
             if (reelCards.length === 0) {
                 for (let i = 0; i < 4; i++) {
                     reelCards.push({
@@ -889,6 +885,7 @@
         initLiveWeather();
         fetchNews('local-news');
         runLiveReelsSearch();
+        fetchMeme();
 
         document.getElementById('bulletins-container').innerHTML = `
             <div class="card">
