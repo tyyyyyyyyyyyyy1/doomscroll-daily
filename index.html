@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Doomscroll Daily - Global Unhinged Dashboard</title>
+    <title>The Doomscroll Daily - Unhinged Weather & Reels Dashboard</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -167,7 +167,7 @@
         .card-footer-link:hover { text-decoration: underline; }
 
         /* Weather Styling */
-        .weather-grid-hourly { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 500px; overflow-y: auto; padding-right: 5px; }
+        .weather-grid-hourly { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
         .weather-hour-card { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 12px; text-align: center; }
         .weather-time { font-size: 0.8rem; color: #00f2fe; font-weight: bold; margin-bottom: 5px; }
         .weather-icon-lg { font-size: 1.8rem; margin: 2px 0; }
@@ -268,7 +268,7 @@
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     
     <div id="frontpage-weather-banner">
-        <span id="header-location">📍 Locating Viewer Worldwide...</span>
+        <span id="header-location">📍 Locating GPS...</span>
         <span id="header-temp">🌡 Loading live temp...</span>
         <span id="header-time">🌤️ Synced Local Time</span>
     </div>
@@ -316,7 +316,7 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Locating Viewer Worldwide...</span>
+                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Syncing GPS Satellite...</span>
                 <button class="btn-action" style="margin:0; padding:6px 12px; font-size:0.8rem;" onclick="toggleTemperatureUnit()">Toggle °C / °F & mm / in</button>
             </div>
 
@@ -442,7 +442,7 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        // --- CONTEXT-AWARE OUTRAGEOUS WEATHER REPORTS ---
+        // --- CONTEXT-AWARE FUNNY WEATHER REPORTS ---
         function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
             let tempC = Number(maxTemp) || 15;
             let condition = getWeatherDetails(weatherCode).text.toLowerCase();
@@ -463,20 +463,13 @@
             }
         }
 
-        // --- GLOBAL TWO-TIER LOCATOR (GPS FIRST -> IP FALLBACK) ---
+        // --- WORKING SYNCHRONIZED WEATHER ENGINE WITH GLOBAL IP/GPS FALLBACK ---
         async function initLiveWeather() {
-            document.getElementById('weather-status-tag').textContent = "Requesting precise GPS...";
-            
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
-                    pos => {
-                        fetchWeather(pos.coords.latitude, pos.coords.longitude, "Precise GPS Location");
-                    },
-                    err => {
-                        console.log("GPS unavailable or denied. Resolving global IP location...");
-                        fetchWeatherByIP();
-                    },
-                    { timeout: 7000, enableHighAccuracy: true }
+                    pos => { fetchWeather(pos.coords.latitude, pos.coords.longitude, "Local GPS"); },
+                    err => { fetchWeatherByIP(); },
+                    { timeout: 7000, enableHighAccuracy: false }
                 );
             } else {
                 fetchWeatherByIP();
@@ -485,19 +478,16 @@
 
         async function fetchWeatherByIP() {
             try {
-                document.getElementById('weather-status-tag').textContent = "Detecting global location...";
                 const res = await fetch('https://ipapi.co/json/');
-                if (!res.ok) throw new Error("IP geolocation failed");
+                if (!res.ok) throw new Error("IP fallback failed");
                 const data = await res.json();
-                
                 if (data.latitude && data.longitude) {
-                    const locName = `${data.city || 'Local City'}, ${data.region || data.country_name || ''}`;
-                    fetchWeather(data.latitude, data.longitude, locName);
+                    fetchWeather(data.latitude, data.longitude, `${data.city || 'Local Area'}, ${data.country_name || ''}`);
                 } else {
-                    throw new Error("Invalid IP coordinates");
+                    throw new Error("No coordinates returned");
                 }
             } catch (e) {
-                document.getElementById('weather-status-tag').textContent = "Weather server offline.";
+                document.getElementById('weather-status-tag').textContent = "Weather offline.";
             }
         }
 
@@ -511,7 +501,7 @@
                 document.getElementById('header-location').textContent = `📍 ${locName}`;
                 renderWeatherUI();
             } catch (e) {
-                document.getElementById('weather-status-tag').textContent = "Weather server offline.";
+                document.getElementById('weather-status-tag').textContent = "Weather offline.";
             }
         }
 
@@ -526,9 +516,9 @@
             
             document.getElementById('header-temp').textContent = `${curCond.icon} ${Math.round(temp)}°${currentTempUnit}`;
             document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            document.getElementById('weather-status-tag').textContent = `Localized Live Feed (${currentTempUnit}, ${currentPrecipUnit})`;
+            document.getElementById('weather-status-tag').textContent = `Synced GPS Satellite (${currentTempUnit}, ${currentPrecipUnit})`;
 
-            // 1. DYNAMIC 24-HOUR ROLLING OUTLOOK STARTING FROM CURRENT HOUR OF VIEWER'S LOCAL TIMEZONE
+            // 1. DYNAMIC 24-HOUR ROLLING OUTLOOK STARTING FROM CURRENT HOUR
             const nowIso = new Date().toISOString().substring(0, 13);
             let startIndex = hourly.time.findIndex(t => t.startsWith(nowIso));
             if (startIndex === -1) startIndex = 0;
@@ -553,7 +543,7 @@
             }
             document.getElementById('hourly-grid-container').innerHTML = hourlyHTML;
 
-            // 2. BUILD 7-DAY & 14-DAY FORECAST PANES WITH OUTRAGEOUS WEATHER REPORTS
+            // 2. EXTENDED FORECAST PANES WITH FUNNY REPORTS
             renderExtendedForecast('seven-daily-container', 7);
             renderExtendedForecast('fourteen-daily-container', 14);
         }
@@ -579,7 +569,7 @@
                 const dayPrecipSum = formatPrecip(dayPrecipSumRaw);
                 const maxTempC = rawWeatherData.daily.temperature_2m_max[day];
 
-                const outrageousText = generateOutrageousReport(maxTempC, dayPrecipSumRaw, dayCode);
+                const outrageousReport = generateOutrageousReport(maxTempC, dayPrecipSumRaw, dayCode);
 
                 dailyHTML += `
                     <div class="daily-weather-card">
@@ -587,7 +577,7 @@
                             <span>${dayCond.icon} ${dateStr} - ${dayCond.text}</span>
                             <span style="color:#00f2fe;">🌧️ ${dayPrecipProb}% (${dayPrecipSum})</span>
                         </div>
-                        <div class="outrageous-report">📢 ${outrageText}</div>
+                        <div class="outrageous-report">📢 ${outrageReport}</div>
                         <div class="weather-period-grid">
                             <div class="period-card">
                                 <div class="period-title">Morning</div>
