@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Doomscroll Daily - Live YouTube API Embed Engine</title>
+    <title>The Doomscroll Daily - Unhinged Weather & Reels Engine</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -192,9 +192,45 @@
         .weather-cond-text { font-size: 0.75rem; color: #8f9bba; font-weight: bold; }
         .weather-precip { font-size: 0.75rem; color: #00f2fe; margin-top: 4px; }
 
-        .daily-weather-card { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-        .daily-weather-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-bottom: 1px dashed #2a2f3d; padding-bottom: 8px; margin-bottom: 10px; flex-wrap: wrap; gap: 5px; }
-        .outrageous-report { background: rgba(255, 51, 75, 0.1); border-left: 3px solid var(--accent-color); padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; color: #ff758c; font-style: italic; margin-bottom: 10px; }
+        .daily-weather-card { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+        .daily-weather-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-bottom: 1px dashed #2a2f3d; padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 5px; }
+        
+        /* EXPANDED UNHINGED REPORT BOX */
+        .outrageous-report-box { 
+            background: rgba(255, 51, 75, 0.08); 
+            border-left: 4px solid var(--accent-color); 
+            padding: 12px 16px; 
+            border-radius: 6px; 
+            margin-bottom: 15px; 
+        }
+        .outrageous-report-box .headline { 
+            font-size: 0.95rem; 
+            font-weight: bold; 
+            color: #ff334b; 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        .outrageous-report-box .overall-text { 
+            font-size: 0.9rem; 
+            color: #f1f2f6; 
+            line-height: 1.45; 
+            margin-bottom: 10px;
+        }
+        .outrageous-report-box .time-breakdown { 
+            font-size: 0.83rem; 
+            color: #ced6e0; 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 6px; 
+            border-top: 1px solid rgba(255,255,255,0.08); 
+            padding-top: 8px; 
+        }
+        @media(min-width: 600px) {
+            .outrageous-report-box .time-breakdown { grid-template-columns: 1fr 1fr; }
+        }
+        .time-breakdown-item strong { color: var(--secondary-accent); }
+
         .weather-period-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
         @media (max-width: 768px) { .weather-period-grid { grid-template-columns: repeat(2, 1fr); } }
         .period-card { background: #0b0e14; border: 1px solid #1f2533; border-radius: 6px; padding: 10px; text-align: center; }
@@ -477,24 +513,75 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
+        // --- EXPANDED UNHINGED & LENGTHY OUTRAGEOUS WEATHER REPORT GENERATOR ---
         function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
             let tempC = Number(maxTemp) || 15;
             let condition = getWeatherDetails(weatherCode).text.toLowerCase();
             let rainAmt = Number(precipSum) || 0;
 
+            let headline = "📢 OFFICIAL METEOROLOGICAL DISASTER BULLETIN";
+            let overallText = "";
+            let morning = "";
+            let afternoon = "";
+            let evening = "";
+            let night = "";
+
             if (condition.includes('snow')) {
-                return `ARCTIC FREEZE ASSAULT: Snow falling with absolute malice.`;
+                headline = "❄️ CRIPPLING FROST & ICE SYNDICATE WARNING";
+                overallText = `Today's atmosphere is executing an aggressive cold-blooded assault with icy precipitation. The sky has completely abandoned reason and chosen violence. Expect frozen facial hair, icy sidewalks engineered specifically to ruin your posture, and local raccoons staging a coup over heated vehicle hoods.`;
+                morning = "Brutal sub-zero frostbite hazard. Crawling out of bed requires military-grade willpower.";
+                afternoon = "Malicious snow clouds block the sun. Visibility drops as the local snowplow mafia takes control.";
+                evening = "Temperatures plummet. Black ice forms traps across all major intersections.";
+                night = "Arctic wasteland conditions. Your windows will freeze solid; do not open them under any circumstances.";
             } else if (condition.includes('thunderstorm')) {
-                return `THUNDERDOME ACTIVATED: Mother Nature is throwing a tantrum with lightning bolts.`;
+                headline = "🌩️ THUNDERDOME METEOROLOGICAL TANTRAM";
+                overallText = `Mother Nature has entered maximum rage-mode. Flash-mob lightning strikes and booming atmospheric noise will dominate today's weather profile. Electronics will vibrate with anxiety, and all outdoor plans are officially revoked by decree of the heavens.`;
+                morning = "Ominous dark clouds roll in like an impending invasion. Sudden gusts knock over outdoor furniture.";
+                afternoon = "Deafening thunderclaps rock the neighborhood. Torrential downpours turn gutters into rapids.";
+                evening = "Intermittent lightning illuminates the skyline. Puddles reach lake-sized proportions.";
+                night = "Rumbling sky-bass continues into the dark hours. High risk of power-grid flickering and roof-drumming rain.";
             } else if (condition.includes('rain')) {
-                return `MOISTURE ASSAULT: Sky juice coming down heavy (${rainAmt}mm).`;
+                headline = "🌧️ SKY-JUICE MOISTURE ASSAULT DETECTED";
+                overallText = `A unrelenting downpour (${rainAmt}mm) is descending upon the city. The clouds are aggressively leaking sky-juice with zeroes given for your footwear choices. Expect socks to get soaked through within four seconds of exiting any building.`;
+                morning = "Persistent drizzling grayness that immediately ruins any attempt at hair styling.";
+                afternoon = "Rainfall accelerates. Puddles form strategic traps directly in front of public entranceways.";
+                evening = "Soggy commute home. Umbrellas will fold backward under localized gust-attacks.";
+                night = "Damp, gloomy drizzle. Wet asphalt reflections give the streets an aggressive cyberpunk aesthetic.";
             } else if (tempC > 25) {
-                return `SOLAR AGGRESSION: The sun is roasting the pavement today.`;
+                headline = "☀️ SOLAR AGGRESSION & PAVEMENT MELTDOWN";
+                overallText = `The sun is behaving like an unhinged microwave laser today. Temperatures are soaring high enough to melt asphalt and make human enthusiasm evaporate on contact. Staying indoors near air-conditioning is no longer optional—it's a survival tactic.`;
+                morning = "The sun rises with immediate aggressive heat. Sweat begins forming before you finish breakfast.";
+                afternoon = "Peak solar bombardment. Steering wheels turn into liquid lava and shoes stick to blacktop.";
+                evening = "Sweltering dusk. The city radiates trapped thermal heat like an oversized pizza oven.";
+                night = "Heavy warm breeze. Sleep will require maximum fan power and minimal blanket usage.";
             } else if (tempC < 0) {
-                return `FREEZING REALITY: Sub-zero temperatures. Embrace the ice-zombie aesthetic.`;
+                headline = "🧊 SUB-ZERO ARCTIC REALITY CHECK";
+                overallText = `An unyielding polar airmass is locked over your coordinates. The wind-chill factor feels like getting slapped in the face with a bag of frozen ice cubes. Embrace the local ice-zombie aesthetic and do not attempt to touch metal objects barehanded.`;
+                morning = "Invasive freezing chill that makes your teeth chatter uncontrollably in under thirty seconds.";
+                afternoon = "Brittle sunlight with zero actual heat output. Cold wind slices through heavy winter coats.";
+                evening = "Rapid drop in degrees. Frost patterns form aggressive artwork on car windshields.";
+                night = "Deep space cold. The neighborhood goes dead silent as even the local wildlife hibernates.";
             } else {
-                return `SUSPICIOUSLY CALM: Local wildlife is plotting something behind your back.`;
+                headline = "🤨 SUSPICIOUSLY CALM METEOROLOGICAL ANOMALY";
+                overallText = `The weather today appears mild, calm, and visually unassuming... which is deeply suspicious. Do not let this fake tranquility fool you. Nature is merely regrouping and plotting its next chaotic stunt behind your back.`;
+                morning = "Deceptively pleasant breeze with gentle light. You will suspect an alien invasion is brewing.";
+                afternoon = "Mild temperatures continue. Local wildlife is spotted holding secret strategy meetings in alleys.";
+                evening = "Comfortable twilight, but the atmospheric pressure hints at future chaos.";
+                night = "Eerily calm skies. Rest up, because tomorrow's weather syndication will not be this generous.";
             }
+
+            return `
+                <div class="outrageous-report-box">
+                    <div class="headline">${headline}</div>
+                    <div class="overall-text">${overallText}</div>
+                    <div class="time-breakdown">
+                        <div class="time-breakdown-item"><strong>🌅 Morning:</strong> ${morning}</div>
+                        <div class="time-breakdown-item"><strong>☀️ Afternoon:</strong> ${afternoon}</div>
+                        <div class="time-breakdown-item"><strong>🌆 Evening:</strong> ${evening}</div>
+                        <div class="time-breakdown-item"><strong>🌙 Overnight:</strong> ${night}</div>
+                    </div>
+                </div>
+            `;
         }
 
         function requestUserLocation() {
@@ -578,13 +665,17 @@
                 const eveningCode = hourly ? hourly.weathercode[dayStartIndex + 19] || dayCode : dayCode;
                 const nightCode = hourly ? hourly.weathercode[dayStartIndex + 23] || dayCode : dayCode;
 
+                const outrageousReportHTML = generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], rawWeatherData.daily.precipitation_sum[day], dayCode);
+
                 dailyHTML += `
                     <div class="daily-weather-card">
                         <div class="daily-weather-header">
                             <span>${getWeatherDetails(dayCode).icon} ${dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                             <span style="color:#00f2fe;">🌧️ ${rawWeatherData.daily.precipitation_probability_max[day] || 0}%</span>
                         </div>
-                        <div class="outrageous-report">📢 ${generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], rawWeatherData.daily.precipitation_sum[day], dayCode)}</div>
+                        
+                        ${outrageousReportHTML}
+
                         <div class="weather-period-grid">
                             <div class="period-card">
                                 <div class="period-title">Morning</div>
