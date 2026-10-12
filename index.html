@@ -381,6 +381,7 @@
                 <button class="sub-tab-btn active" onclick="switchWeatherSubTab('hourly-pane', this)">🕒 24-Hour Outlook</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSubTab('seven-pane', this)">📅 7-Day Forecast</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSubTab('fourteen-pane', this)">📆 14-Day Forecast</button>
+                <button class="sub-tab-btn" onclick="switchWeatherSubTab('radar-pane', this)" onclick="initRadarMap()">🌍 Live Radar</button>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
@@ -404,6 +405,17 @@
             <div id="fourteen-pane" class="weather-sub-pane">
                 <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:15px;">14-Day Extended Forecast</h3>
                 <div id="fourteen-daily-container"></div>
+            </div>
+
+            <!-- Pane 4: Live Radar Map -->
+            <div id="radar-pane" class="weather-sub-pane">
+                <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:15px;">🌍 Live Meteorological Radar & Storm Intensity</h3>
+                <div style="background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 15px; text-align: center;">
+                    <p style="font-size: 0.85rem; color: #8f9bba; margin-bottom: 12px;">Color-coded cloud cover & precipitation severity overlay centered on your coordinates.</p>
+                    <div id="radar-container" style="width: 100%; height: 450px; border-radius: 8px; overflow: hidden; background: #0b0e14;">
+                        <iframe id="radar-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -481,6 +493,8 @@
         let currentTempUnit = 'C'; 
         let currentPrecipUnit = 'mm'; 
         let rawWeatherData = null;
+        let currentLat = 45.4215;
+        let currentLon = -75.6972;
 
         function switchTab(tabId, btnElement) {
             console.log("Switching tab to:", tabId);
@@ -495,6 +509,9 @@
             document.querySelectorAll('#weather-tab .sub-tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(paneId).classList.add('active');
             btn.classList.add('active');
+            if(paneId === 'radar-pane') {
+                initRadarMap();
+            }
         }
 
         function toggleCorporatePanic() { document.body.classList.toggle('panic-mode'); }
@@ -592,8 +609,10 @@
                 if (!res.ok) throw new Error("IP geolocation failed");
                 const data = await res.json();
                 if (data.latitude && data.longitude) {
+                    currentLat = data.latitude;
+                    currentLon = data.longitude;
                     const label = data.city ? `${data.city}, ${data.country_code || ''}` : "Local Network Node";
-                    fetchWeatherData(data.latitude, data.longitude, label);
+                    fetchWeatherData(currentLat, currentLon, label);
                 } else {
                     throw new Error("No coordinates in IP response");
                 }
@@ -609,7 +628,11 @@
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    position => fetchWeatherData(position.coords.latitude, position.coords.longitude, "Precise GPS Location"),
+                    position => {
+                        currentLat = position.coords.latitude;
+                        currentLon = position.coords.longitude;
+                        fetchWeatherData(currentLat, currentLon, "Precise GPS Location");
+                    },
                     () => {
                         console.warn("GPS denied or timeout. Falling back to IP location.");
                         fetchIPLocation();
@@ -623,6 +646,14 @@
 
         function initLiveWeather() {
             requestUserLocation();
+        }
+
+        function initRadarMap() {
+            const iframe = document.getElementById('radar-iframe');
+            if (iframe) {
+                // OpenWeatherMap / RainViewer embedded interactive radar map centered on user coords
+                iframe.src = `https://embed.windy.com/embed2.html?lat=${currentLat}&lon=${currentLon}&zoom=8&level=surface&overlay=radar&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
+            }
         }
 
         async function fetchWeatherData(lat, lon, locationLabel) {
@@ -662,7 +693,6 @@
             document.getElementById('header-temp').textContent = `${curCond.icon} ${Math.round(temp)}°${currentTempUnit}`;
             document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: 'numeric', minute:'2-digit', hour12: true})}`;
 
-            // Match exact local hour matching user's current viewing time zone
             const nowLocalHour = new Date().getHours();
             let startIndex = hourly.time.findIndex(t => {
                 const hourVal = new Date(t).getHours();
@@ -709,13 +739,25 @@
                 const eveningCode = hourly ? hourly.weathercode[dayStartIndex + 19] || dayCode : dayCode;
                 const nightCode = hourly ? hourly.weathercode[dayStartIndex + 23] || dayCode : dayCode;
 
+                // Calculate period-specific accumulation estimates
+                let morningRain = 0, afternoonRain = 0, eveningRain = 0, nightRain = 0;
+                if (hourly && hourly.precipitation) {
+                    for(let h = 0; h < 6; h++) morningRain += hourly.precipitation[dayStartIndex + 6 + h] || 0;
+                    for(let h = 0; h < 6; h++) afternoonRain += hourly.precipitation[dayStartIndex + 12 + h] || 0;
+                    for(let h = 0; h < 5; h++) eveningRain += hourly.precipitation[dayStartIndex + 18 + h] || 0;
+                    for(let h = 0; h < 5; h++) nightRain += hourly.precipitation[dayStartIndex + 23 + h] || 0;
+                }
+
+                const isSnow = getWeatherDetails(dayCode).text.toLowerCase().includes('snow');
+                const precipTypeLabel = isSnow ? "❄️ Snow" : "🌧️ Rain";
+
                 const outrageousReportHTML = generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], precipSum, dayCode);
 
                 dailyHTML += `
                     <div class="daily-weather-card">
                         <div class="daily-weather-header">
                             <span>${getWeatherDetails(dayCode).icon} ${dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}</span>
-                            <span style="color:#00f2fe;">🌧️ ${precipProb}% (${formatPrecip(precipSum)})</span>
+                            <span style="color:#00f2fe;">${precipTypeLabel} Prob: ${precipProb}% | Total: ${formatPrecip(precipSum)}</span>
                         </div>
                         
                         ${outrageousReportHTML}
@@ -724,18 +766,22 @@
                             <div class="period-card">
                                 <div class="period-title">Morning</div>
                                 <div class="period-val">${getWeatherDetails(morningCode).icon} ${formatTemp(morningTemp)}</div>
+                                <div style="font-size:0.7rem; color:#00f2fe; margin-top:2px;">${morningRain > 0.05 ? formatPrecip(morningRain) : '0 mm'}</div>
                             </div>
                             <div class="period-card">
                                 <div class="period-title">Afternoon</div>
                                 <div class="period-val">${getWeatherDetails(afternoonCode).icon} ${formatTemp(afternoonTemp)}</div>
+                                <div style="font-size:0.7rem; color:#00f2fe; margin-top:2px;">${afternoonRain > 0.05 ? formatPrecip(afternoonRain) : '0 mm'}</div>
                             </div>
                             <div class="period-card">
                                 <div class="period-title">Evening</div>
                                 <div class="period-val">${getWeatherDetails(eveningCode).icon} ${formatTemp(eveningTemp)}</div>
+                                <div style="font-size:0.7rem; color:#00f2fe; margin-top:2px;">${eveningRain > 0.05 ? formatPrecip(eveningRain) : '0 mm'}</div>
                             </div>
                             <div class="period-card">
                                 <div class="period-title">Night</div>
                                 <div class="period-val">${getWeatherDetails(nightCode).icon} ${formatTemp(nightTemp)}</div>
+                                <div style="font-size:0.7rem; color:#00f2fe; margin-top:2px;">${nightRain > 0.05 ? formatPrecip(nightRain) : '0 mm'}</div>
                             </div>
                         </div>
                     </div>
@@ -810,7 +856,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (YOUTUBE, DAILYMOTION & WIKIMEDIA API) ---
+        // --- MULTI-PLATFORM STREAM ENGINE ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -825,7 +871,6 @@
 
             let reelCards = [];
 
-            // 1. YOUTUBE API SEARCH
             if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
                 try {
                     const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
@@ -848,7 +893,6 @@
                 } catch (e) { console.error("YouTube search error:", e); }
             }
 
-            // 2. DAILYMOTION API SEARCH
             else if (platform === 'dailymotion') {
                 try {
                     const dmUrl = `https://api.dailymotion.com/videos?q=${encodeURIComponent(query)}&limit=6&fields=id,title`;
@@ -872,10 +916,9 @@
                 } catch (e) { console.error("Dailymotion search error:", e); }
             }
 
-            // 3. WIKIMEDIA COMMONS PUBLIC VIDEO SEARCH (Zero Keys Required)
             else if (platform === 'wikimedia') {
                 try {
-                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gteqtitle=${encodeURIComponent(query)}&gsrsearch=filetype:video%20${encodeURIComponent(query)}&gsrlimit=6&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;
+                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=filetype:video%20${encodeURIComponent(query)}&gsrlimit=6&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;
                     const res = await fetch(wikiUrl);
                     if (res.ok) {
                         const data = await res.json();
@@ -957,7 +1000,7 @@
         document.getElementById('bulletins-container').innerHTML = `
             <div class="card">
                 <h3>System Operational</h3>
-                <p>Localized weather and multi-platform engine active.</p>
+                <p>Localized weather radar & multi-platform engine active.</p>
             </div>
         `;
     </script>
