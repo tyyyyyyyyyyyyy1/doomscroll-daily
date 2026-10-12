@@ -484,7 +484,7 @@
                         <option value="pixabay-video">🎥 Pixabay Videos</option>
                         <option value="pixabay-image">🖼️ Pixabay Images</option>
                     </select>
-                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. meme, cyberpunk)..." value="meme" onchange="resetStreamPagination()">
+                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. meme, nature)..." value="nature" onchange="resetStreamPagination()">
                     <button class="global-audio-btn" id="global-audio-toggle-btn" onclick="toggleGlobalAudio()">🔇 Audio: Muted</button>
                     <button onclick="resetStreamPagination(); loadMultiPlatformStream()">Load Stream</button>
                 </div>
@@ -943,12 +943,12 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE WITH EXPLICIT ERROR LOGGING ---
+        // --- MULTI-PLATFORM STREAM ENGINE ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
             const platform = document.getElementById('media-platform-select').value;
-            const query = document.getElementById('media-search-input').value.trim() || "meme";
+            const query = document.getElementById('media-search-input').value.trim() || "nature";
             const container = document.getElementById('multi-source-results');
 
             if (!isAppend) {
@@ -1023,9 +1023,10 @@
                     }
                 }
 
-                // 3. PIXABAY VIDEOS
+                // 3. PIXABAY VIDEOS (Safely structured URL parameters)
                 else if (platform === 'pixabay-video') {
-                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&per_page=10&page=${streamPage}`;
+                    const encodedQuery = encodeURIComponent(query);
+                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodedQuery}&per_page=10&page=${streamPage}`;
                     console.log("Fetching Pixabay Video API:", pixabayVidUrl);
                     const res = await fetch(pixabayVidUrl);
                     if (!res.ok) throw new Error(`Pixabay Video HTTP error! status: ${res.status}`);
@@ -1052,7 +1053,8 @@
 
                 // 4. PIXABAY IMAGES
                 else if (platform === 'pixabay-image') {
-                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&image_type=photo&per_page=10&page=${streamPage}`;
+                    const encodedQuery = encodeURIComponent(query);
+                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodedQuery}&image_type=photo&per_page=10&page=${streamPage}`;
                     console.log("Fetching Pixabay Image API:", pixabayImgUrl);
                     const res = await fetch(pixabayImgUrl);
                     if (!res.ok) throw new Error(`Pixabay Image HTTP error! status: ${res.status}`);
