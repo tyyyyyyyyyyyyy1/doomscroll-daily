@@ -463,14 +463,14 @@
             <h2>📺 Multi-Platform Stream Engine</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
-                    <select id="media-platform-select">
+                    <select id="media-platform-select" onchange="resetStreamPagination()">
                         <option value="youtube">▶️ YouTube Shorts</option>
                         <option value="wikimedia">🌐 Wikimedia Commons API</option>
                         <option value="pixabay-video">🎥 Pixabay Videos (Vertical)</option>
                         <option value="pixabay-image">🖼️ Pixabay Images (Vertical)</option>
                     </select>
-                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. raccoon, cyberpunk)..." value="raccoon">
-                    <button onclick="loadMultiPlatformStream()">Load Stream</button>
+                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. raccoon, cyberpunk)..." value="raccoon" onchange="resetStreamPagination()">
+                    <button onclick="resetStreamPagination(); loadMultiPlatformStream()">Load Stream</button>
                 </div>
                 
                 <div class="media-feed-wrapper">
@@ -534,6 +534,18 @@
         let rawWeatherData = null;
         let currentLat = 45.4215;
         let currentLon = -75.6972;
+
+        // Pagination & Duplicate Tracker State
+        let streamPage = 1;
+        let loadedEmbedUrls = new Set();
+        let youtubeNextPageToken = "";
+
+        function resetStreamPagination() {
+            streamPage = 1;
+            loadedEmbedUrls.clear();
+            youtubeNextPageToken = "";
+            loadMultiPlatformStream(false);
+        }
 
         function switchTab(tabId, btnElement) {
             console.log("Switching tab to:", tabId);
@@ -896,46 +908,60 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (AUTO-PAUSE & UNMUTED FIX) ---
+        // --- MULTI-PLATFORM STREAM ENGINE (PAGINATED & DUPLICATE FREE) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
             const platform = document.getElementById('media-platform-select').value;
             const query = document.getElementById('media-search-input').value.trim() || "raccoon";
-            console.log(`Loading stream for platform: ${platform}, query: ${query}`);
             const container = document.getElementById('multi-source-results');
 
             if (!isAppend) {
                 container.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Searching ${platform.toUpperCase()} for "${query}"...</p>`;
+                streamPage = 1;
+                loadedEmbedUrls.clear();
+                youtubeNextPageToken = "";
             }
 
             let reelCards = [];
 
+            // 1. YOUTUBE SHORTS (Paginated via pageToken)
             if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
                 try {
-                    const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
+                    let ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
+                    if (youtubeNextPageToken) ytUrl += `&pageToken=${youtubeNextPageToken}`;
+                    
                     const res = await fetch(ytUrl);
                     if (res.ok) {
                         const data = await res.json();
-                        data.items.forEach(item => {
-                            const videoId = item.id.videoId;
-                            if (videoId) {
-                                reelCards.push({
-                                    title: item.snippet.title,
-                                    caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `YouTube result for "${query}"`,
-                                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=1`,
-                                    type: "iframe",
-                                    tag: "▶️ YouTube Shorts"
-                                });
-                            }
-                        });
+                        youtubeNextPageToken = data.nextPageToken || "";
+                        if (data.items) {
+                            data.items.forEach(item => {
+                                const videoId = item.id.videoId;
+                                if (videoId) {
+                                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=1`;
+                                    if (!loadedEmbedUrls.has(embedUrl)) {
+                                        loadedEmbedUrls.add(embedUrl);
+                                        reelCards.push({
+                                            title: item.snippet.title,
+                                            caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `YouTube result for "${query}"`,
+                                            embedUrl: embedUrl,
+                                            type: "iframe",
+                                            tag: "▶️ YouTube Shorts"
+                                        });
+                                    }
+                                }
+                            });
+                        }
                     }
                 } catch (e) { console.error("YouTube search error:", e); }
             }
 
+            // 2. WIKIMEDIA COMMONS VIDEO API (Paginated via sroffset)
             else if (platform === 'wikimedia') {
                 try {
-                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + " filetype:video")}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
+                    const sroffset = (streamPage - 1) * 6;
+                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + " filetype:video")}&gsrnamespace=6&gsrlimit=6&gsroffset=${sroffset}&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
                     const res = await fetch(wikiUrl);
                     if (res.ok) {
                         const data = await res.json();
@@ -943,7 +969,8 @@
                             Object.values(data.query.pages).forEach(page => {
                                 if (page.imageinfo && page.imageinfo[0]) {
                                     const info = page.imageinfo[0];
-                                    if (info.url) {
+                                    if (info.url && !loadedEmbedUrls.has(info.url)) {
+                                        loadedEmbedUrls.add(info.url);
                                         reelCards.push({
                                             title: page.title.replace(/^File:/i, ''),
                                             caption: `Wikimedia Commons search result`,
@@ -960,62 +987,71 @@
                 } catch (e) { console.error("Wikimedia search error:", e); }
             }
 
+            // 3. PIXABAY VIDEOS (Paginated via page parameter)
             else if (platform === 'pixabay-video') {
                 try {
-                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&editors_choice=true&per_page=15`;
+                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&editors_choice=true&per_page=12&page=${streamPage}`;
                     const res = await fetch(pixabayVidUrl);
                     if (res.ok) {
                         const data = await res.json();
-                        data.hits.forEach(video => {
-                            const tags = video.tags ? video.tags.toLowerCase() : "";
-                            const titleText = video.pageURL ? video.pageURL.toLowerCase() : "";
-                            const qLower = query.toLowerCase();
-                            
-                            if (tags.includes(qLower) || titleText.includes(qLower)) {
-                                const vUrl = video.videos.medium?.url || video.videos.small?.url;
-                                if (vUrl) {
-                                    reelCards.push({
-                                        title: `Pixabay: ${query} clip`,
-                                        caption: `Tags: ${video.tags} | By ${video.user}`,
-                                        embedUrl: vUrl,
-                                        mimeType: "video/mp4",
-                                        type: "video",
-                                        tag: "🎥 Pixabay Video"
-                                    });
+                        if (data.hits) {
+                            data.hits.forEach(video => {
+                                const tags = video.tags ? video.tags.toLowerCase() : "";
+                                const titleText = video.pageURL ? video.pageURL.toLowerCase() : "";
+                                const qLower = query.toLowerCase();
+                                
+                                if (tags.includes(qLower) || titleText.includes(qLower)) {
+                                    const vUrl = video.videos.medium?.url || video.videos.small?.url;
+                                    if (vUrl && !loadedEmbedUrls.has(vUrl)) {
+                                        loadedEmbedUrls.add(vUrl);
+                                        reelCards.push({
+                                            title: `Pixabay: ${query} clip`,
+                                            caption: `Tags: ${video.tags} | By ${video.user}`,
+                                            embedUrl: vUrl,
+                                            mimeType: "video/mp4",
+                                            type: "video",
+                                            tag: "🎥 Pixabay Video"
+                                        });
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 } catch (e) { console.error("Pixabay video search error:", e); }
             }
 
+            // 4. PIXABAY IMAGES (Paginated via page parameter)
             else if (platform === 'pixabay-image') {
                 try {
-                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&image_type=photo&editors_choice=true&per_page=15`;
+                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&image_type=photo&editors_choice=true&per_page=12&page=${streamPage}`;
                     const res = await fetch(pixabayImgUrl);
                     if (res.ok) {
                         const data = await res.json();
-                        data.hits.forEach(img => {
-                            const tags = img.tags ? img.tags.toLowerCase() : "";
-                            const qLower = query.toLowerCase();
+                        if (data.hits) {
+                            data.hits.forEach(img => {
+                                const tags = img.tags ? img.tags.toLowerCase() : "";
+                                const qLower = query.toLowerCase();
 
-                            if (tags.includes(qLower)) {
-                                if (img.largeImageURL || img.webformatURL) {
-                                    reelCards.push({
-                                        title: `Pixabay Photo: ${query}`,
-                                        caption: `Tags: ${img.tags} | By ${img.user}`,
-                                        embedUrl: img.largeImageURL || img.webformatURL,
-                                        type: "image",
-                                        tag: "🖼️ Pixabay Image"
-                                    });
+                                if (tags.includes(qLower)) {
+                                    const imgUrl = img.largeImageURL || img.webformatURL;
+                                    if (imgUrl && !loadedEmbedUrls.has(imgUrl)) {
+                                        loadedEmbedUrls.add(imgUrl);
+                                        reelCards.push({
+                                            title: `Pixabay Photo: ${query}`,
+                                            caption: `Tags: ${img.tags} | By ${img.user}`,
+                                            embedUrl: imgUrl,
+                                            type: "image",
+                                            tag: "🖼️ Pixabay Image"
+                                        });
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 } catch (e) { console.error("Pixabay image search error:", e); }
             }
 
-            if (reelCards.length === 0) {
+            if (reelCards.length === 0 && !isAppend) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
                         <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No strict streams found for "${query}".</p>
@@ -1030,14 +1066,12 @@
             reelCards.forEach(card => {
                 let mediaMarkup = "";
                 if (card.type === "video") {
-                    // Removed 'muted' attribute so videos play with sound by default
                     mediaMarkup = `<video class="media-video" autoplay loop playsinline controls>
                                      <source src="${card.embedUrl}" type="${card.mimeType || 'video/mp4'}">
                                    </video>`;
                 } else if (card.type === "image") {
                     mediaMarkup = `<img src="${card.embedUrl}" class="media-image" alt="Pixabay Image">`;
                 } else {
-                    // Updated youtube embed to mute=0
                     mediaMarkup = `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
                 }
 
@@ -1067,7 +1101,7 @@
             updateActiveReelPlayback();
         }
 
-        // --- SCROLL AUTO-PAUSE / AUTO-PLAY HANDLER ---
+        // --- SCROLL AUTO-PAUSE & PAGINATION TRIGGER ---
         function handleReelsScroll(element) {
             checkEmbedInfiniteScroll(element);
             updateActiveReelPlayback();
@@ -1084,7 +1118,6 @@
                 const video = card.querySelector('video');
                 const iframe = card.querySelector('iframe');
 
-                // Determine if card is currently centered in view
                 const isVisible = rect.top >= containerTop - 100 && rect.top <= containerTop + 200;
 
                 if (video) {
@@ -1092,13 +1125,11 @@
                         video.play().catch(() => {});
                     } else {
                         video.pause();
-                        video.currentTime = 0; // Reset playback when scrolled away
+                        video.currentTime = 0;
                     }
                 }
                 
                 if (iframe) {
-                    // For iframes (like YouTube), toggle autoplay param or reload source if needed
-                    // (Simplest approach for iframes is letting user interact or stopping src when out of view)
                     const src = iframe.src;
                     if (!isVisible && src.includes('autoplay=1')) {
                         iframe.src = src.replace('autoplay=1', 'autoplay=0');
@@ -1113,6 +1144,7 @@
             if (element.scrollTop + element.clientHeight >= element.scrollHeight - 150) {
                 if (!isLoadingEmbeds) {
                     isLoadingEmbeds = true;
+                    streamPage++; // Advance page number to load fresh content
                     setTimeout(() => loadMultiPlatformStream(true), 300);
                 }
             }
