@@ -195,6 +195,11 @@
         .daily-weather-card { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
         .daily-weather-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-bottom: 1px dashed #2a2f3d; padding-bottom: 8px; margin-bottom: 10px; flex-wrap: wrap; gap: 5px; }
         .outrageous-report { background: rgba(255, 51, 75, 0.1); border-left: 3px solid var(--accent-color); padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; color: #ff758c; font-style: italic; margin-bottom: 10px; }
+        .weather-period-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+        @media (max-width: 768px) { .weather-period-grid { grid-template-columns: repeat(2, 1fr); } }
+        .period-card { background: #0b0e14; border: 1px solid #1f2533; border-radius: 6px; padding: 10px; text-align: center; }
+        .period-title { font-size: 0.75rem; color: #00f2fe; font-weight: bold; text-transform: uppercase; }
+        .period-val { font-size: 0.95rem; color: #fff; font-weight: bold; margin-top: 4px; }
 
         .media-engine-box { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 12px; padding: 20px; }
         .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
@@ -434,9 +439,6 @@
     <script>
         console.log("Script execution started.");
         
-        // -------------------------------------------------------------
-        // YOUR YOUTUBE DATA API V3 KEY IS INTEGRATED BELOW:
-        // -------------------------------------------------------------
         const YOUTUBE_API_KEY = "AIzaSyAmhqUX0iC-XYC3W4cL6DcInxFdCGAXK_8"; 
 
         let currentTempUnit = 'C'; 
@@ -533,7 +535,7 @@
             if (currentTempUnit === 'F') temp = (temp * 9/5) + 32;
             
             document.getElementById('header-temp').textContent = `${curCond.icon} ${Math.round(temp)}°${currentTempUnit}`;
-            document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: 'numeric', minute:'2-digit', hour12: true})}`;
 
             const nowIso = new Date().toISOString().substring(0, 13);
             let startIndex = hourly.time.findIndex(t => t.startsWith(nowIso));
@@ -542,9 +544,10 @@
             let hourlyHTML = "";
             for (let i = startIndex; i < startIndex + 24 && i < hourly.time.length; i++) {
                 const timeObj = new Date(hourly.time[i]);
+                const timeStr = timeObj.toLocaleTimeString([], {hour: 'numeric', minute:'2-digit', hour12: true});
                 hourlyHTML += `
                     <div class="weather-hour-card">
-                        <div class="weather-time">${timeObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="weather-time">${timeStr}</div>
                         <div class="weather-icon-lg">${getWeatherDetails(hourly.weathercode[i]).icon}</div>
                         <div class="weather-temp">${formatTemp(hourly.temperature_2m[i])}</div>
                         <div class="weather-cond-text">${getWeatherDetails(hourly.weathercode[i]).text}</div>
@@ -563,6 +566,18 @@
             for (let day = 0; day < numDays && day < rawWeatherData.daily.time.length; day++) {
                 const dateObj = new Date(rawWeatherData.daily.time[day] + "T00:00:00");
                 const dayCode = rawWeatherData.daily.weathercode[day];
+
+                const dayStartIndex = day * 24;
+                const morningTemp = hourly ? hourly.temperature_2m[dayStartIndex + 8] ?? rawWeatherData.daily.temperature_2m_max[day] : rawWeatherData.daily.temperature_2m_max[day];
+                const afternoonTemp = hourly ? hourly.temperature_2m[dayStartIndex + 14] ?? rawWeatherData.daily.temperature_2m_max[day] : rawWeatherData.daily.temperature_2m_max[day];
+                const eveningTemp = hourly ? hourly.temperature_2m[dayStartIndex + 19] ?? rawWeatherData.daily.temperature_2m_min[day] : rawWeatherData.daily.temperature_2m_min[day];
+                const nightTemp = hourly ? hourly.temperature_2m[dayStartIndex + 23] ?? rawWeatherData.daily.temperature_2m_min[day] : rawWeatherData.daily.temperature_2m_min[day];
+
+                const morningCode = hourly ? hourly.weathercode[dayStartIndex + 8] || dayCode : dayCode;
+                const afternoonCode = hourly ? hourly.weathercode[dayStartIndex + 14] || dayCode : dayCode;
+                const eveningCode = hourly ? hourly.weathercode[dayStartIndex + 19] || dayCode : dayCode;
+                const nightCode = hourly ? hourly.weathercode[dayStartIndex + 23] || dayCode : dayCode;
+
                 dailyHTML += `
                     <div class="daily-weather-card">
                         <div class="daily-weather-header">
@@ -570,6 +585,24 @@
                             <span style="color:#00f2fe;">🌧️ ${rawWeatherData.daily.precipitation_probability_max[day] || 0}%</span>
                         </div>
                         <div class="outrageous-report">📢 ${generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], rawWeatherData.daily.precipitation_sum[day], dayCode)}</div>
+                        <div class="weather-period-grid">
+                            <div class="period-card">
+                                <div class="period-title">Morning</div>
+                                <div class="period-val">${getWeatherDetails(morningCode).icon} ${formatTemp(morningTemp)}</div>
+                            </div>
+                            <div class="period-card">
+                                <div class="period-title">Afternoon</div>
+                                <div class="period-val">${getWeatherDetails(afternoonCode).icon} ${formatTemp(afternoonTemp)}</div>
+                            </div>
+                            <div class="period-card">
+                                <div class="period-title">Evening</div>
+                                <div class="period-val">${getWeatherDetails(eveningCode).icon} ${formatTemp(eveningTemp)}</div>
+                            </div>
+                            <div class="period-card">
+                                <div class="period-title">Night</div>
+                                <div class="period-val">${getWeatherDetails(nightCode).icon} ${formatTemp(nightTemp)}</div>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -679,7 +712,6 @@
                 }
             }
 
-            // Fallback warning if key is missing
             if (reelCards.length === 0) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
