@@ -24,6 +24,21 @@
         }
         @media (min-width: 768px) { body { padding: 20px; } }
         
+        /* VISUAL DEBUG LOGGER BOX */
+        #visual-debugger {
+            background: #1a0000;
+            border: 2px solid #ff334b;
+            color: #ff758c;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        #visual-debugger b { color: #fff; }
+
         .panic-controls {
             position: fixed;
             top: 15px;
@@ -54,7 +69,8 @@
         body.panic-mode #frontpage-weather-banner,
         body.panic-mode .panic-controls,
         body.panic-mode #panic-banner,
-        body.panic-mode #raccoon-chaos {
+        body.panic-mode #raccoon-chaos,
+        body.panic-mode #visual-debugger {
             display: none !important;
         }
         #corporate-panic {
@@ -75,7 +91,8 @@
         body.raccoon-mode #frontpage-weather-banner,
         body.raccoon-mode .panic-controls,
         body.raccoon-mode #panic-banner,
-        body.raccoon-mode #corporate-panic {
+        body.raccoon-mode #corporate-panic,
+        body.raccoon-mode #visual-debugger {
             display: none !important;
         }
         #raccoon-chaos {
@@ -240,6 +257,30 @@
 </head>
 <body>
 
+    <!-- VISUAL DEBUGGER CONSOLE BOX -->
+    <div id="visual-debugger"><b>🖥️ Visual Logger Initialized...</b><br></div>
+
+    <script>
+        // Intercept all console errors and prints and display them directly on screen
+        (function() {
+            const dbg = document.getElementById('visual-debugger');
+            function logToScreen(type, args) {
+                const msg = Array.from(args).map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+                dbg.innerHTML += `<div>[${type}] ${msg}</div>`;
+                dbg.scrollTop = dbg.scrollHeight;
+            }
+            const oldLog = console.log;
+            const oldErr = console.error;
+            const oldWarn = console.warn;
+            console.log = function() { logToScreen('LOG', arguments); oldLog.apply(console, arguments); };
+            console.error = function() { logToScreen('ERROR', arguments); oldErr.apply(console, arguments); };
+            console.warn = function() { logToScreen('WARN', arguments); oldWarn.apply(console, arguments); };
+            window.onerror = function(msg, url, line) {
+                dbg.innerHTML += `<div style="color:#ff334b;">[FATAL] ${msg} (Line ${line})</div>`;
+            };
+        })();
+    </script>
+
     <div class="panic-controls">
         <button class="panic-btn raccoon" onclick="toggleRaccoonChaos()">🦝 Trash Panda Mode</button>
         <button class="panic-btn" onclick="toggleCorporatePanic()">📈 Corporate BS (Esc)</button>
@@ -268,8 +309,8 @@
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     
     <div id="frontpage-weather-banner">
-        <span id="header-location">📍 Initializing GPS...</span>
-        <span id="header-temp">🌡 Loading live temp...</span>
+        <span id="header-location">📍 Ready to Sync Location</span>
+        <span id="header-temp">🌡 --°C</span>
         <span id="header-time">🌤️ Synced Local Time</span>
     </div>
 
@@ -309,6 +350,10 @@
         <section>
             <h2>🌤️ Live Weather & Outrageous Reports</h2>
             
+            <div style="text-align: center; margin-bottom: 15px;">
+                <button class="btn-action" style="background: #00f2fe; color: #000; font-weight: bold;" onclick="requestUserLocation()">📍 Tap to Enable My Exact GPS Location</button>
+            </div>
+
             <div class="sub-tab-nav">
                 <button class="sub-tab-btn active" onclick="switchWeatherSubTab('hourly-pane', this)">🕒 24-Hour Outlook</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSubTab('seven-pane', this)">📅 7-Day Forecast</button>
@@ -316,7 +361,7 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Locating Satellite Coordinates...</span>
+                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Awaiting location trigger...</span>
                 <button class="btn-action" style="margin:0; padding:6px 12px; font-size:0.8rem;" onclick="toggleTemperatureUnit()">Toggle °C / °F & mm / in</button>
             </div>
 
@@ -402,11 +447,13 @@
     </footer>
 
     <script>
+        console.log("Script execution started.");
         let currentTempUnit = 'C'; 
         let currentPrecipUnit = 'mm'; 
         let rawWeatherData = null;
 
         function switchTab(tabId, btnElement) {
+            console.log("Switching tab to:", tabId);
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -442,7 +489,7 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        // --- CONTEXT-AWARE FUNNY WEATHER REPORTS ---
+        // --- FUNNY WEATHER REPORTS ---
         function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
             let tempC = Number(maxTemp) || 15;
             let condition = getWeatherDetails(weatherCode).text.toLowerCase();
@@ -463,44 +510,56 @@
             }
         }
 
-        // --- BULLETPROOF ASYNCHRONOUS WEATHER INITIALIZER ---
-        function initLiveWeather() {
+        function requestUserLocation() {
+            console.log("Requesting user geolocation...");
+            document.getElementById('weather-status-tag').textContent = "Requesting GPS permission...";
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     position => {
-                        fetchWeatherData(position.coords.latitude, position.coords.longitude, "Your Precise Location");
+                        console.log("GPS success:", position.coords.latitude, position.coords.longitude);
+                        fetchWeatherData(position.coords.latitude, position.coords.longitude, "Precise GPS Location");
                     },
                     error => {
-                        console.warn("Geolocation blocked or failed. Using fallback coordinates.");
-                        // Fallback coordinates (e.g. Central North America / Ottawa region or default global node)
-                        fetchWeatherData(45.4215, -75.6972, "Detected Local Node");
+                        console.warn("GPS error code:", error.code, error.message);
+                        document.getElementById('weather-status-tag').textContent = "GPS denied. Using default node.";
+                        fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node");
                     },
-                    { timeout: 4000, maximumAge: 60000, enableHighAccuracy: false }
+                    { timeout: 8000, maximumAge: 0, enableHighAccuracy: true }
                 );
             } else {
-                fetchWeatherData(45.4215, -75.6972, "Detected Local Node");
+                console.warn("Geolocation not supported by browser.");
+                fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node");
             }
+        }
+
+        function initLiveWeather() {
+            console.log("Initializing default weather load...");
+            fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node");
         }
 
         async function fetchWeatherData(lat, lon, locationLabel) {
             try {
+                console.log(`Fetching weather for lat: ${lat}, lon: ${lon}`);
                 const apiURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&current_weather=true&forecast_days=14&timezone=auto`;
                 
                 const response = await fetch(apiURL);
-                if (!response.ok) throw new Error("API response unsuccessful");
+                console.log("Weather API response status:", response.status);
+                if (!response.ok) throw new Error(`API failed with status ${response.status}`);
                 
                 rawWeatherData = await response.json();
+                console.log("Weather data parsed successfully.");
                 
                 document.getElementById('header-location').textContent = `📍 ${locationLabel}`;
                 renderWeatherUI();
             } catch (err) {
-                console.error("Weather fetch error:", err);
+                console.error("Weather fetch exception caught:", err.message);
                 document.getElementById('weather-status-tag').textContent = "Weather feed offline.";
             }
         }
 
         function renderWeatherUI() {
             if (!rawWeatherData) return;
+            console.log("Rendering weather UI...");
             const current = rawWeatherData.current_weather;
             const hourly = rawWeatherData.hourly;
             const curCond = getWeatherDetails(current.weathercode);
@@ -512,7 +571,6 @@
             document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
             document.getElementById('weather-status-tag').textContent = `Live Feed Active (${currentTempUnit}, ${currentPrecipUnit})`;
 
-            // 1. DYNAMIC 24-HOUR ROLLING OUTLOOK STARTING FROM CURRENT HOUR
             const nowIso = new Date().toISOString().substring(0, 13);
             let startIndex = hourly.time.findIndex(t => t.startsWith(nowIso));
             if (startIndex === -1) startIndex = 0;
@@ -536,8 +594,6 @@
                 `;
             }
             document.getElementById('hourly-grid-container').innerHTML = hourlyHTML;
-
-            // 2. EXTENDED FORECAST PANES WITH FUNNY REPORTS
             renderExtendedForecast('seven-daily-container', 7);
             renderExtendedForecast('fourteen-daily-container', 14);
         }
@@ -616,7 +672,6 @@
             renderWeatherUI();
         }
 
-        // --- NEWS ENGINE ---
         const newsFeeds = {
             'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
             'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
@@ -624,6 +679,7 @@
         };
 
         async function fetchNews(feedKey) {
+            console.log("Fetching news feed:", feedKey);
             const grid = document.getElementById('local-news-grid');
             grid.innerHTML = `<p style="color:#8f9bba; grid-column: 1/-1; text-align:center;">Fetching live RSS feed...</p>`;
             
@@ -647,6 +703,7 @@
                 });
                 grid.innerHTML = cardsHTML;
             } catch (e) {
+                console.error("News fetch error:", e.message);
                 grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1;">Failed to load live news feed.</p>`;
             }
         }
@@ -657,7 +714,6 @@
             fetchNews(feedKey);
         }
 
-        // --- KEYLESS MULTI-SOURCE REELS ENGINE ---
         let isGlobalMuted = true;
         function toggleGlobalSound() {
             isGlobalMuted = !isGlobalMuted;
@@ -677,6 +733,7 @@
 
         async function runLiveReelsSearch(isAppend = false) {
             const query = document.getElementById('media-search-input').value.trim() || "raccoon";
+            console.log("Running reels search for query:", query);
             const resultsContainer = document.getElementById('multi-source-results');
             
             if (!isAppend) {
@@ -706,7 +763,9 @@
                         }
                     });
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn("Piped search warning:", e.message);
+            }
 
             try {
                 const targetUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=new&type=link`;
@@ -731,7 +790,9 @@
                         });
                     }
                 });
-            } catch (e) {}
+            } catch (e) {
+                console.warn("Reddit search warning:", e.message);
+            }
 
             if (reelCards.length === 0) {
                 for (let i = 0; i < 4; i++) {
@@ -824,7 +885,7 @@
             }
         }
 
-        // Initialize Everything Safely
+        // Initialize Everything Safely on Startup
         initLiveWeather();
         fetchNews('local-news');
         runLiveReelsSearch();
