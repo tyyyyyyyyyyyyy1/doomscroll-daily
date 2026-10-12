@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Doomscroll Daily - Complete Dashboard</title>
+    <title>The Doomscroll Daily - Keyless Multi-Source Dashboard</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -319,7 +319,7 @@
     <!-- Tab 4: Media Engine -->
     <div id="media-tab" class="tab-pane">
         <section>
-            <h2>📺 Live Vertical Reels Engine (Pexels + Keyless YouTube)</h2>
+            <h2>📺 Keyless Multi-Source Reels Engine</h2>
             <div class="media-engine-box">
                 <div class="search-bar-wrapper">
                     <input type="text" id="media-search-input" placeholder="Search live videos (e.g. raccoon, Ottawa)..." value="raccoon">
@@ -379,12 +379,7 @@
 
     <script>
         /* ==========================================
-           CONFIG & API KEYS (VERY TOP OF SCRIPT)
-           ========================================== */
-        const PEXELS_API_KEY = "YOUR_PEXELS_API_KEY_HERE";
-
-        /* ==========================================
-           CORE DASHBOARD LOGIC
+           CORE DASHBOARD LOGIC (KEYLESS ENGINE)
            ========================================== */
         let currentTempUnit = 'C';
         let rawWeatherData = null;
@@ -517,7 +512,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-SOURCE REELS ENGINE ---
+        // --- KEYLESS MULTI-SOURCE REELS ENGINE ---
         let isGlobalMuted = true;
         function toggleGlobalSound() {
             isGlobalMuted = !isGlobalMuted;
@@ -540,44 +535,18 @@
             const resultsContainer = document.getElementById('multi-source-results');
             
             if (!isAppend) {
-                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Fetching streams across Pexels, YouTube & Reddit for "${query}"...</p>`;
+                resultsContainer.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Fetching streams across YouTube Shorts & Reddit for "${query}"...</p>`;
             }
 
             let reelCards = [];
 
-            // 1. Pexels HD Vertical API
-            if (PEXELS_API_KEY && PEXELS_API_KEY !== "YOUR_PEXELS_API_KEY_HERE") {
-                try {
-                    const pexelsUrl = `https://api.pexels.com/v1/videos/search?query=${encodeURIComponent(query)}&orientation=portrait&per_page=6`;
-                    const res = await fetch(pexelsUrl, { headers: { Authorization: PEXELS_API_KEY } });
-                    if (res.ok) {
-                        const data = await res.json();
-                        data?.videos?.forEach(v => {
-                            const videoFile = v.video_files.find(f => f.quality === 'hd' || f.quality === 'sd') || v.video_files[0];
-                            if (videoFile) {
-                                reelCards.push({
-                                    source: `🎥 Pexels HD (${v.user.name})`,
-                                    title: `HD Reel: ${query}`,
-                                    caption: `High definition vertical video provided by Pexels creator ${v.user.name}.`,
-                                    url: v.url,
-                                    isEmbed: false,
-                                    videoUrl: videoFile.link,
-                                    likes: v.duration * 120 + 450,
-                                    comments: Math.floor(v.duration * 4.2) + 12
-                                });
-                            }
-                        });
-                    }
-                } catch (e) {}
-            }
-
-            // 2. Keyless YouTube Proxy
+            // 1. Keyless YouTube Shorts Proxy
             try {
                 const pipedUrl = `https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query + " shorts")}&filter=videos`;
                 const res = await fetch(pipedUrl);
                 if (res.ok) {
                     const data = await res.json();
-                    data?.items?.slice(0, 4).forEach(item => {
+                    data?.items?.slice(0, 6).forEach(item => {
                         const videoId = item.url ? item.url.split("v=")[1] : null;
                         if (videoId) {
                             reelCards.push({
@@ -593,37 +562,37 @@
                         }
                     });
                 }
-            } catch (e) {}
-
-            // 3. Reddit Open JSON Search
-            if (reelCards.length < 8) {
-                try {
-                    const targetUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=new&type=link`;
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-                    const res = await fetch(proxyUrl);
-                    const data = await res.json();
-                    const json = JSON.parse(data.contents);
-                    
-                    json?.data?.children?.forEach((item, idx) => {
-                        const post = item.data;
-                        if (!post.over_18) {
-                            let directVidUrl = post.media?.reddit_video?.fallback_url || verticalFallbackVideos[idx % verticalFallbackVideos.length];
-                            reelCards.push({
-                                source: `🤖 Reddit (r/${post.subreddit})`,
-                                title: post.title,
-                                caption: `Live match for keyword "${query}" in community discussions.`,
-                                url: `https://reddit.com${post.permalink}`,
-                                isEmbed: false,
-                                videoUrl: directVidUrl,
-                                likes: post.score || 420,
-                                comments: post.num_comments || 38
-                            });
-                        }
-                    });
-                } catch (e) {}
+            } catch (e) {
+                console.log("YouTube proxy skipped.");
             }
 
-            // 4. CORS Safeguard
+            // 2. Reddit Open JSON Search
+            try {
+                const targetUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=6&sort=new&type=link`;
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+                const res = await fetch(proxyUrl);
+                const data = await res.json();
+                const json = JSON.parse(data.contents);
+                
+                json?.data?.children?.forEach((item, idx) => {
+                    const post = item.data;
+                    if (!post.over_18) {
+                        let directVidUrl = post.media?.reddit_video?.fallback_url || verticalFallbackVideos[idx % verticalFallbackVideos.length];
+                        reelCards.push({
+                            source: `🤖 Reddit (r/${post.subreddit})`,
+                            title: post.title,
+                            caption: `Live match for keyword "${query}" in community discussions.`,
+                            url: `https://reddit.com${post.permalink}`,
+                            isEmbed: false,
+                            videoUrl: directVidUrl,
+                            likes: post.score || 420,
+                            comments: post.num_comments || 38
+                        });
+                    }
+                });
+            } catch (e) {}
+
+            // 3. CORS Safeguard
             if (reelCards.length === 0) {
                 for (let i = 0; i < 4; i++) {
                     reelCards.push({
