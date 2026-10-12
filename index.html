@@ -383,7 +383,7 @@
         <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News</button>
         <button class="tab-btn" onclick="switchTab('weather-tab', this)">🌤️ Weather</button>
         <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Multi-Platform Stream</button>
-        <button class="tab-btn" onclick="switchTab('meme-tab', this)">🎭 Memes</button>
+        <button class="tab-btn" onclick="switchTab('meme-tab', this)">💀 Dark & Unhinged Memes</button>
         <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 RPG Adventure</button>
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
     </div>
@@ -501,15 +501,16 @@
         </section>
     </div>
 
-    <!-- Tab 5: Memes -->
+    <!-- Tab 5: Unhinged Dark Memes -->
     <div id="meme-tab" class="tab-pane">
         <section>
-            <h2>🎭 Dank & Dark Meme Feed</h2>
+            <h2>💀 Dark & Unhinged Meme Engine</h2>
             <div class="card-grid">
                 <div class="card" style="text-align: center; grid-column: 1 / -1;">
-                    <h3 id="meme-title">Loading Wholesome Meme...</h3>
-                    <div id="meme-container" style="min-height: 250px; display: flex; justify-content: center; align-items: center; margin: 15px 0;"></div>
-                    <button class="btn-action" onclick="fetchMeme()">New Wholesome Meme</button>
+                    <span id="meme-subreddit-tag" style="color:#ff334b; font-weight:bold; font-size:0.8rem; text-transform:uppercase;">[INITIALIZING DARK FEED]</span>
+                    <h3 id="meme-title" style="margin-top:8px;">Fetching morbid material...</h3>
+                    <div id="meme-container" style="min-height: 300px; display: flex; justify-content: center; align-items: center; margin: 15px 0;"></div>
+                    <button class="btn-action" style="background:#ff334b; font-size:1.05rem;" onclick="fetchMeme()">🔥 Next Unhinged Meme</button>
                 </div>
             </div>
         </section>
@@ -558,7 +559,11 @@
         let loadedEmbedUrls = new Set();
         let youtubeNextPageToken = "";
         let scrollTimeout = null;
-        let globalAudioUnmuted = false; // Tracks global mute state
+        let globalAudioUnmuted = false;
+
+        // MEME DEDUPING & DARK HUMOR POOLS
+        const seenMemes = new Set();
+        const darkSubreddits = ['darkmeme', 'darkhumourmemes', 'pessimismmemes', 'me_irl', 'funnydark', 'tombstoning'];
 
         function resetStreamPagination() {
             streamPage = 1;
@@ -566,7 +571,6 @@
             youtubeNextPageToken = "";
         }
 
-        // --- GLOBAL MUTE/UNMUTE BUTTON WITH 40MS DELAYED POSTMESSAGE ---
         function toggleGlobalAudio() {
             globalAudioUnmuted = !globalAudioUnmuted;
             const btn = document.getElementById('global-audio-toggle-btn');
@@ -886,20 +890,48 @@
             renderWeatherUI();
         }
 
-        // --- MEME ENGINE ---
-        async function fetchMeme() {
+        // --- UNHINGED DARK MEME ENGINE WITH DEDUPING ---
+        async function fetchMeme(attempts = 0) {
             const titleEl = document.getElementById('meme-title');
             const containerEl = document.getElementById('meme-container');
+            const tagEl = document.getElementById('meme-subreddit-tag');
+
+            if (attempts > 5) {
+                tagEl.textContent = "[FALLBACK TRANSMISSION]";
+                titleEl.textContent = "The Void Beckons...";
+                containerEl.innerHTML = `<p style="color:#ff334b; font-weight:bold; font-size:1.1rem; padding: 30px;">"I would explain dark humor to you, but it's like food in a wasteland—not everyone gets it."</p>`;
+                return;
+            }
+
+            const chosenSub = darkSubreddits[Math.floor(Math.random() * darkSubreddits.length)];
+            
             try {
-                const res = await fetch('https://meme-api.com/gimme/wholesomememes');
+                const res = await fetch(`https://meme-api.com/gimme/${chosenSub}`);
+                if (!res.ok) throw new Error("API rate limit or error");
                 const data = await res.json();
+
                 if (data && data.url) {
-                    titleEl.textContent = data.title || "Wholesome Moment";
-                    containerEl.innerHTML = `<img src="${data.url}" alt="Meme" style="max-width: 100%; max-height: 400px; border-radius: 8px; object-fit: contain;">`;
+                    // Check for duplicate URLs to prevent repeats
+                    if (seenMemes.has(data.url)) {
+                        console.warn("Duplicate meme caught, retrying...");
+                        return fetchMeme(attempts + 1);
+                    }
+
+                    seenMemes.add(data.url);
+                    tagEl.textContent = `💀 Source: r/${data.subreddit || chosenSub}`;
+                    titleEl.textContent = data.title || "Unhinged Post";
+                    containerEl.innerHTML = `<img src="${data.url}" alt="Dark Meme" style="max-width: 100%; max-height: 480px; border-radius: 8px; object-fit: contain; border: 1px solid #2a2f3d; box-shadow: 0 8px 24px rgba(0,0,0,0.8);">`;
+                } else {
+                    fetchMeme(attempts + 1);
                 }
             } catch (e) {
-                console.error("Meme API error:", e);
-                containerEl.innerHTML = `<p style="color:#ff334b;">Failed to fetch live meme.</p>`;
+                console.error("Dark meme fetch error:", e);
+                // Fallback unhinged text content
+                tagEl.textContent = "[DARK HUMOR ARCHIVE]";
+                titleEl.textContent = "System Outage Realization";
+                containerEl.innerHTML = `<div style="padding:20px; border:1px solid #ff334b; border-radius:8px; background:#1a0000; color:#fff;">
+                    <p style="font-size:1.1rem;">"My doctor told me I have 3 months to live. So I killed him. The judge gave me 30 years. Problem solved."</p>
+                </div>`;
             }
         }
 
@@ -947,7 +979,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (MANUAL TRIGGER ONLY) ---
+        // --- MULTI-PLATFORM STREAM ENGINE ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -1201,7 +1233,7 @@
             }
         }
 
-        // Initialize Startup (Weather, News, and Memes only—Media stream is manual)
+        // Initialize Startup
         initLiveWeather();
         fetchNews('local-news');
         fetchMeme();
