@@ -894,7 +894,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (FIXED) ---
+        // --- MULTI-PLATFORM STREAM ENGINE (DIRECT REAL-TIME QUERY FIX) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -909,6 +909,7 @@
 
             let reelCards = [];
 
+            // 1. YOUTUBE SHORTS
             if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
                 try {
                     const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
@@ -931,9 +932,10 @@
                 } catch (e) { console.error("YouTube search error:", e); }
             }
 
+            // 2. DAILYMOTION PUBLIC EMBED SEARCH
             else if (platform === 'dailymotion') {
                 try {
-                    const dmUrl = `https://api.dailymotion.com/videos?search=${encodeURIComponent(query)}&limit=6&fields=id,title,owner.username`;
+                    const dmUrl = `https://api.dailymotion.com/videos?search=${encodeURIComponent(query)}&limit=6&ssl_assets=true&fields=id,title,user.username`;
                     const res = await fetch(dmUrl);
                     if (res.ok) {
                         const data = await res.json();
@@ -943,7 +945,7 @@
                             if (vidId) {
                                 reelCards.push({
                                     title: item.title || `Dailymotion ${query} clip`,
-                                    caption: item['owner.username'] ? `Uploaded by ${item['owner.username']}` : `Live Dailymotion Stream`,
+                                    caption: item['user.username'] ? `Uploaded by ${item['user.username']}` : `Live Dailymotion search result`,
                                     embedUrl: `https://www.dailymotion.com/embed/video/${vidId}?autoplay=1&mute=1`,
                                     type: "iframe",
                                     tag: "🅿️ Dailymotion"
@@ -954,9 +956,10 @@
                 } catch (e) { console.error("Dailymotion search error:", e); }
             }
 
+            // 3. WIKIMEDIA COMMONS MEDIASEARCH API
             else if (platform === 'wikimedia') {
                 try {
-                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
+                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + " filetype:video")}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
                     const res = await fetch(wikiUrl);
                     if (res.ok) {
                         const data = await res.json();
@@ -964,11 +967,12 @@
                             Object.values(data.query.pages).forEach(page => {
                                 if (page.imageinfo && page.imageinfo[0]) {
                                     const info = page.imageinfo[0];
-                                    if (info.mediatype === "VIDEO" || (info.mime && info.mime.startsWith("video/"))) {
+                                    if (info.url) {
                                         reelCards.push({
                                             title: page.title.replace(/^File:/i, ''),
-                                            caption: `Wikimedia Public Domain Video Stream`,
+                                            caption: `Wikimedia Commons search result`,
                                             embedUrl: info.url,
+                                            mimeType: info.mime || "video/webm",
                                             type: "video",
                                             tag: "🌐 Wikimedia Video"
                                         });
@@ -983,8 +987,8 @@
             if (reelCards.length === 0) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
-                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found for "${query}".</p>
-                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a broader keyword or switch platform feed.</p>
+                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No live streams found for "${query}".</p>
+                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a broader keyword or switch platforms.</p>
                     </div>
                 `;
                 isLoadingEmbeds = false;
@@ -994,7 +998,9 @@
             let html = isAppend ? container.innerHTML : "";
             reelCards.forEach(card => {
                 const mediaMarkup = card.type === "video" 
-                    ? `<video src="${card.embedUrl}" class="media-video" autoplay loop muted playsinline controls></video>`
+                    ? `<video class="media-video" autoplay loop muted playsinline controls>
+                         <source src="${card.embedUrl}" type="${card.mimeType || 'video/webm'}">
+                       </video>`
                     : `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
 
                 html += `
