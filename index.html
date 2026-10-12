@@ -475,7 +475,7 @@
                 
                 <div class="media-feed-wrapper">
                     <div id="multi-source-results" onscroll="handleReelsScroll(this)">
-                        <p style="color:#8f9bba; text-align:center; padding: 40px;">Initializing stream search...</p>
+                        <div style="padding: 40px; text-align: center; color: #8f9bba; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">Initializing stream search...</div>
                     </div>
                 </div>
             </div>
@@ -917,7 +917,7 @@
             const container = document.getElementById('multi-source-results');
 
             if (!isAppend) {
-                container.innerHTML = `<p style="color:#8f9bba; text-align:center; padding: 40px;">Searching ${platform.toUpperCase()} for "${query}"...</p>`;
+                container.innerHTML = `<div style="padding: 40px; text-align: center; color: #8f9bba; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">Searching ${platform.toUpperCase()} for "${query}"...</div>`;
                 streamPage = 1;
                 loadedEmbedUrls.clear();
                 youtubeNextPageToken = "";
@@ -1046,8 +1046,8 @@
 
             if (reelCards.length === 0 && !isAppend) {
                 container.innerHTML = `
-                    <div style="padding: 30px; text-align: center; color: #ff334b;">
-                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found for "${query}".</p>
+                    <div style="padding: 40px; text-align: center; color: #ff334b; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; z-index: 10;">
+                        <p style="font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">⚠️ No streams found for "${query}".</p>
                         <p style="color: #8f9bba; font-size: 0.9rem;">Try a different keyword or check other platforms.</p>
                     </div>
                 `;
