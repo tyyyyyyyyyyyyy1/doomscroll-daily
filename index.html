@@ -298,7 +298,7 @@
         .media-caption { font-size: 0.85rem; color: #d1d8e0; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
         .reels-action-sidebar { position: absolute; right: 12px; bottom: 30px; z-index: 4; display: flex; flex-direction: column; align-items: center; gap: 16px; }
-        .reel-action-btn { background: rgba(20, 24, 33, 0.85); border: 1px solid rgba(255,255,255,0.15); width: 46px; height: 46px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; cursor: pointer; backdrop-filter: blur(6px); }
+        .reel-action-btn { background: rgba(20, 24, 33, 0.85); border: 1px solid rgba(255,255,255,0.15); width: 46px; height: 46px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; cursor: pointer; backdrop-filter: blur(6px); pointer-events: auto; }
 
         .btn-action { background-color: var(--accent-color); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-action:hover { background-color: #ff5267; }
@@ -474,7 +474,7 @@
                 </div>
                 
                 <div class="media-feed-wrapper">
-                    <div id="multi-source-results" onscroll="checkEmbedInfiniteScroll(this)">
+                    <div id="multi-source-results" onscroll="handleReelsScroll(this)">
                         <p style="color:#8f9bba; text-align:center; padding: 40px;">Initializing stream search...</p>
                     </div>
                 </div>
@@ -896,7 +896,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (WITH PIXABAY & WIKIMEDIA) ---
+        // --- MULTI-PLATFORM STREAM ENGINE (AUTO-PAUSE & UNMUTED FIX) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -911,7 +911,6 @@
 
             let reelCards = [];
 
-            // 1. YOUTUBE SHORTS
             if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
                 try {
                     const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
@@ -924,7 +923,7 @@
                                 reelCards.push({
                                     title: item.snippet.title,
                                     caption: item.snippet.channelTitle ? `By ${item.snippet.channelTitle}` : `YouTube result for "${query}"`,
-                                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1`,
+                                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=1`,
                                     type: "iframe",
                                     tag: "▶️ YouTube Shorts"
                                 });
@@ -934,7 +933,6 @@
                 } catch (e) { console.error("YouTube search error:", e); }
             }
 
-            // 2. WIKIMEDIA COMMONS VIDEO API
             else if (platform === 'wikimedia') {
                 try {
                     const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + " filetype:video")}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
@@ -962,46 +960,55 @@
                 } catch (e) { console.error("Wikimedia search error:", e); }
             }
 
-            // 3. PIXABAY VIDEOS (VERTICAL STOCK FOOTAGE)
             else if (platform === 'pixabay-video') {
                 try {
-                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&per_page=10`;
+                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&editors_choice=true&per_page=15`;
                     const res = await fetch(pixabayVidUrl);
                     if (res.ok) {
                         const data = await res.json();
                         data.hits.forEach(video => {
-                            const vUrl = video.videos.medium?.url || video.videos.small?.url;
-                            if (vUrl) {
-                                reelCards.push({
-                                    title: `Pixabay: ${query} clip`,
-                                    caption: `Video by ${video.user} on Pixabay`,
-                                    embedUrl: vUrl,
-                                    mimeType: "video/mp4",
-                                    type: "video",
-                                    tag: "🎥 Pixabay Video"
-                                });
+                            const tags = video.tags ? video.tags.toLowerCase() : "";
+                            const titleText = video.pageURL ? video.pageURL.toLowerCase() : "";
+                            const qLower = query.toLowerCase();
+                            
+                            if (tags.includes(qLower) || titleText.includes(qLower)) {
+                                const vUrl = video.videos.medium?.url || video.videos.small?.url;
+                                if (vUrl) {
+                                    reelCards.push({
+                                        title: `Pixabay: ${query} clip`,
+                                        caption: `Tags: ${video.tags} | By ${video.user}`,
+                                        embedUrl: vUrl,
+                                        mimeType: "video/mp4",
+                                        type: "video",
+                                        tag: "🎥 Pixabay Video"
+                                    });
+                                }
                             }
                         });
                     }
                 } catch (e) { console.error("Pixabay video search error:", e); }
             }
 
-            // 4. PIXABAY IMAGES (VERTICAL VISUAL CARDS)
             else if (platform === 'pixabay-image') {
                 try {
-                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&image_type=photo&per_page=10`;
+                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&image_type=photo&editors_choice=true&per_page=15`;
                     const res = await fetch(pixabayImgUrl);
                     if (res.ok) {
                         const data = await res.json();
                         data.hits.forEach(img => {
-                            if (img.largeImageURL || img.webformatURL) {
-                                reelCards.push({
-                                    title: `Pixabay Photo: ${query}`,
-                                    caption: `Tags: ${img.tags} | By ${img.user}`,
-                                    embedUrl: img.largeImageURL || img.webformatURL,
-                                    type: "image",
-                                    tag: "🖼️ Pixabay Image"
-                                });
+                            const tags = img.tags ? img.tags.toLowerCase() : "";
+                            const qLower = query.toLowerCase();
+
+                            if (tags.includes(qLower)) {
+                                if (img.largeImageURL || img.webformatURL) {
+                                    reelCards.push({
+                                        title: `Pixabay Photo: ${query}`,
+                                        caption: `Tags: ${img.tags} | By ${img.user}`,
+                                        embedUrl: img.largeImageURL || img.webformatURL,
+                                        type: "image",
+                                        tag: "🖼️ Pixabay Image"
+                                    });
+                                }
                             }
                         });
                     }
@@ -1011,8 +1018,8 @@
             if (reelCards.length === 0) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
-                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found for "${query}".</p>
-                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a broader keyword or switch platform sub-sections.</p>
+                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No strict streams found for "${query}".</p>
+                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a more specific search term or check other platforms.</p>
                     </div>
                 `;
                 isLoadingEmbeds = false;
@@ -1023,12 +1030,14 @@
             reelCards.forEach(card => {
                 let mediaMarkup = "";
                 if (card.type === "video") {
-                    mediaMarkup = `<video class="media-video" autoplay loop muted playsinline controls>
+                    // Removed 'muted' attribute so videos play with sound by default
+                    mediaMarkup = `<video class="media-video" autoplay loop playsinline controls>
                                      <source src="${card.embedUrl}" type="${card.mimeType || 'video/mp4'}">
                                    </video>`;
                 } else if (card.type === "image") {
                     mediaMarkup = `<img src="${card.embedUrl}" class="media-image" alt="Pixabay Image">`;
                 } else {
+                    // Updated youtube embed to mute=0
                     mediaMarkup = `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
                 }
 
@@ -1055,6 +1064,49 @@
 
             container.innerHTML = html;
             isLoadingEmbeds = false;
+            updateActiveReelPlayback();
+        }
+
+        // --- SCROLL AUTO-PAUSE / AUTO-PLAY HANDLER ---
+        function handleReelsScroll(element) {
+            checkEmbedInfiniteScroll(element);
+            updateActiveReelPlayback();
+        }
+
+        function updateActiveReelPlayback() {
+            const container = document.getElementById('multi-source-results');
+            if (!container) return;
+            const cards = container.querySelectorAll('.media-result-card');
+            const containerTop = container.getBoundingClientRect().top;
+
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const video = card.querySelector('video');
+                const iframe = card.querySelector('iframe');
+
+                // Determine if card is currently centered in view
+                const isVisible = rect.top >= containerTop - 100 && rect.top <= containerTop + 200;
+
+                if (video) {
+                    if (isVisible) {
+                        video.play().catch(() => {});
+                    } else {
+                        video.pause();
+                        video.currentTime = 0; // Reset playback when scrolled away
+                    }
+                }
+                
+                if (iframe) {
+                    // For iframes (like YouTube), toggle autoplay param or reload source if needed
+                    // (Simplest approach for iframes is letting user interact or stopping src when out of view)
+                    const src = iframe.src;
+                    if (!isVisible && src.includes('autoplay=1')) {
+                        iframe.src = src.replace('autoplay=1', 'autoplay=0');
+                    } else if (isVisible && src.includes('autoplay=0')) {
+                        iframe.src = src.replace('autoplay=0', 'autoplay=1');
+                    }
+                }
+            });
         }
 
         function checkEmbedInfiniteScroll(element) {
