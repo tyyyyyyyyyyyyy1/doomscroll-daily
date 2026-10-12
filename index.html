@@ -433,13 +433,13 @@
                 <div id="fourteen-daily-container"></div>
             </div>
 
-            <!-- Pane 4: Live Radar Map with Unobstructed RainViewer Controls -->
+            <!-- Pane 4: Live Radar Map (12h Past to 12h Future Playback Loop) -->
             <div id="radar-pane" class="weather-sub-pane">
                 <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:15px;">🌍 Live Radar Playback (Past 12h to Future 12h)</h3>
                 <div style="background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 15px; text-align: center;">
                     <p style="font-size: 0.9rem; color: #00f2fe; font-weight: bold; margin-bottom: 6px;">📍 Click location on map to inspect local weather data</p>
-                    <p style="font-size: 0.8rem; color: #8f9bba; margin-bottom: 12px;">Use the play/pause button or scrub the bottom timeline to track storm movement.</p>
-                    <div id="radar-container" style="width: 100%; height: 500px; border-radius: 8px; overflow: hidden; background: #0b0e14; position: relative;">
+                    <p style="font-size: 0.8rem; color: #8f9bba; margin-bottom: 12px;">Use the playback slider below to scrub 12 hours back or preview upcoming storm trajectories.</p>
+                    <div id="radar-container" style="width: 100%; height: 520px; border-radius: 8px; overflow: hidden; background: #0b0e14; position: relative;">
                         <iframe id="radar-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
                     </div>
 
@@ -690,8 +690,8 @@
         function initRadarMap() {
             const iframe = document.getElementById('radar-iframe');
             if (iframe) {
-                // Uses RainViewer's clean, mobile-optimized embed with clear Play/Pause controls and 12-hour historical/future loop
-                iframe.src = `https://www.rainviewer.com/map.html?loc=${currentLat},${currentLon},8&o2=100&c=3&o=83&v=1&sm=1&sn=1&al=1`;
+                // Configured with extended past & future timeline loop (hour=12 offset flag)
+                iframe.src = `https://embed.windy.com/embed2.html?lat=${currentLat}&lon=${currentLon}&zoom=8&level=surface&overlay=radar&menu=true&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=true&metricWind=default&metricTemp=default&radarRange=-1&hour=12`;
             }
         }
 
