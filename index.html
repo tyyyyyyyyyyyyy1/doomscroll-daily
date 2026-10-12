@@ -261,7 +261,6 @@
     <div id="visual-debugger"><b>🖥️ Visual Logger Initialized...</b><br></div>
 
     <script>
-        // Intercept all console errors and prints and display them directly on screen
         (function() {
             const dbg = document.getElementById('visual-debugger');
             function logToScreen(type, args) {
@@ -619,6 +618,7 @@
                 const dayPrecipSum = formatPrecip(dayPrecipSumRaw);
                 const maxTempC = rawWeatherData.daily.temperature_2m_max[day];
 
+                // FIXED: Now calling the correct function name
                 const outrageousReport = generateOutrageousReport(maxTempC, dayPrecipSumRaw, dayCode);
 
                 dailyHTML += `
@@ -627,7 +627,7 @@
                             <span>${dayCond.icon} ${dateStr} - ${dayCond.text}</span>
                             <span style="color:#00f2fe;">🌧️ ${dayPrecipProb}% (${dayPrecipSum})</span>
                         </div>
-                        <div class="outrageous-report">📢 ${outrageReport}</div>
+                        <div class="outrageous-report">📢 ${outrageousReport}</div>
                         <div class="weather-period-grid">
                             <div class="period-card">
                                 <div class="period-title">Morning</div>
