@@ -783,11 +783,13 @@
             let reelCards = [];
 
             try {
-                const pipedUrl = `https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query + " shorts")}&filter=videos`;
-                const res = await fetch(pipedUrl);
+                const targetUrl = `https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query + " shorts")}&filter=videos`;
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+                const res = await fetch(proxyUrl);
                 if (res.ok) {
                     const data = await res.json();
-                    data?.items?.slice(0, 6).forEach(item => {
+                    const json = JSON.parse(data.contents);
+                    json?.items?.slice(0, 6).forEach(item => {
                         const videoId = item.url ? item.url.split("v=")[1] : null;
                         if (videoId) {
                             reelCards.push({
@@ -804,7 +806,7 @@
                     });
                 }
             } catch (e) {
-                console.warn("Piped search bypassed or blocked via CORS.");
+                console.warn("Piped search proxy warning:", e.message);
             }
 
             if (reelCards.length === 0) {
