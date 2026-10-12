@@ -309,6 +309,11 @@
         <section>
             <h2>🌤️ Live Localized Weather & Outrageous Reports</h2>
             
+            <div class="search-bar-wrapper" style="margin-bottom: 15px;">
+                <input type="text" id="city-search-input" placeholder="Type your city (e.g., Ottawa, Toronto)..." onkeypress="if(event.key==='Enter') searchCustomCity()">
+                <button onclick="searchCustomCity()">Search City</button>
+            </div>
+
             <div class="sub-tab-nav">
                 <button class="sub-tab-btn active" onclick="switchWeatherSubTab('hourly-pane', this)">🕒 24-Hour Outlook</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSubTab('seven-pane', this)">📅 7-Day Forecast</button>
@@ -462,7 +467,7 @@
             }
         }
 
-        // --- STRICTLY LOCALIZED WEATHER ENGINE (NO HARDCODED FALLBACKS) ---
+        // --- ROBUST LOCALIZED WEATHER ENGINE WITH MANUAL SEARCH ---
         async function initLiveWeather() {
             document.getElementById('weather-status-tag').textContent = "Requesting GPS Location...";
             
@@ -472,17 +477,17 @@
                         fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude, "Your Precise GPS Location"); 
                     },
                     err => { 
-                        console.log("GPS denied or unavailable. Falling back to IP geolocation...");
-                        fetchWeatherByIP();
+                        console.log("GPS denied or unavailable. Using Open-Meteo Geocoding IP fallback...");
+                        fetchWeatherByIPFallback();
                     },
-                    { timeout: 12000, enableHighAccuracy: true }
+                    { timeout: 10000, enableHighAccuracy: true }
                 );
             } else {
-                fetchWeatherByIP();
+                fetchWeatherByIPFallback();
             }
         }
 
-        async function fetchWeatherByIP() {
+        async function fetchWeatherByIPFallback() {
             try {
                 document.getElementById('weather-status-tag').textContent = "Resolving location via IP...";
                 const res = await fetch('https://ipapi.co/json/');
@@ -493,11 +498,32 @@
                     const locName = `${data.city}, ${data.region || data.country_name}`;
                     fetchWeatherByCoords(data.latitude, data.longitude, locName);
                 } else {
-                    throw new Error("No coordinates returned from IP lookup");
+                    throw new Error("No coordinates returned");
                 }
             } catch (e) {
-                document.getElementById('weather-status-tag').textContent = "Location access denied. Please enable GPS.";
-                document.getElementById('header-location').textContent = "📍 Location Unknown";
+                document.getElementById('weather-status-tag').textContent = "Location blocked. Type your city above 👆";
+                document.getElementById('header-location').textContent = "📍 Location Required";
+            }
+        }
+
+        async function searchCustomCity() {
+            const query = document.getElementById('city-search-input').value.trim();
+            if (!query) return;
+            
+            document.getElementById('weather-status-tag').textContent = `Searching for "${query}"...`;
+            try {
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1`);
+                const geoData = await geoRes.json();
+                
+                if (geoData && geoData.results && geoData.results.length > 0) {
+                    const loc = geoData.results[0];
+                    const locName = `${loc.name}, ${loc.country || ''}`;
+                    fetchWeatherByCoords(loc.latitude, loc.longitude, locName);
+                } else {
+                    document.getElementById('weather-status-tag').textContent = `City "${query}" not found. Try again.`;
+                }
+            } catch (e) {
+                document.getElementById('weather-status-tag').textContent = "City search failed. Check connection.";
             }
         }
 
