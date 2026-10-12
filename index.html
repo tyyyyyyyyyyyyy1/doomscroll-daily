@@ -260,11 +260,26 @@
         }
 
         .media-engine-box { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 12px; padding: 20px; }
-        .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
         .search-bar-wrapper select { background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-weight: bold; }
         .search-bar-wrapper input[type="text"] { flex: 1; min-width: 180px; background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px 15px; border-radius: 8px; font-size: 1rem; }
-        .search-bar-wrapper button { background: #ff334b; color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .search-bar-wrapper button { background: #ff334b; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .search-bar-wrapper button:hover { background: #ff5267; }
+        
+        .global-audio-btn {
+            background: #1a1f2c !important;
+            border: 1px solid #00f2fe !important;
+            color: #00f2fe !important;
+            padding: 11px 16px !important;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .global-audio-btn.unmuted {
+            background: #00f2fe !important;
+            color: #000 !important;
+        }
 
         /* REELS FEED */
         .media-feed-wrapper { position: relative; max-width: 420px; margin: 0 auto; }
@@ -286,42 +301,18 @@
         .media-asset-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #0b0e14; display: flex; align-items: center; justify-content: center; }
         .media-iframe, .media-video, .media-image { width: 100%; height: 100%; border: none; pointer-events: auto; object-fit: cover; position: relative; z-index: 2; }
         
-        .yt-unmute-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 3;
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: opacity 0.3s ease;
-        }
-        .yt-unmute-btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 15px rgba(255, 51, 75, 0.5);
-            pointer-events: none;
-        }
-
         .reels-gradient-overlay {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
             background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 100%);
-            z-index: 4; pointer-events: none;
+            z-index: 3; pointer-events: none;
         }
 
-        .reels-content-box { position: relative; z-index: 5; padding: 20px; padding-right: 75px; pointer-events: none; }
+        .reels-content-box { position: relative; z-index: 4; padding: 20px; padding-right: 75px; pointer-events: none; }
         .media-source-tag { font-size: 0.75rem; background: rgba(255, 51, 75, 0.85); padding: 4px 10px; border-radius: 20px; color: #fff; font-weight: bold; display: inline-block; margin-bottom: 8px; }
         .media-result-title { font-size: 1.05rem; color: #fff; font-weight: bold; margin-bottom: 6px; text-decoration: none; display: block; }
         .media-caption { font-size: 0.85rem; color: #d1d8e0; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .reels-action-sidebar { position: absolute; right: 12px; bottom: 30px; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .reels-action-sidebar { position: absolute; right: 12px; bottom: 30px; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 16px; }
         .reel-action-btn { background: rgba(20, 24, 33, 0.85); border: 1px solid rgba(255,255,255,0.15); width: 46px; height: 46px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; cursor: pointer; backdrop-filter: blur(6px); pointer-events: auto; }
 
         .btn-action { background-color: var(--accent-color); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
@@ -494,6 +485,7 @@
                         <option value="pixabay-image">🖼️ Pixabay Images</option>
                     </select>
                     <input type="text" id="media-search-input" placeholder="Search topic (e.g. meme, cyberpunk)..." value="meme" onchange="resetStreamPagination()">
+                    <button class="global-audio-btn" id="global-audio-toggle-btn" onclick="toggleGlobalAudio()">🔇 Audio: Muted</button>
                     <button onclick="resetStreamPagination(); loadMultiPlatformStream()">Load Stream</button>
                 </div>
                 
@@ -561,12 +553,29 @@
         let loadedEmbedUrls = new Set();
         let youtubeNextPageToken = "";
         let scrollTimeout = null;
+        let globalAudioUnmuted = false; // Tracks mute/unmute state
 
         function resetStreamPagination() {
             streamPage = 1;
             loadedEmbedUrls.clear();
             youtubeNextPageToken = "";
             loadMultiPlatformStream(false);
+        }
+
+        function toggleGlobalAudio() {
+            globalAudioUnmuted = !globalAudioUnmuted;
+            const btn = document.getElementById('global-audio-toggle-btn');
+            
+            if (globalAudioUnmuted) {
+                btn.textContent = "🔊 Audio: Unmuted";
+                btn.classList.add('unmuted');
+            } else {
+                btn.textContent = "🔇 Audio: Muted";
+                btn.classList.remove('unmuted');
+            }
+
+            // Immediately update active videos based on new state
+            updateActiveReelPlayback();
         }
 
         function switchTab(tabId, btnElement) {
@@ -947,7 +956,7 @@
 
             let reelCards = [];
 
-            // 1. YOUTUBE SHORTS
+            // 1. YOUTUBE SHORTS (Always load safely muted with enablejsapi=1)
             if (platform === 'youtube' && YOUTUBE_API_KEY && YOUTUBE_API_KEY !== "YOUR_KEY_HERE") {
                 try {
                     let ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
@@ -961,8 +970,8 @@
                             data.items.forEach(item => {
                                 const videoId = item.id.videoId;
                                 if (videoId) {
-                                    // Unmuted embed configuration with user interaction overlay support
-                                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=1&enablejsapi=1&playsinline=1`;
+                                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&enablejsapi=1`;
+                                    
                                     if (!loadedEmbedUrls.has(embedUrl)) {
                                         loadedEmbedUrls.add(embedUrl);
                                         reelCards.push({
@@ -1075,28 +1084,19 @@
             let html = isAppend ? container.innerHTML : "";
             reelCards.forEach(card => {
                 let mediaMarkup = "";
-                let overlayMarkup = "";
-                
                 if (card.type === "video") {
-                    mediaMarkup = `<video class="media-video" autoplay loop playsinline controls>
+                    mediaMarkup = `<video class="media-video" autoplay loop playsinline controls muted>
                                      <source src="${card.embedUrl}" type="${card.mimeType || 'video/mp4'}">
                                    </video>`;
                 } else if (card.type === "image") {
                     mediaMarkup = `<img src="${card.embedUrl}" class="media-image" alt="Pixabay Image">`;
                 } else {
-                    // For unmuted YouTube iframes, add a tap-to-unlock overlay so browsers permit audio playback
                     mediaMarkup = `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-                    overlayMarkup = `
-                        <div class="yt-unmute-overlay" onclick="this.style.opacity='0'; this.style.pointerEvents='none';">
-                            <button class="yt-unmute-btn">🔊 Tap to Enable Audio & Play</button>
-                        </div>
-                    `;
                 }
 
                 html += `
                     <div class="media-result-card">
                         <div class="media-asset-container">
-                            ${overlayMarkup}
                             ${mediaMarkup}
                         </div>
                         <div class="reels-gradient-overlay"></div>
@@ -1117,10 +1117,6 @@
 
             container.innerHTML = html;
             isLoadingEmbeds = false;
-            
-            setTimeout(() => {
-                updateActiveReelPlayback();
-            }, 400);
         }
 
         // --- THROTTLED SCROLL HANDLER ---
@@ -1148,6 +1144,7 @@
 
                 if (video) {
                     if (isVisible) {
+                        video.muted = !globalAudioUnmuted;
                         video.play().catch(() => {});
                     } else {
                         video.pause();
@@ -1161,6 +1158,25 @@
                         iframe.src = src.replace('autoplay=1', 'autoplay=0');
                     } else if (isVisible && src && src.includes('autoplay=0')) {
                         iframe.src = src.replace('autoplay=0', 'autoplay=1');
+                    }
+
+                    // If visible, handle 40ms postMessage command for unmuting if global button is unmuted
+                    if (isVisible) {
+                        setTimeout(() => {
+                            if (globalAudioUnmuted && iframe && iframe.contentWindow) {
+                                iframe.contentWindow.postMessage(JSON.stringify({
+                                    event: 'command',
+                                    func: 'unMute',
+                                    args: ''
+                                }), '*');
+                            } else if (!globalAudioUnmuted && iframe && iframe.contentWindow) {
+                                iframe.contentWindow.postMessage(JSON.stringify({
+                                    event: 'command',
+                                    func: 'mute',
+                                    args: ''
+                                }), '*');
+                            }
+                        }, 40);
                     }
                 }
             });
