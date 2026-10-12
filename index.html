@@ -233,6 +233,32 @@
         .period-title { font-size: 0.75rem; color: #00f2fe; font-weight: bold; text-transform: uppercase; }
         .period-val { font-size: 0.95rem; color: #fff; font-weight: bold; margin-top: 4px; }
 
+        /* RADAR LEGEND STYLING */
+        .radar-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+            background: #0b0e14;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #2a2f3d;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #ced6e0;
+            font-weight: bold;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
         .media-engine-box { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 12px; padding: 20px; }
         .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         .search-bar-wrapper select { background: #0b0e14; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-weight: bold; }
@@ -381,7 +407,7 @@
                 <button class="sub-tab-btn active" onclick="switchWeatherSubTab('hourly-pane', this)">🕒 24-Hour Outlook</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSubTab('seven-pane', this)">📅 7-Day Forecast</button>
                 <button class="sub-tab-btn" onclick="switchWeatherSubTab('fourteen-pane', this)">📆 14-Day Forecast</button>
-                <button class="sub-tab-btn" onclick="switchWeatherSubTab('radar-pane', this)" onclick="initRadarMap()">🌍 Live Radar</button>
+                <button class="sub-tab-btn" onclick="switchWeatherSubTab('radar-pane', this)">🌍 Live Radar</button>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
@@ -407,13 +433,23 @@
                 <div id="fourteen-daily-container"></div>
             </div>
 
-            <!-- Pane 4: Live Radar Map -->
+            <!-- Pane 4: Live Radar Map with 12h History & Friendly Legend -->
             <div id="radar-pane" class="weather-sub-pane">
                 <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:15px;">🌍 Live Meteorological Radar & Storm Intensity</h3>
                 <div style="background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 15px; text-align: center;">
-                    <p style="font-size: 0.85rem; color: #8f9bba; margin-bottom: 12px;">Color-coded cloud cover & precipitation severity overlay centered on your coordinates.</p>
-                    <div id="radar-container" style="width: 100%; height: 450px; border-radius: 8px; overflow: hidden; background: #0b0e14;">
+                    <p style="font-size: 0.85rem; color: #8f9bba; margin-bottom: 12px;">Scrub up to 12 hours into the past or track upcoming storm trajectories.</p>
+                    <div id="radar-container" style="width: 100%; height: 420px; border-radius: 8px; overflow: hidden; background: #0b0e14;">
                         <iframe id="radar-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+                    </div>
+
+                    <!-- User Friendly Storm Intensity Legend -->
+                    <div class="radar-legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #38bdf8;"></div> Light Drizzle / Snow Flurries</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #22c55e;"></div> Moderate Rain</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #eab308;"></div> Heavy Rain / Wet Snow</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #f97316;"></div> Intense Downpour</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #ef4444;"></div> Severe Storm / Heavy Hail</div>
+                        <div class="legend-item"><div class="legend-color" style="background: #a855f7;"></div> Extreme Weather / Tornado Risk</div>
                     </div>
                 </div>
             </div>
@@ -651,8 +687,8 @@
         function initRadarMap() {
             const iframe = document.getElementById('radar-iframe');
             if (iframe) {
-                // OpenWeatherMap / RainViewer embedded interactive radar map centered on user coords
-                iframe.src = `https://embed.windy.com/embed2.html?lat=${currentLat}&lon=${currentLon}&zoom=8&level=surface&overlay=radar&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
+                // Enabled timeline controls and past 12-hour looping radar data
+                iframe.src = `https://embed.windy.com/embed2.html?lat=${currentLat}&lon=${currentLon}&zoom=8&level=surface&overlay=radar&menu=true&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=true&metricWind=default&metricTemp=default&radarRange=-1`;
             }
         }
 
@@ -739,7 +775,6 @@
                 const eveningCode = hourly ? hourly.weathercode[dayStartIndex + 19] || dayCode : dayCode;
                 const nightCode = hourly ? hourly.weathercode[dayStartIndex + 23] || dayCode : dayCode;
 
-                // Calculate period-specific accumulation estimates
                 let morningRain = 0, afternoonRain = 0, eveningRain = 0, nightRain = 0;
                 if (hourly && hourly.precipitation) {
                     for(let h = 0; h < 6; h++) morningRain += hourly.precipitation[dayStartIndex + 6 + h] || 0;
