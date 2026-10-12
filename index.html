@@ -163,7 +163,7 @@
         .card-footer-link { font-size: 0.8rem; color: #00f2fe; text-decoration: none; font-weight: bold; align-self: flex-start; border-top: 1px solid #1f2533; padding-top: 8px; width: 100%; display: flex; justify-content: space-between; }
         .card-footer-link:hover { text-decoration: underline; }
 
-        /* Restored Weather Styling */
+        /* Weather Styling */
         .weather-grid-hourly { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
         .weather-hour-card { background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 6px; padding: 12px; text-align: center; }
         .weather-time { font-size: 0.8rem; color: #00f2fe; font-weight: bold; margin-bottom: 5px; }
@@ -282,7 +282,7 @@
         </section>
     </div>
 
-    <!-- Tab 2: News (Restored Sub-Tabs) -->
+    <!-- Tab 2: News -->
     <div id="news-tab" class="tab-pane">
         <section>
             <h2>📰 Real-Time News Feeds</h2>
@@ -295,7 +295,7 @@
         </section>
     </div>
 
-    <!-- Tab 3: Weather (Restored Detail Grid) -->
+    <!-- Tab 3: Weather -->
     <div id="weather-tab" class="tab-pane">
         <section>
             <h2>🌤️ Live Weather Forecast</h2>
@@ -378,9 +378,14 @@
     </footer>
 
     <script>
-        // PASTE YOUR PEXELS API KEY BETWEEN THE QUOTES BELOW:
+        /* ==========================================
+           CONFIG & API KEYS (VERY TOP OF SCRIPT)
+           ========================================== */
         const PEXELS_API_KEY = "YOUR_PEXELS_API_KEY_HERE";
 
+        /* ==========================================
+           CORE DASHBOARD LOGIC
+           ========================================== */
         let currentTempUnit = 'C';
         let rawWeatherData = null;
 
@@ -399,7 +404,7 @@
         function toggleCorporatePanic() { document.body.classList.toggle('panic-mode'); }
         function toggleRaccoonChaos() { document.body.classList.toggle('raccoon-mode'); }
 
-        // --- RESTORED WEATHER ENGINE ---
+        // --- WEATHER ENGINE ---
         async function initLiveWeather() {
             let lat = 45.4215, lon = -75.6972, locName = "Ottawa, ON"; // Default Ottawa
             
@@ -471,7 +476,7 @@
             renderWeatherUI();
         }
 
-        // --- RESTORED NEWS ENGINE ---
+        // --- NEWS ENGINE ---
         const newsFeeds = {
             'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
             'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
