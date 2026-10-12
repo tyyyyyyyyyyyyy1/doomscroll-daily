@@ -433,9 +433,9 @@
                 <div id="fourteen-daily-container"></div>
             </div>
 
-            <!-- Pane 4: Live Radar Map (Clean map view with timeline playback slider) -->
+            <!-- Pane 4: Live Radar Map -->
             <div id="radar-pane" class="weather-sub-pane">
-                <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:15px;">🌍 Live Radar Playback (Past 12h to Future 12h)</h3>
+                <h3 style="color:#00f2fe; margin-top:10px; margin-bottom:15px;">🌍 Live Radar Playback</h3>
                 <div style="background: var(--card-bg); border: 1px solid #2a2f3d; border-radius: 8px; padding: 15px; text-align: center;">
                     <p style="font-size: 0.9rem; color: #00f2fe; font-weight: bold; margin-bottom: 6px;">📍 Click location on map to inspect local weather data</p>
                     <p style="font-size: 0.8rem; color: #8f9bba; margin-bottom: 12px;">Use the timeline play button and slider at the bottom of the map to track storm movement.</p>
@@ -690,7 +690,6 @@
         function initRadarMap() {
             const iframe = document.getElementById('radar-iframe');
             if (iframe) {
-                // Stripped detail= parameter so bottom forecast card is completely hidden, exposing full timeline slider and play button
                 iframe.src = `https://embed.windy.com/embed2.html?lat=${currentLat}&lon=${currentLon}&zoom=8&level=surface&overlay=radar&menu=true&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
             }
         }
@@ -895,7 +894,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE ---
+        // --- MULTI-PLATFORM STREAM ENGINE (FIXED) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -934,7 +933,7 @@
 
             else if (platform === 'dailymotion') {
                 try {
-                    const dmUrl = `https://api.dailymotion.com/videos?q=${encodeURIComponent(query)}&limit=6&fields=id,title`;
+                    const dmUrl = `https://api.dailymotion.com/videos?search=${encodeURIComponent(query)}&limit=6&fields=id,title,owner.username`;
                     const res = await fetch(dmUrl);
                     if (res.ok) {
                         const data = await res.json();
@@ -944,7 +943,7 @@
                             if (vidId) {
                                 reelCards.push({
                                     title: item.title || `Dailymotion ${query} clip`,
-                                    caption: `Live Dailymotion Stream`,
+                                    caption: item['owner.username'] ? `Uploaded by ${item['owner.username']}` : `Live Dailymotion Stream`,
                                     embedUrl: `https://www.dailymotion.com/embed/video/${vidId}?autoplay=1&mute=1`,
                                     type: "iframe",
                                     tag: "🅿️ Dailymotion"
@@ -957,21 +956,23 @@
 
             else if (platform === 'wikimedia') {
                 try {
-                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=filetype:video%20${encodeURIComponent(query)}&gsrlimit=6&prop=imageinfo&iiprop=url|mime&format=json&origin=*`;
+                    const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
                     const res = await fetch(wikiUrl);
                     if (res.ok) {
                         const data = await res.json();
                         if (data && data.query && data.query.pages) {
                             Object.values(data.query.pages).forEach(page => {
                                 if (page.imageinfo && page.imageinfo[0]) {
-                                    const mediaUrl = page.imageinfo[0].url;
-                                    reelCards.push({
-                                        title: page.title.replace('File:', ''),
-                                        caption: `Wikimedia Public Domain Video Stream`,
-                                        embedUrl: mediaUrl,
-                                        type: "video",
-                                        tag: "🌐 Wikimedia Video"
-                                    });
+                                    const info = page.imageinfo[0];
+                                    if (info.mediatype === "VIDEO" || (info.mime && info.mime.startsWith("video/"))) {
+                                        reelCards.push({
+                                            title: page.title.replace(/^File:/i, ''),
+                                            caption: `Wikimedia Public Domain Video Stream`,
+                                            embedUrl: info.url,
+                                            type: "video",
+                                            tag: "🌐 Wikimedia Video"
+                                        });
+                                    }
                                 }
                             });
                         }
@@ -983,7 +984,7 @@
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
                         <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found for "${query}".</p>
-                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a different keyword or platform selector.</p>
+                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a broader keyword or switch platform feed.</p>
                     </div>
                 `;
                 isLoadingEmbeds = false;
@@ -993,7 +994,7 @@
             let html = isAppend ? container.innerHTML : "";
             reelCards.forEach(card => {
                 const mediaMarkup = card.type === "video" 
-                    ? `<video src="${card.embedUrl}" class="media-video" autoplay loop muted playsinline></video>`
+                    ? `<video src="${card.embedUrl}" class="media-video" autoplay loop muted playsinline controls></video>`
                     : `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
 
                 html += `
