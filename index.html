@@ -284,7 +284,7 @@
             flex-direction: column; justify-content: flex-end; overflow: hidden; flex-shrink: 0;
         }
         .media-asset-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
-        .media-iframe, .media-video { width: 100%; height: 100%; border: none; pointer-events: auto; object-fit: cover; }
+        .media-iframe, .media-video, .media-image { width: 100%; height: 100%; border: none; pointer-events: auto; object-fit: cover; }
 
         .reels-gradient-overlay {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
@@ -465,8 +465,9 @@
                 <div class="search-bar-wrapper">
                     <select id="media-platform-select">
                         <option value="youtube">▶️ YouTube Shorts</option>
-                        <option value="dailymotion">🅿️ Dailymotion</option>
                         <option value="wikimedia">🌐 Wikimedia Commons API</option>
+                        <option value="pixabay-video">🎥 Pixabay Videos (Vertical)</option>
+                        <option value="pixabay-image">🖼️ Pixabay Images (Vertical)</option>
                     </select>
                     <input type="text" id="media-search-input" placeholder="Search topic (e.g. raccoon, cyberpunk)..." value="raccoon">
                     <button onclick="loadMultiPlatformStream()">Load Stream</button>
@@ -526,6 +527,7 @@
         console.log("Script execution started.");
         
         const YOUTUBE_API_KEY = "AIzaSyAmhqUX0iC-XYC3W4cL6DcInxFdCGAXK_8"; 
+        const PIXABAY_API_KEY = "58012291-a9821e278a489f49bf9424a79";
 
         let currentTempUnit = 'C'; 
         let currentPrecipUnit = 'mm'; 
@@ -894,7 +896,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (DIRECT REAL-TIME QUERY FIX) ---
+        // --- MULTI-PLATFORM STREAM ENGINE (WITH PIXABAY & WIKIMEDIA) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -932,31 +934,7 @@
                 } catch (e) { console.error("YouTube search error:", e); }
             }
 
-            // 2. DAILYMOTION PUBLIC EMBED SEARCH
-            else if (platform === 'dailymotion') {
-                try {
-                    const dmUrl = `https://api.dailymotion.com/videos?search=${encodeURIComponent(query)}&limit=6&ssl_assets=true&fields=id,title,user.username`;
-                    const res = await fetch(dmUrl);
-                    if (res.ok) {
-                        const data = await res.json();
-                        const items = data.list || data.data || [];
-                        items.forEach(item => {
-                            const vidId = item.id || item.video_id;
-                            if (vidId) {
-                                reelCards.push({
-                                    title: item.title || `Dailymotion ${query} clip`,
-                                    caption: item['user.username'] ? `Uploaded by ${item['user.username']}` : `Live Dailymotion search result`,
-                                    embedUrl: `https://www.dailymotion.com/embed/video/${vidId}?autoplay=1&mute=1`,
-                                    type: "iframe",
-                                    tag: "🅿️ Dailymotion"
-                                });
-                            }
-                        });
-                    }
-                } catch (e) { console.error("Dailymotion search error:", e); }
-            }
-
-            // 3. WIKIMEDIA COMMONS MEDIASEARCH API
+            // 2. WIKIMEDIA COMMONS VIDEO API
             else if (platform === 'wikimedia') {
                 try {
                     const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + " filetype:video")}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
@@ -984,11 +962,57 @@
                 } catch (e) { console.error("Wikimedia search error:", e); }
             }
 
+            // 3. PIXABAY VIDEOS (VERTICAL STOCK FOOTAGE)
+            else if (platform === 'pixabay-video') {
+                try {
+                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&per_page=10`;
+                    const res = await fetch(pixabayVidUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        data.hits.forEach(video => {
+                            const vUrl = video.videos.medium?.url || video.videos.small?.url;
+                            if (vUrl) {
+                                reelCards.push({
+                                    title: `Pixabay: ${query} clip`,
+                                    caption: `Video by ${video.user} on Pixabay`,
+                                    embedUrl: vUrl,
+                                    mimeType: "video/mp4",
+                                    type: "video",
+                                    tag: "🎥 Pixabay Video"
+                                });
+                            }
+                        });
+                    }
+                } catch (e) { console.error("Pixabay video search error:", e); }
+            }
+
+            // 4. PIXABAY IMAGES (VERTICAL VISUAL CARDS)
+            else if (platform === 'pixabay-image') {
+                try {
+                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&image_type=photo&per_page=10`;
+                    const res = await fetch(pixabayImgUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        data.hits.forEach(img => {
+                            if (img.largeImageURL || img.webformatURL) {
+                                reelCards.push({
+                                    title: `Pixabay Photo: ${query}`,
+                                    caption: `Tags: ${img.tags} | By ${img.user}`,
+                                    embedUrl: img.largeImageURL || img.webformatURL,
+                                    type: "image",
+                                    tag: "🖼️ Pixabay Image"
+                                });
+                            }
+                        });
+                    }
+                } catch (e) { console.error("Pixabay image search error:", e); }
+            }
+
             if (reelCards.length === 0) {
                 container.innerHTML = `
                     <div style="padding: 30px; text-align: center; color: #ff334b;">
-                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No live streams found for "${query}".</p>
-                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a broader keyword or switch platforms.</p>
+                        <p style="font-weight: bold; font-size: 1.1rem;">⚠️ No streams found for "${query}".</p>
+                        <p style="color: #8f9bba; font-size: 0.9rem;">Try a broader keyword or switch platform sub-sections.</p>
                     </div>
                 `;
                 isLoadingEmbeds = false;
@@ -997,11 +1021,16 @@
 
             let html = isAppend ? container.innerHTML : "";
             reelCards.forEach(card => {
-                const mediaMarkup = card.type === "video" 
-                    ? `<video class="media-video" autoplay loop muted playsinline controls>
-                         <source src="${card.embedUrl}" type="${card.mimeType || 'video/webm'}">
-                       </video>`
-                    : `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                let mediaMarkup = "";
+                if (card.type === "video") {
+                    mediaMarkup = `<video class="media-video" autoplay loop muted playsinline controls>
+                                     <source src="${card.embedUrl}" type="${card.mimeType || 'video/mp4'}">
+                                   </video>`;
+                } else if (card.type === "image") {
+                    mediaMarkup = `<img src="${card.embedUrl}" class="media-image" alt="Pixabay Image">`;
+                } else {
+                    mediaMarkup = `<iframe src="${card.embedUrl}" class="media-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                }
 
                 html += `
                     <div class="media-result-card">
