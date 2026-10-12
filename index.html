@@ -268,7 +268,7 @@
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     
     <div id="frontpage-weather-banner">
-        <span id="header-location">📍 Initializing Weather...</span>
+        <span id="header-location">📍 Acquiring GPS Coordinates...</span>
         <span id="header-temp">🌡 Loading live temp...</span>
         <span id="header-time">🌤️ Synced Local Time</span>
     </div>
@@ -308,11 +308,6 @@
     <div id="weather-tab" class="tab-pane">
         <section>
             <h2>🌤️ Live Localized Weather & Outrageous Reports</h2>
-            
-            <div class="search-bar-wrapper" style="margin-bottom: 15px;">
-                <input type="text" id="city-search-input" placeholder="Type city name (e.g., Ottawa, Tokyo)..." onkeypress="if(event.key==='Enter') searchCustomCity()">
-                <button onclick="searchCustomCity()">Search City</button>
-            </div>
 
             <div class="sub-tab-nav">
                 <button class="sub-tab-btn active" onclick="switchWeatherSubTab('hourly-pane', this)">🕒 24-Hour Outlook</button>
@@ -321,7 +316,7 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Loading Weather...</span>
+                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Acquiring GPS Location...</span>
                 <button class="btn-action" style="margin:0; padding:6px 12px; font-size:0.8rem;" onclick="toggleTemperatureUnit()">Toggle °C / °F & mm / in</button>
             </div>
 
@@ -448,7 +443,7 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        // --- SAFE CONTEXT-AWARE OUTRAGEOUS REPORTS ---
+        // --- CONTEXT-AWARE OUTRAGEOUS WEATHER REPORTS ---
         function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
             try {
                 let tempC = Number(maxTemp) || 15;
@@ -469,46 +464,32 @@
                     return `SUSPICIOUSLY CALM: The sky looks decent, which probably means local wildlife is plotting something chaotic behind your back.`;
                 }
             } catch (err) {
-                return `ATMOSPHERIC ANOMACY: Sensors are confused, much like a raccoon in a laser tag arena.`;
+                return `ATMOSPHERIC ANOMALY: Sensors are confused, much like a raccoon in a laser tag arena.`;
             }
         }
 
-        // --- BULLETPROOF INITIALIZER ---
+        // --- PURE GPS-BASED WEATHER INITIALIZER WITH FALLBACK ---
         function initLiveWeather() {
-            // Load Ottawa default coordinates instantly on startup
-            fetchWeatherByCoords(45.4215, -75.6972, "Ottawa, ON");
-        }
-
-        // --- BULLETPROOF CITY SEARCH ---
-        async function searchCustomCity() {
-            const input = document.getElementById('city-search-input');
-            const query = input.value.trim();
-            if (!query) return;
-            
-            document.getElementById('weather-status-tag').textContent = `Searching for "${query}"...`;
-            
-            try {
-                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
-                const geoRes = await fetch(geoUrl);
-                if (!geoRes.ok) throw new Error("Geocoding network error");
-                const geoData = await geoRes.json();
-                
-                if (geoData && geoData.results && geoData.results.length > 0) {
-                    const loc = geoData.results[0];
-                    const locName = `${loc.name || query}, ${loc.country || ''}`;
-                    fetchWeatherByCoords(loc.latitude, loc.longitude, locName);
-                } else {
-                    document.getElementById('weather-status-tag').textContent = `City "${query}" not found.`;
-                }
-            } catch (e) {
-                console.error(e);
-                document.getElementById('weather-status-tag').textContent = "City search failed.";
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude, "GPS Position");
+                    },
+                    err => {
+                        console.warn("GPS permission denied or unavailable. Using default fallback coordinates.");
+                        // Default fallback to Ottawa coordinates if GPS is blocked
+                        fetchWeatherByCoords(45.4215, -75.6972, "Ottawa, ON (GPS Fallback)");
+                    },
+                    { timeout: 8000, enableHighAccuracy: true, maximumAge: 60000 }
+                );
+            } else {
+                fetchWeatherByCoords(45.4215, -75.6972, "Ottawa, ON (Default)");
             }
         }
 
         async function fetchWeatherByCoords(lat, lon, locName) {
             try {
-                document.getElementById('weather-status-tag').textContent = `Syncing weather for ${locName}...`;
+                document.getElementById('weather-status-tag').textContent = `Syncing GPS weather data...`;
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&current_weather=true&forecast_days=14&timezone=auto`;
                 const res = await fetch(url);
                 if (!res.ok) throw new Error("Weather API network failure");
@@ -533,7 +514,7 @@
             
             document.getElementById('header-temp').textContent = `${curCond.icon} ${Math.round(temp)}°${currentTempUnit}`;
             document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            document.getElementById('weather-status-tag').textContent = `Satellite Synced (${currentTempUnit}, ${currentPrecipUnit})`;
+            document.getElementById('weather-status-tag').textContent = `GPS Satellite Synced (${currentTempUnit}, ${currentPrecipUnit})`;
 
             const nowIso = new Date().toISOString().substring(0, 13);
             let startIndex = hourly.time.findIndex(t => t.startsWith(nowIso));
@@ -862,7 +843,7 @@
             }
         }
 
-        // Initialize Everything Safely
+        // Initialize Everything
         initLiveWeather();
         fetchNews('local-news');
         runLiveReelsSearch();
