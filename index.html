@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Doomscroll Daily - Multi-Platform Embed Engine</title>
+    <title>The Doomscroll Daily - Localized Weather & Multi-Stream Engine</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -285,7 +285,7 @@
 </head>
 <body>
 
-    <!-- VISUAL DEBUG LOGGER BOX -->
+    <!-- VISUAL DEBUGGER CONSOLE BOX -->
     <div id="visual-debugger"><b>🖥️ Visual Logger Initialized...</b><br></div>
 
     <script>
@@ -336,7 +336,7 @@
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     
     <div id="frontpage-weather-banner">
-        <span id="header-location">📍 Ready to Sync Location</span>
+        <span id="header-location">📍 Detecting Location...</span>
         <span id="header-temp">🌡 --°C</span>
         <span id="header-time">🌤️ Synced Local Time</span>
     </div>
@@ -532,14 +532,14 @@
 
             if (condition.includes('snow')) {
                 headline = "❄️ CRIPPLING FROST & ICE SYNDICATE WARNING";
-                overallText = `Today's atmosphere is executing an aggressive cold-blooded assault with icy precipitation. The sky has completely abandoned reason and chosen violence. Expect frozen facial hair, icy sidewalks engineered specifically to ruin your posture, and local raccoons staging a coup over heated vehicle hoods.`;
+                overallText = `Today's atmosphere is executing an aggressive cold-blooded assault with icy precipitation (${rainAmt}mm equiv). The sky has completely abandoned reason and chosen violence. Expect frozen facial hair, icy sidewalks engineered specifically to ruin your posture, and local raccoons staging a coup over heated vehicle hoods.`;
                 morning = "Brutal sub-zero frostbite hazard. Crawling out of bed requires military-grade willpower.";
                 afternoon = "Malicious snow clouds block the sun. Visibility drops as the local snowplow mafia takes control.";
                 evening = "Temperatures plummet. Black ice forms traps across all major intersections.";
                 night = "Arctic wasteland conditions. Your windows will freeze solid; do not open them under any circumstances.";
             } else if (condition.includes('thunderstorm')) {
                 headline = "🌩️ THUNDERDOME METEOROLOGICAL TANTRAM";
-                overallText = `Mother Nature has entered maximum rage-mode. Flash-mob lightning strikes and booming atmospheric noise will dominate today's weather profile. Electronics will vibrate with anxiety, and all outdoor plans are officially revoked by decree of the heavens.`;
+                overallText = `Mother Nature has entered maximum rage-mode with ${rainAmt}mm of downpour. Flash-mob lightning strikes and booming atmospheric noise will dominate today's weather profile. Electronics will vibrate with anxiety, and all outdoor plans are officially revoked by decree of the heavens.`;
                 morning = "Ominous dark clouds roll in like an impending invasion. Sudden gusts knock over outdoor furniture.";
                 afternoon = "Deafening thunderclaps rock the neighborhood. Torrential downpours turn gutters into rapids.";
                 evening = "Intermittent lightning illuminates the skyline. Puddles reach lake-sized proportions.";
@@ -588,33 +588,73 @@
             `;
         }
 
+        // --- LOCALIZED IP & GPS GEOLOCATION ENGINE ---
+        async function fetchIPLocation() {
+            const statusTag = document.getElementById('weather-status-tag');
+            if (statusTag) statusTag.textContent = "🌐 Detecting location via IP network...";
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                if (!res.ok) throw new Error("IP geolocation failed");
+                const data = await res.json();
+                if (data.latitude && data.longitude) {
+                    const label = data.city ? `${data.city}, ${data.country_code || ''}` : "Local Network Node";
+                    fetchWeatherData(data.latitude, data.longitude, label);
+                } else {
+                    throw new Error("No coordinates in IP response");
+                }
+            } catch (err) {
+                console.error("IP geolocation fallback error:", err);
+                if (statusTag) statusTag.textContent = "❌ Location unavailable. Tap GPS button above.";
+            }
+        }
+
         function requestUserLocation() {
+            const statusTag = document.getElementById('weather-status-tag');
+            if (statusTag) statusTag.textContent = "📡 Acquiring precise GPS position...";
+            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     position => fetchWeatherData(position.coords.latitude, position.coords.longitude, "Precise GPS Location"),
-                    () => fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node"),
+                    () => {
+                        console.warn("GPS denied or timeout. Falling back to IP location.");
+                        fetchIPLocation();
+                    },
                     { timeout: 8000 }
                 );
             } else {
-                fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node");
+                fetchIPLocation();
             }
         }
 
         function initLiveWeather() {
-            fetchWeatherData(45.4215, -75.6972, "Ottawa Default Node");
+            // Automatically detect local weather wherever viewer is located without assuming Ottawa
+            requestUserLocation();
         }
 
         async function fetchWeatherData(lat, lon, locationLabel) {
+            const statusTag = document.getElementById('weather-status-tag');
             try {
                 const apiURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&current_weather=true&forecast_days=14&timezone=auto`;
                 const response = await fetch(apiURL);
                 if (!response.ok) throw new Error();
                 rawWeatherData = await response.json();
+                
                 document.getElementById('header-location').textContent = `📍 ${locationLabel}`;
+                if (statusTag) statusTag.textContent = `🟢 Synced: ${locationLabel}`;
+                
                 renderWeatherUI();
             } catch (err) {
-                document.getElementById('weather-status-tag').textContent = "Weather feed offline.";
+                console.error("Weather fetch error:", err);
+                if (statusTag) statusTag.textContent = "🔴 Weather feed offline.";
             }
+        }
+
+        function formatPrecip(mm) {
+            if (currentPrecipUnit === 'in') {
+                const inches = mm / 25.4;
+                return inches < 0.01 && mm > 0 ? "<0.01 in" : `${inches.toFixed(2)} in`;
+            }
+            return `${Math.round(mm * 10) / 10} mm`;
         }
 
         function renderWeatherUI() {
@@ -657,6 +697,8 @@
             for (let day = 0; day < numDays && day < rawWeatherData.daily.time.length; day++) {
                 const dateObj = new Date(rawWeatherData.daily.time[day] + "T00:00:00");
                 const dayCode = rawWeatherData.daily.weathercode[day];
+                const precipSum = rawWeatherData.daily.precipitation_sum[day] || 0;
+                const precipProb = rawWeatherData.daily.precipitation_probability_max[day] || 0;
 
                 const dayStartIndex = day * 24;
                 const morningTemp = hourly ? hourly.temperature_2m[dayStartIndex + 8] ?? rawWeatherData.daily.temperature_2m_max[day] : rawWeatherData.daily.temperature_2m_max[day];
@@ -669,13 +711,13 @@
                 const eveningCode = hourly ? hourly.weathercode[dayStartIndex + 19] || dayCode : dayCode;
                 const nightCode = hourly ? hourly.weathercode[dayStartIndex + 23] || dayCode : dayCode;
 
-                const outrageousReportHTML = generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], rawWeatherData.daily.precipitation_sum[day], dayCode);
+                const outrageousReportHTML = generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], precipSum, dayCode);
 
                 dailyHTML += `
                     <div class="daily-weather-card">
                         <div class="daily-weather-header">
                             <span>${getWeatherDetails(dayCode).icon} ${dateObj.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}</span>
-                            <span style="color:#00f2fe;">🌧️ ${rawWeatherData.daily.precipitation_probability_max[day] || 0}%</span>
+                            <span style="color:#00f2fe;">🌧️ ${precipProb}% (${formatPrecip(precipSum)})</span>
                         </div>
                         
                         ${outrageousReportHTML}
@@ -707,6 +749,7 @@
         function formatTemp(c) { return currentTempUnit === 'F' ? `${Math.round((c * 9/5) + 32)}°F` : `${Math.round(c)}°C`; }
         function toggleTemperatureUnit() {
             currentTempUnit = currentTempUnit === 'C' ? 'F' : 'C';
+            currentPrecipUnit = currentPrecipUnit === 'mm' ? 'in' : 'mm';
             renderWeatherUI();
         }
 
@@ -899,7 +942,7 @@
         document.getElementById('bulletins-container').innerHTML = `
             <div class="card">
                 <h3>System Operational</h3>
-                <p>Multi-platform proxy-free stream engine active.</p>
+                <p>Localized weather and multi-platform engine active.</p>
             </div>
         `;
     </script>
