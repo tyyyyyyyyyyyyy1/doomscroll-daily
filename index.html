@@ -484,13 +484,18 @@
                         <option value="pixabay-video">🎥 Pixabay Videos</option>
                         <option value="pixabay-image">🖼️ Pixabay Images</option>
                     </select>
-                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. meme, nature)..." value="nature" onchange="resetStreamPagination()">
+                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. meme, nature)..." value="nature">
                     <button class="global-audio-btn" id="global-audio-toggle-btn" onclick="toggleGlobalAudio()">🔇 Audio: Muted</button>
                     <button onclick="resetStreamPagination(); loadMultiPlatformStream()">Load Stream</button>
                 </div>
                 
                 <div class="media-feed-wrapper">
-                    <div id="multi-source-results" onscroll="handleReelsScroll(this)"></div>
+                    <div id="multi-source-results" onscroll="handleReelsScroll(this)">
+                        <div style="padding: 50px; text-align: center; color: #8f9bba;">
+                            <p style="font-size: 1.1rem; margin-bottom: 10px;">Select your platform and enter a keyword, then click <strong>Load Stream</strong>.</p>
+                            <p style="font-size: 0.85rem; color: #57606f;">(Protected from automatic page-load API quota limits)</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -559,7 +564,6 @@
             streamPage = 1;
             loadedEmbedUrls.clear();
             youtubeNextPageToken = "";
-            loadMultiPlatformStream(false);
         }
 
         // --- GLOBAL MUTE/UNMUTE BUTTON WITH 40MS DELAYED POSTMESSAGE ---
@@ -943,7 +947,7 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE ---
+        // --- MULTI-PLATFORM STREAM ENGINE (MANUAL TRIGGER ONLY) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -952,7 +956,7 @@
             const container = document.getElementById('multi-source-results');
 
             if (!isAppend) {
-                container.innerHTML = "";
+                container.innerHTML = `<div style="padding: 40px; text-align: center; color: #00f2fe;">Loading stream items for "${query}"...</div>`;
                 streamPage = 1;
                 loadedEmbedUrls.clear();
                 youtubeNextPageToken = "";
@@ -1023,7 +1027,7 @@
                     }
                 }
 
-                // 3. PIXABAY VIDEOS (Safely structured URL parameters)
+                // 3. PIXABAY VIDEOS
                 else if (platform === 'pixabay-video') {
                     const encodedQuery = encodeURIComponent(query);
                     const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodedQuery}&per_page=10&page=${streamPage}`;
@@ -1081,7 +1085,7 @@
                 console.error(`[STREAM FETCH ERROR - ${platform}]:`, err.message);
             }
 
-            if (reelCards.length === 0 && !isAppend) {
+            if (reelCards.length === 0) {
                 container.innerHTML = `<div style="padding: 40px; text-align: center; color: #ff334b;">No items found or API request failed. Check debugger above.</div>`;
                 isLoadingEmbeds = false;
                 return;
@@ -1197,10 +1201,9 @@
             }
         }
 
-        // Initialize Startup
+        // Initialize Startup (Weather, News, and Memes only—Media stream is manual)
         initLiveWeather();
         fetchNews('local-news');
-        loadMultiPlatformStream();
         fetchMeme();
 
         document.getElementById('bulletins-container').innerHTML = `
