@@ -466,10 +466,10 @@
                     <select id="media-platform-select" onchange="resetStreamPagination()">
                         <option value="youtube">▶️ YouTube Shorts</option>
                         <option value="wikimedia">🌐 Wikimedia Commons API</option>
-                        <option value="pixabay-video">🎥 Pixabay Videos (Vertical)</option>
-                        <option value="pixabay-image">🖼️ Pixabay Images (Vertical)</option>
+                        <option value="pixabay-video">🎥 Pixabay Videos</option>
+                        <option value="pixabay-image">🖼️ Pixabay Images</option>
                     </select>
-                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. raccoon, cyberpunk)..." value="raccoon" onchange="resetStreamPagination()">
+                    <input type="text" id="media-search-input" placeholder="Search topic (e.g. meme, cyberpunk)..." value="meme" onchange="resetStreamPagination()">
                     <button onclick="resetStreamPagination(); loadMultiPlatformStream()">Load Stream</button>
                 </div>
                 
@@ -908,12 +908,12 @@
             fetchNews(feedKey);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE (STABILIZED & SAFE API CALLS) ---
+        // --- MULTI-PLATFORM STREAM ENGINE (FIXED PIXABAY ENDPOINTS) ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
             const platform = document.getElementById('media-platform-select').value;
-            const query = document.getElementById('media-search-input').value.trim() || "raccoon";
+            const query = document.getElementById('media-search-input').value.trim() || "meme";
             const container = document.getElementById('multi-source-results');
 
             if (!isAppend) {
@@ -987,21 +987,21 @@
                 } catch (e) { console.error("Wikimedia search error:", e); }
             }
 
-            // 3. PIXABAY VIDEOS (SAFE PARSING)
+            // 3. PIXABAY VIDEOS (CORRECTED ENDPOINT: /api/videos/)
             else if (platform === 'pixabay-video') {
                 try {
-                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&per_page=10&page=${streamPage}`;
+                    const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&per_page=10&page=${streamPage}`;
                     const res = await fetch(pixabayVidUrl);
                     if (res.ok) {
                         const data = await res.json();
                         if (data && data.hits) {
                             data.hits.forEach(video => {
                                 if (video && video.videos) {
-                                    const vUrl = video.videos.medium?.url || video.videos.small?.url;
+                                    const vUrl = video.videos.medium?.url || video.videos.small?.url || video.videos.large?.url;
                                     if (vUrl && !loadedEmbedUrls.has(vUrl)) {
                                         loadedEmbedUrls.add(vUrl);
                                         reelCards.push({
-                                            title: `Pixabay: ${query} clip`,
+                                            title: `Pixabay Video: ${query}`,
                                             caption: `Tags: ${video.tags || query} | By ${video.user || 'Unknown'}`,
                                             embedUrl: vUrl,
                                             mimeType: "video/mp4",
@@ -1016,10 +1016,10 @@
                 } catch (e) { console.error("Pixabay video search error:", e); }
             }
 
-            // 4. PIXABAY IMAGES (SAFE PARSING)
+            // 4. PIXABAY IMAGES (CORRECTED ENDPOINT: /api/)
             else if (platform === 'pixabay-image') {
                 try {
-                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&orientation=vertical&image_type=photo&per_page=10&page=${streamPage}`;
+                    const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&image_type=photo&per_page=10&page=${streamPage}`;
                     const res = await fetch(pixabayImgUrl);
                     if (res.ok) {
                         const data = await res.json();
@@ -1094,7 +1094,7 @@
             updateActiveReelPlayback();
         }
 
-        // --- THROTTLED SCROLL HANDLER (PREVENTS CHROME FREEZES) ---
+        // --- THROTTLED SCROLL HANDLER ---
         function handleReelsScroll(element) {
             if (scrollTimeout) return;
             scrollTimeout = setTimeout(() => {
