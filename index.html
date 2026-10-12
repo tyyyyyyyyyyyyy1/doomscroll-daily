@@ -467,7 +467,7 @@
             }
         }
 
-        // --- ROBUST LOCALIZED WEATHER ENGINE WITH MANUAL SEARCH ---
+        // --- ROBUST LOCALIZED WEATHER ENGINE WITH GEOCODING SEARCH ---
         async function initLiveWeather() {
             document.getElementById('weather-status-tag').textContent = "Requesting GPS Location...";
             
@@ -512,6 +512,7 @@
             
             document.getElementById('weather-status-tag').textContent = `Searching for "${query}"...`;
             try {
+                // Fixed: Utilizing official Open-Meteo Geocoding API to resolve city name to coordinates
                 const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1`);
                 const geoData = await geoRes.json();
                 
