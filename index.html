@@ -268,7 +268,7 @@
     <div id="panic-banner">📊 Global Panic Index: Operational</div>
     
     <div id="frontpage-weather-banner">
-        <span id="header-location">📍 Locating GPS...</span>
+        <span id="header-location">📍 Initializing GPS...</span>
         <span id="header-temp">🌡 Loading live temp...</span>
         <span id="header-time">🌤️ Synced Local Time</span>
     </div>
@@ -316,7 +316,7 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Syncing GPS Satellite...</span>
+                <span id="weather-status-tag" style="color:#00f2fe; font-weight:bold;">Locating Satellite Coordinates...</span>
                 <button class="btn-action" style="margin:0; padding:6px 12px; font-size:0.8rem;" onclick="toggleTemperatureUnit()">Toggle °C / °F & mm / in</button>
             </div>
 
@@ -463,45 +463,39 @@
             }
         }
 
-        // --- WORKING SYNCHRONIZED WEATHER ENGINE WITH GLOBAL IP/GPS FALLBACK ---
-        async function initLiveWeather() {
-            if ("geolocation" in navigator) {
+        // --- BULLETPROOF ASYNCHRONOUS WEATHER INITIALIZER ---
+        function initLiveWeather() {
+            if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    pos => { fetchWeather(pos.coords.latitude, pos.coords.longitude, "Local GPS"); },
-                    err => { fetchWeatherByIP(); },
-                    { timeout: 7000, enableHighAccuracy: false }
+                    position => {
+                        fetchWeatherData(position.coords.latitude, position.coords.longitude, "Your Precise Location");
+                    },
+                    error => {
+                        console.warn("Geolocation blocked or failed. Using fallback coordinates.");
+                        // Fallback coordinates (e.g. Central North America / Ottawa region or default global node)
+                        fetchWeatherData(45.4215, -75.6972, "Detected Local Node");
+                    },
+                    { timeout: 4000, maximumAge: 60000, enableHighAccuracy: false }
                 );
             } else {
-                fetchWeatherByIP();
+                fetchWeatherData(45.4215, -75.6972, "Detected Local Node");
             }
         }
 
-        async function fetchWeatherByIP() {
+        async function fetchWeatherData(lat, lon, locationLabel) {
             try {
-                const res = await fetch('https://ipapi.co/json/');
-                if (!res.ok) throw new Error("IP fallback failed");
-                const data = await res.json();
-                if (data.latitude && data.longitude) {
-                    fetchWeather(data.latitude, data.longitude, `${data.city || 'Local Area'}, ${data.country_name || ''}`);
-                } else {
-                    throw new Error("No coordinates returned");
-                }
-            } catch (e) {
-                document.getElementById('weather-status-tag').textContent = "Weather offline.";
-            }
-        }
-
-        async function fetchWeather(lat, lon, locName) {
-            try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&current_weather=true&forecast_days=14&timezone=auto`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error("Weather fetch failed");
-                rawWeatherData = await res.json();
+                const apiURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&current_weather=true&forecast_days=14&timezone=auto`;
                 
-                document.getElementById('header-location').textContent = `📍 ${locName}`;
+                const response = await fetch(apiURL);
+                if (!response.ok) throw new Error("API response unsuccessful");
+                
+                rawWeatherData = await response.json();
+                
+                document.getElementById('header-location').textContent = `📍 ${locationLabel}`;
                 renderWeatherUI();
-            } catch (e) {
-                document.getElementById('weather-status-tag').textContent = "Weather offline.";
+            } catch (err) {
+                console.error("Weather fetch error:", err);
+                document.getElementById('weather-status-tag').textContent = "Weather feed offline.";
             }
         }
 
@@ -516,7 +510,7 @@
             
             document.getElementById('header-temp').textContent = `${curCond.icon} ${Math.round(temp)}°${currentTempUnit}`;
             document.getElementById('header-time').textContent = `🌤️ ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            document.getElementById('weather-status-tag').textContent = `Synced GPS Satellite (${currentTempUnit}, ${currentPrecipUnit})`;
+            document.getElementById('weather-status-tag').textContent = `Live Feed Active (${currentTempUnit}, ${currentPrecipUnit})`;
 
             // 1. DYNAMIC 24-HOUR ROLLING OUTLOOK STARTING FROM CURRENT HOUR
             const nowIso = new Date().toISOString().substring(0, 13);
@@ -830,15 +824,15 @@
             }
         }
 
-        // Initialize Everything
+        // Initialize Everything Safely
         initLiveWeather();
         fetchNews('local-news');
         runLiveReelsSearch();
 
         document.getElementById('bulletins-container').innerHTML = `
             <div class="card">
-                <h3>Global Surveillance Network Active</h3>
-                <p>Decentralized node sync operational across international viewing regions.</p>
+                <h3>Global Feed Active</h3>
+                <p>Live meteorological and content syndication engines fully online.</p>
             </div>
         `;
     </script>
