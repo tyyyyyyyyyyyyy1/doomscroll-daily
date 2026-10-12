@@ -435,73 +435,51 @@
 
         // --- WEATHER CONDITION MAPPER & ICONS ---
         function getWeatherDetails(code) {
-            if (code === 0) return { icon: "☀️", text: "Clear Sunny" };
-            if (code === 1 || code === 2) return { icon: "⛅", text: "Partly Cloudy" };
-            if (code === 3) return { icon: "☁️", text: "Overcast Cloudy" };
-            if (code >= 45 && code <= 48) return { icon: "🌫️", text: "Foggy Cloud" };
-            if (code >= 51 && code <= 67) return { icon: "🌧️", text: "Rain Showers" };
-            if (code >= 71 && code <= 77) return { icon: "❄️", text: "Snowfall" };
-            if (code >= 80 && code <= 82) return { icon: "🌧️", text: "Heavy Rain" };
-            if (code >= 85 && code <= 86) return { icon: "❄️", text: "Snow Squalls" };
-            if (code >= 95 && code <= 99) return { icon: "🌩️", text: "Thunderstorm" };
+            const numCode = Number(code) || 0;
+            if (numCode === 0) return { icon: "☀️", text: "Clear Sunny" };
+            if (numCode === 1 || numCode === 2) return { icon: "⛅", text: "Partly Cloudy" };
+            if (numCode === 3) return { icon: "☁️", text: "Overcast Cloudy" };
+            if (numCode >= 45 && numCode <= 48) return { icon: "🌫️", text: "Foggy Cloud" };
+            if (numCode >= 51 && numCode <= 67) return { icon: "🌧️", text: "Rain Showers" };
+            if (numCode >= 71 && numCode <= 77) return { icon: "❄️", text: "Snowfall" };
+            if (numCode >= 80 && numCode <= 82) return { icon: "🌧️", text: "Heavy Rain" };
+            if (numCode >= 85 && numCode <= 86) return { icon: "❄️", text: "Snow Squalls" };
+            if (numCode >= 95 && numCode <= 99) return { icon: "🌩️", text: "Thunderstorm" };
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        // --- CONTEXT-AWARE OUTRAGEOUS WEATHER REPORTS ---
+        // --- SAFE CONTEXT-AWARE OUTRAGEOUS REPORTS ---
         function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
-            let tempC = maxTemp;
-            let condition = getWeatherDetails(weatherCode).text.toLowerCase();
-
-            if (condition.includes('snow')) {
-                return `ARCTIC FREEZE ASSAULT: Snow falling with absolute malice. Expect your neighborhood to become an igloo and your motivation to drop below freezing.`;
-            } else if (condition.includes('thunderstorm')) {
-                return `THUNDERDOME ACTIVATED: Mother Nature is throwing a violent tantrum with lightning bolts. Unplug your appliances and hide your electronics immediately.`;
-            } else if (condition.includes('rain')) {
-                return `MOISTURE ASSAULT: Sky juice is coming down heavy (${precipSum}mm). Puddles have formed specifically to sabotage your footwear.`;
-            } else if (tempC > 25) {
-                return `SOLAR AGGRESSION: The sun is roasting the pavement today. You will melt into a puddle without immediate iced caffeine intervention.`;
-            } else if (tempC < 0) {
-                return `FREEZING REALITY: Sub-zero temperatures mean your facial hair will freeze solid. Embrace the local ice-zombie aesthetic.`;
-            } else {
-                return `SUSPICIOUSLY CALM: The sky looks decent, which probably means local wildlife is plotting something chaotic behind your back.`;
-            }
-        }
-
-        // --- FOOLPROOF WEATHER INITIALIZER (INSTANT DEFAULT + GEOLOCATION) ---
-        async function initLiveWeather() {
-            // Instant default load so dashboard never displays offline state on boot
-            fetchWeatherByCoords(45.4215, -75.6972, "Ottawa, ON");
-
-            // Attempt background geolocation upgrade
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    pos => { 
-                        fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude, "Your Precise GPS Location"); 
-                    },
-                    err => { 
-                        // GPS skipped or denied, fallback IP resolver
-                        fetchWeatherByIPFallback();
-                    },
-                    { timeout: 5000, enableHighAccuracy: false }
-                );
-            } else {
-                fetchWeatherByIPFallback();
-            }
-        }
-
-        async function fetchWeatherByIPFallback() {
             try {
-                const res = await fetch('https://ipapi.co/json/');
-                if (!res.ok) return;
-                const data = await res.json();
-                if (data.latitude && data.longitude) {
-                    const locName = `${data.city}, ${data.region || data.country_name}`;
-                    fetchWeatherByCoords(data.latitude, data.longitude, locName);
+                let tempC = Number(maxTemp) || 15;
+                let condition = getWeatherDetails(weatherCode).text.toLowerCase();
+                let rainAmt = Number(precipSum) || 0;
+
+                if (condition.includes('snow')) {
+                    return `ARCTIC FREEZE ASSAULT: Snow falling with absolute malice. Expect your neighborhood to become an igloo and your motivation to drop below freezing.`;
+                } else if (condition.includes('thunderstorm')) {
+                    return `THUNDERDOME ACTIVATED: Mother Nature is throwing a violent tantrum with lightning bolts. Unplug your appliances and hide your electronics immediately.`;
+                } else if (condition.includes('rain')) {
+                    return `MOISTURE ASSAULT: Sky juice is coming down heavy (${rainAmt}mm). Puddles have formed specifically to sabotage your footwear.`;
+                } else if (tempC > 25) {
+                    return `SOLAR AGGRESSION: The sun is roasting the pavement today. You will melt into a puddle without immediate iced caffeine intervention.`;
+                } else if (tempC < 0) {
+                    return `FREEZING REALITY: Sub-zero temperatures mean your facial hair will freeze solid. Embrace the local ice-zombie aesthetic.`;
+                } else {
+                    return `SUSPICIOUSLY CALM: The sky looks decent, which probably means local wildlife is plotting something chaotic behind your back.`;
                 }
-            } catch (e) {}
+            } catch (err) {
+                return `ATMOSPHERIC ANOMACY: Sensors are confused, much like a raccoon in a laser tag arena.`;
+            }
         }
 
-        // --- WORKING CITY SEARCH ---
+        // --- BULLETPROOF INITIALIZER ---
+        function initLiveWeather() {
+            // Load Ottawa default coordinates instantly on startup
+            fetchWeatherByCoords(45.4215, -75.6972, "Ottawa, ON");
+        }
+
+        // --- BULLETPROOF CITY SEARCH ---
         async function searchCustomCity() {
             const input = document.getElementById('city-search-input');
             const query = input.value.trim();
@@ -510,21 +488,21 @@
             document.getElementById('weather-status-tag').textContent = `Searching for "${query}"...`;
             
             try {
-                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`;
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
                 const geoRes = await fetch(geoUrl);
                 if (!geoRes.ok) throw new Error("Geocoding network error");
                 const geoData = await geoRes.json();
                 
                 if (geoData && geoData.results && geoData.results.length > 0) {
                     const loc = geoData.results[0];
-                    const locName = `${loc.name}, ${loc.admin1 || loc.country || ''}`;
+                    const locName = `${loc.name || query}, ${loc.country || ''}`;
                     fetchWeatherByCoords(loc.latitude, loc.longitude, locName);
                 } else {
-                    document.getElementById('weather-status-tag').textContent = `City "${query}" not found. Try again.`;
+                    document.getElementById('weather-status-tag').textContent = `City "${query}" not found.`;
                 }
             } catch (e) {
                 console.error(e);
-                document.getElementById('weather-status-tag').textContent = "City search failed. Check connection.";
+                document.getElementById('weather-status-tag').textContent = "City search failed.";
             }
         }
 
@@ -539,12 +517,13 @@
                 document.getElementById('header-location').textContent = `📍 ${locName}`;
                 renderWeatherUI();
             } catch (e) {
+                console.error(e);
                 document.getElementById('weather-status-tag').textContent = "Weather server offline.";
             }
         }
 
         function renderWeatherUI() {
-            if (!rawWeatherData) return;
+            if (!rawWeatherData || !rawWeatherData.current_weather) return;
             const current = rawWeatherData.current_weather;
             const hourly = rawWeatherData.hourly;
             const curCond = getWeatherDetails(current.weathercode);
@@ -564,7 +543,7 @@
             for (let i = startIndex; i < startIndex + 24 && i < hourly.time.length; i++) {
                 const timeObj = new Date(hourly.time[i]);
                 const timeStr = timeObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const precipAmt = formatPrecip(hourly.precipitation[i]);
+                const precipAmt = formatPrecip(hourly.precipitation[i] || 0);
                 const cond = getWeatherDetails(hourly.weathercode[i]);
                 
                 hourlyHTML += `
@@ -573,7 +552,7 @@
                         <div class="weather-icon-lg">${cond.icon}</div>
                         <div class="weather-temp">${formatTemp(hourly.temperature_2m[i])}</div>
                         <div class="weather-cond-text">${cond.text}</div>
-                        <div class="weather-precip">🌧️ ${hourly.precipitation_probability[i]}%</div>
+                        <div class="weather-precip">🌧️ ${hourly.precipitation_probability[i] || 0}%</div>
                         <div class="weather-amt">${precipAmt}</div>
                     </div>
                 `;
@@ -585,6 +564,7 @@
         }
 
         function renderExtendedForecast(containerId, numDays) {
+            if (!rawWeatherData || !rawWeatherData.daily) return;
             const hourly = rawWeatherData.hourly;
             let dailyHTML = "";
             
@@ -882,7 +862,7 @@
             }
         }
 
-        // Initialize Everything
+        // Initialize Everything Safely
         initLiveWeather();
         fetchNews('local-news');
         runLiveReelsSearch();
