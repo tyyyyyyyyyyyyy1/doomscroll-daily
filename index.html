@@ -283,21 +283,29 @@
             background: #000; position: relative; display: flex;
             flex-direction: column; justify-content: flex-end; overflow: hidden; flex-shrink: 0;
         }
-        .media-asset-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
-        .media-iframe, .media-video, .media-image { width: 100%; height: 100%; border: none; pointer-events: auto; object-fit: cover; }
+        .media-asset-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #0b0e14; display: flex; align-items: center; justify-content: center; }
+        .media-iframe, .media-video, .media-image { width: 100%; height: 100%; border: none; pointer-events: auto; object-fit: cover; position: relative; z-index: 2; }
+        
+        .loading-spinner {
+            position: absolute;
+            color: #00f2fe;
+            font-size: 0.9rem;
+            font-weight: bold;
+            z-index: 1;
+        }
 
         .reels-gradient-overlay {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
             background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 100%);
-            z-index: 2; pointer-events: none;
+            z-index: 3; pointer-events: none;
         }
 
-        .reels-content-box { position: relative; z-index: 3; padding: 20px; padding-right: 75px; pointer-events: none; }
+        .reels-content-box { position: relative; z-index: 4; padding: 20px; padding-right: 75px; pointer-events: none; }
         .media-source-tag { font-size: 0.75rem; background: rgba(255, 51, 75, 0.85); padding: 4px 10px; border-radius: 20px; color: #fff; font-weight: bold; display: inline-block; margin-bottom: 8px; }
         .media-result-title { font-size: 1.05rem; color: #fff; font-weight: bold; margin-bottom: 6px; text-decoration: none; display: block; }
         .media-caption { font-size: 0.85rem; color: #d1d8e0; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .reels-action-sidebar { position: absolute; right: 12px; bottom: 30px; z-index: 4; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .reels-action-sidebar { position: absolute; right: 12px; bottom: 30px; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 16px; }
         .reel-action-btn { background: rgba(20, 24, 33, 0.85); border: 1px solid rgba(255,255,255,0.15); width: 46px; height: 46px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; cursor: pointer; backdrop-filter: blur(6px); pointer-events: auto; }
 
         .btn-action { background-color: var(--accent-color); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
@@ -1071,6 +1079,7 @@
                 html += `
                     <div class="media-result-card">
                         <div class="media-asset-container">
+                            <div class="loading-spinner">⏳ Loading Stream...</div>
                             ${mediaMarkup}
                         </div>
                         <div class="reels-gradient-overlay"></div>
@@ -1091,7 +1100,11 @@
 
             container.innerHTML = html;
             isLoadingEmbeds = false;
-            updateActiveReelPlayback();
+            
+            // Give YouTube iframes a slight buffering head start before checking visibility
+            setTimeout(() => {
+                updateActiveReelPlayback();
+            }, 400);
         }
 
         // --- THROTTLED SCROLL HANDLER ---
