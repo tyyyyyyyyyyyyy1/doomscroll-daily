@@ -100,7 +100,6 @@ def render_video(text, filename, is_promo=False, duration=7):
 
 # --- 4. AUTO-COMMIT TO REPO ---
 def commit_and_push_videos():
-    """Commits and pushes generated videos back to GitHub so they have permanent public URLs."""
     subprocess.run(["git", "config", "--global", "user.name", "github-actions[bot]"], check=True)
     subprocess.run(["git", "config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
     subprocess.run(["git", "add", OUTPUT_DIR], check=True)
@@ -115,8 +114,9 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
         "Content-Type": "application/json"
     }
     
+    # Fixed type declaration to match CreatePostInput!
     mutation = """
-    mutation CreatePost($input: PostInput!) {
+    mutation CreatePost($input: CreatePostInput!) {
         createPost(input: $input) {
             ... on PostActionSuccess {
                 post { id dueAt }
@@ -165,11 +165,9 @@ if __name__ == "__main__":
         rendered_slots.append((video_path, slot))
         print(f"Slot #{idx} ({slot['time']}) created successfully.")
 
-    # Push videos to GitHub to generate public raw URLs
     print("\n📦 Committing videos to repository for public URLs...")
     commit_and_push_videos()
 
-    # Get repository name dynamically from git remote or hardcode your username/repo
     repo_owner_repo = "tyyyyy/doomscroll-daily" 
 
     print("\n📅 Sending schedule requests to Buffer...")
