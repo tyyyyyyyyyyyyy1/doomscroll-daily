@@ -9,7 +9,7 @@ from io import BytesIO
 from PIL import Image
 from datetime import datetime, timedelta
 from gtts import gTTS
-from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip, AudioArrayClip, AudioFileClip, concatenate_audioclips, CompositeAudioClip
+from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip, AudioArrayClip, AudioFileClip, CompositeAudioClip
 
 # --- 1. CONFIGURATION ---
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
@@ -83,29 +83,30 @@ def fetch_random_reddit_image():
 
 # --- 4. DRIFT PHONK AUDIO & VOICE SAMPLE GENERATOR ---
 def generate_voice_sample(duration=7):
-    """Programmatically generates an eerie spoken-word voice snippet to layer into the track like Brutus."""
-    phrases = [
-        "Everyone is talking about it.",
-        "I must watch closely.",
-        "Another day, another scroll.",
-        "Can you hear them coming?",
-        "Check the feed."
-    ]
-    selected_text = random.choice(phrases)
-    temp_speech_path = "temp_voice.mp3"
+    """Safely generates an eerie spoken-word voice snippet with explicit duration."""
     try:
+        phrases = [
+            "Everyone is talking about it.",
+            "I must watch closely.",
+            "Another day, another scroll.",
+            "Can you hear them coming?",
+            "Check the feed."
+        ]
+        selected_text = random.choice(phrases)
+        temp_speech_path = "temp_voice.mp3"
+        
         tts = gTTS(text=selected_text, lang='en', slow=True)
         tts.save(temp_speech_path)
+        
         voice_clip = AudioFileClip(temp_speech_path)
-        if voice_clip.duration > duration:
-            voice_clip = voice_clip.subclipped(0, duration)
+        voice_clip = voice_clip.subclipped(0, min(duration, voice_clip.duration))
         return voice_clip
     except Exception as e:
-        print(f"⚠️ Could not generate voice sample: {e}")
+        print(f"⚠️ Voice sample skipped: {e}")
         return None
 
 def generate_drift_phonk_audio(duration=7):
-    """Generates a heavy drift phonk track with metallic cowbells, rolling 808s, tape distortion, and spoken voice."""
+    """Generates a heavy drift phonk track with explicit duration mapping and voice integration."""
     sample_rate = 44100
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
     
@@ -177,15 +178,20 @@ def generate_drift_phonk_audio(duration=7):
     master_mix = sub_bass + cowbell_melody + percussion
     master_mix = np.tanh(master_mix * 2.2) * 0.8
     stereo_data = np.vstack([master_mix, master_mix]).T
-    beat_audio = AudioArrayClip(stereo_data, fps=sample_rate)
     
-    # Layer with synthesized eerie voice sample
-    voice_audio = generate_voice_sample(duration)
-    if voice_audio:
-        # Mix the voice quietly over the driving beat
-        final_audio = CompositeAudioClip([beat_audio, voice_audio.with_volume_scaled(0.6)])
-        return final_audio
+    # Explicitly set duration on the generated array audio clip
+    beat_audio = AudioArrayClip(stereo_data, fps=sample_rate).with_duration(duration)
     
+    # Safely merge with voice sample
+    try:
+        voice_audio = generate_voice_sample(duration)
+        if voice_audio:
+            voice_audio = voice_audio.with_duration(duration).with_volume_scaled(0.6)
+            final_audio = CompositeAudioClip([beat_audio, voice_audio]).with_duration(duration)
+            return final_audio
+    except Exception as e:
+        print(f"⚠️ Composite audio fallback triggered: {e}")
+        
     return beat_audio
 
 # --- 5. GENERATION ENGINE ---
