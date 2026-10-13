@@ -43,7 +43,7 @@ def fetch_random_reddit_image():
     url = f"https://meme-api.com/gimme/{target_subs}"
     
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.6; Win64; x64) AppleWebKit/537.36"
     }
     
     blocked_keywords = [
@@ -80,77 +80,102 @@ def fetch_random_reddit_image():
     print("⚠️ Using fallback visual color background.")
     return None
 
-# --- 4. MULTI-INSTRUMENT PHONK PRODUCTION GENERATOR ---
-def generate_complex_phonk_audio(duration=7):
-    """Composes a multi-instrument track with sub-bass, lead synth arpeggios, snares, and hi-hats."""
+# --- 4. HEAVY PHONK & HARMONIC PRODUCTION ENGINE ---
+def generate_heavy_phonk_audio(duration=7):
+    """Generates a club-heavy phonk beat featuring thick 808 sub-bass, harmonic minor synth chords, and trap percussion."""
     sample_rate = 44100
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
     
-    tempo_bpm = random.randint(135, 155)
+    tempo_bpm = random.randint(132, 148) # Driving phonk tempo
     beat_interval = 60.0 / tempo_bpm
     
-    # Root frequencies for a dark minor phonk scale (e.g., C minor / D# minor variants)
-    root_freq = random.choice([65.41, 73.42, 82.41]) # C2, D2, E2
-    scale_ratios = [1.0, 1.122, 1.259, 1.335, 1.498, 1.682, 1.888] # Minor scale intervals
+    # Deep club roots (F#, G, A minor variants common in heavy phonk)
+    root_freq = random.choice([46.25, 49.00, 55.00]) # F#1, G1, A1
     
-    # Track buffers
-    bass_track = np.zeros_like(t)
-    lead_track = np.zeros_like(t)
+    sub_bass_track = np.zeros_like(t)
+    chord_track = np.zeros_like(t)
     perc_track = np.zeros_like(t)
     
-    # 1. Rhythmic Sub-Bass & Cowbell Layer
+    # 1. Heavy 808 Sub-Bass Layer with Pitch Slides & Saturation
     current_beat = 0.0
     while current_beat < duration:
         hit_idx = int(current_beat * sample_rate)
-        hit_len = int(0.2 * sample_rate)
+        hit_len = int(0.35 * sample_rate) # Long sustaining heavy bass tail
         if hit_idx + hit_len < len(t):
-            t_hit = np.linspace(0, 0.2, hit_len)
-            # Pitch drop envelope for aggressive bounce
-            freq_env = root_freq * (1 + 2 * np.exp(-20 * t_hit))
-            sub_hit = np.sin(2 * np.pi * freq_env * t_hit) * np.exp(-8 * t_hit) * 0.5
-            bass_track[hit_idx:hit_idx+hit_len] += sub_hit
-        current_beat += beat_interval / 2 # Eighth-note groove
+            t_hit = np.linspace(0, 0.35, hit_len)
+            # Characteristic phonk 808 pitch drop envelope
+            freq_env = root_freq * (1 + 1.5 * np.exp(-12 * t_hit))
+            # Rich sine + harmonic wave for sub-bass weight
+            bass_wave = np.sin(2 * np.pi * freq_env * t_hit) + 0.3 * np.sin(2 * np.pi * (freq_env * 2) * t_hit)
+            # Volume envelope with punchy attack and smooth release
+            amp_env = np.exp(-4 * t_hit) * (1 - np.exp(-80 * t_hit))
+            sub_bass_track[hit_idx:hit_idx+hit_len] += bass_wave * amp_env * 0.7
+        current_beat += beat_interval # Four-on-the-floor / heavy downbeat bounce
         
-    # 2. Lead Synth Arpeggio Layer (Dark Melody)
-    note_duration = beat_interval / 4 # Sixteenth notes
-    current_time = 0.0
-    while current_time < duration:
-        note_idx = int(current_time * sample_rate)
-        note_len = int(0.12 * sample_rate)
-        if note_idx + note_len < len(t):
-            # Pick a random note from the minor scale
-            step = random.choice(scale_ratios)
-            note_freq = root_freq * 4 * step # Shifted up 2 octaves for lead
+    # 2. Harmonic Synth Chords (Minor Triads for Atmospheric Width)
+    # Minor chord ratios: Root (1.0), Minor Third (1.189), Fifth (1.498)
+    chord_ratios = [1.0, 1.189, 1.498]
+    chord_duration = beat_interval * 2 # Changes every 2 beats
+    curr_time = 0.0
+    while curr_time < duration:
+        chord_idx = int(curr_time * sample_rate)
+        chord_len = int(chord_duration * sample_rate)
+        if chord_idx + chord_len < len(t):
+            t_chord = np.linspace(0, chord_duration, chord_len)
+            chord_mix = np.zeros_like(t_chord)
             
-            t_note = np.linspace(0, 0.12, note_len)
-            # Square wave for aggressive synth bite
-            lead_note = np.sign(np.sin(2 * np.pi * note_freq * t_note)) * np.exp(-10 * t_note) * 0.15
-            lead_track[note_idx:note_idx+note_len] += lead_note
-        current_time += note_duration
+            # Pick a harmonic progression offset
+            offset = random.choice([1.0, 0.84, 0.75])
+            for ratio in chord_ratios:
+                f = root_freq * 4 * ratio * offset # Octave up for pad/synth texture
+                # Rich saw-like approximation using harmonic summation to avoid arcade sound
+                synth_tone = (np.sin(2 * np.pi * f * t_chord) + 
+                              0.5 * np.sin(2 * np.pi * (f * 2) * t_chord) + 
+                              0.25 * np.sin(2 * np.pi * (f * 3) * t_chord))
+                chord_mix += synth_tone * 0.1
+                
+            # Slow warm filter/volume envelope
+            envelope = np.sin(np.pi * t_chord / chord_duration) * 0.3
+            chord_track[chord_idx:chord_idx+chord_len] += chord_mix * envelope
+        curr_time += chord_duration
 
-    # 3. Percussion / Snare & Hi-Hat Layer
+    # 3. Trap Percussion, Snare & Fast Hi-Hat Rolls
     current_beat = 0.0
     beat_count = 0
     while current_beat < duration:
         hit_idx = int(current_beat * sample_rate)
-        hit_len = int(0.08 * sample_rate)
+        hit_len = int(0.15 * sample_rate)
+        
         if hit_idx + hit_len < len(t):
-            t_hit = np.linspace(0, 0.08, hit_len)
-            if beat_count % 4 == 2: # Snare on backbeats (2 and 4)
-                noise = np.random.uniform(-1, 1, hit_len) * np.exp(-25 * t_hit) * 0.3
-                perc_track[hit_idx:hit_idx+hit_len] += noise
-            else: # Crisp hi-hat ticks
-                hat = np.sin(2 * np.pi * 3000 * t_hit) * np.exp(-50 * t_hit) * 0.1
-                perc_track[hit_idx:hit_idx+hit_len] += hat
+            t_hit = np.linspace(0, 0.15, hit_len)
+            
+            if beat_count % 4 == 2: # Heavy Phonk Snare/Clap on 2 and 4
+                snare_noise = np.random.uniform(-1, 1, hit_len) * np.exp(-18 * t_hit) * 0.4
+                snare_body = np.sin(2 * np.pi * 220 * t_hit) * np.exp(-25 * t_hit) * 0.3
+                perc_track[hit_idx:hit_idx+hit_len] += snare_noise + snare_body
+            else: # Crisp Hi-Hat ticks
+                hat = np.random.uniform(-0.5, 0.5, int(hit_len/2)) * np.exp(-50 * t_hit[:int(hit_len/2)]) * 0.15
+                perc_track[hit_idx:int(hit_idx + hit_len/2)] += hat
+                
+        # Add fast triplet hi-hat rolls between beats for that modern phonk texture
+        if random.random() > 0.4:
+            roll_idx = int((current_beat + beat_interval * 0.75) * sample_rate)
+            roll_len = int(0.05 * sample_rate)
+            if roll_idx + roll_len < len(t):
+                t_roll = np.linspace(0, 0.05, roll_len)
+                roll = np.random.uniform(-0.4, 0.4, roll_len) * np.exp(-60 * t_roll) * 0.12
+                perc_track[roll_idx:roll_idx+roll_len] += roll
+
         current_beat += beat_interval / 2
         beat_count += 1
 
-    # Mix all instruments together with soft limiting/clipping
-    master_mix = bass_track + lead_track + perc_track
-    master_mix = np.clip(master_mix, -0.9, 0.9)
-    stereo_data = np.vstack([master_mix, master_mix]).T
+    # Master Bus Mixing, Saturation, and Limiting
+    master_mix = sub_bass_track + chord_track + perc_track
+    # Warm analog-style soft clipping to give it that heavy distorted tape crunch without digital harshness
+    master_mix = np.tanh(master_mix * 1.3) * 0.85
     
-    print(f"🎛️ Produced multi-instrument phonk track (BPM: {tempo_bpm}, Root: {root_freq}Hz)")
+    stereo_data = np.vstack([master_mix, master_mix]).T
+    print(f"🔊 Produced heavy club phonk track (BPM: {tempo_bpm}, Root: {root_freq}Hz)")
     return AudioArrayClip(stereo_data, fps=sample_rate)
 
 # --- 5. GENERATION ENGINE ---
@@ -210,12 +235,12 @@ def render_video(slot_data, filename, duration=7):
     
     video = CompositeVideoClip([bg, text_bg, txt_clip])
     
-    # --- ATTACH MULTI-INSTRUMENT PRODUCTION TRACK ---
+    # --- ATTACH HEAVY PHONK PRODUCTION AUDIO ---
     try:
-        audio_clip = generate_complex_phonk_audio(duration)
+        audio_clip = generate_heavy_phonk_audio(duration)
         video = video.with_audio(audio_clip)
     except Exception as e:
-        print(f"⚠️ Error generating multi-instrument audio: {e}")
+        print(f"⚠️ Error generating heavy phonk audio: {e}")
 
     output_path = os.path.join(OUTPUT_DIR, filename)
     video.write_videofile(output_path, fps=24, codec="libx264", audio_codec="aac")
@@ -340,4 +365,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered with multi-instrument production, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered with heavy club phonk production, hosted via Litterbox, and queued in Buffer!")
