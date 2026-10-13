@@ -2,7 +2,7 @@ import os
 import random
 import requests
 from datetime import datetime, timedelta
-from moviepy.editor import TextClip, CompositeVideoClip, ColorClip
+from moviepy import TextClip, CompositeVideoClip, ColorClip
 
 # --- 1. CONFIGURATION ---
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
@@ -84,13 +84,13 @@ def render_video(text, filename, is_promo=False, duration=7):
     full_text = f"{prefix}\"{text}\""
 
     txt_clip = TextClip(
-        full_text, 
-        fontsize=46, 
+        text=full_text, 
+        font_size=46, 
         color='white', 
         font='Arial-Bold', 
         method='caption', 
         size=(900, None)
-    ).set_duration(duration).set_position('center')
+    ).with_duration(duration).with_position('center')
     
     video = CompositeVideoClip([bg, txt_clip])
     output_path = os.path.join("daily_output", filename)
@@ -155,5 +155,3 @@ if __name__ == "__main__":
         caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #funny #weather #fyp"
         
         print(f"Slot #{idx} ({slot['time']}) created successfully.")
-        # When your videos are hosted/accessible, pass the public URL here:
-        # schedule_to_buffer("https://your-public-host/video.mp4", caption, scheduled_datetime)
