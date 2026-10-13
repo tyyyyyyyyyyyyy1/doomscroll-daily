@@ -1,6 +1,7 @@
 import os
 import glob
 import random
+import re
 import subprocess
 import time
 import requests
@@ -21,14 +22,22 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 AUDIO_LIB_DIR = "audio_library"
 os.makedirs(AUDIO_LIB_DIR, exist_ok=True)
 
-# --- 2. SAFE JSON LOADER ---
-def load_json_file(filepath, fallback_data):
+# --- 2. SAFE JSON LOADER & CLEANER ---
+def load_json_file(filepath, fallback_data, is_promo=False):
     if os.path.exists(filepath):
         try:
             import json
             with open(filepath, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, list) and len(data) > 0:
+                    # If loading promos, automatically strip trailing numbers/hashes like #113
+                    if is_promo:
+                        cleaned_data = []
+                        for item in data:
+                            # Removes anything like " #113" or "#1" from the end of the string
+                            cleaned_item = re.sub(r'\s*#\d+\s*$', '', item)
+                            cleaned_data.append(cleaned_item)
+                        return cleaned_data
                     return data
         except Exception as e:
             print(f"⚠️ Error loading {filepath}: {e}. Using fallback data.")
@@ -130,7 +139,7 @@ def generate_daily_batch():
     thoughts_pool = load_json_file("thoughts.json", FALLBACK_THOUGHTS)
     jokes_pool = load_json_file("jokes.json", FALLBACK_JOKES)
     reddit_pool = load_json_file("reddit.json", FALLBACK_REDDIT)
-    promos_pool = load_json_file("promos.json", FALLBACK_PROMOS)
+    promos_pool = load_json_file("promos.json", FALLBACK_PROMOS, is_promo=True)
     
     selected_thoughts = random.sample(thoughts_pool, min(3, len(thoughts_pool)))
     selected_joke = random.choice(jokes_pool)
@@ -309,4 +318,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered with pure studio music tracks, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered with clean promos, pure studio tracks, hosted via Litterbox, and queued in Buffer!")
