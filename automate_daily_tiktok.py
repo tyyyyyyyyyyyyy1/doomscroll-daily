@@ -1,6 +1,7 @@
 import os
 import random
 import subprocess
+import time
 import requests
 from datetime import datetime, timedelta
 from moviepy import TextClip, CompositeVideoClip, ColorClip
@@ -134,7 +135,7 @@ def render_video(text, prefix, filename, is_promo=False, duration=7):
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. UPLOAD TO FREE TEMP HOST ---
+# --- 4. UPLOAD TO FREE TEMP HOST WITH PROPAGATION DELAY ---
 def upload_to_temp_host(video_path):
     print(f"☁️ Uploading {video_path} to temporary public host...")
     with open(video_path, "rb") as f:
@@ -144,6 +145,10 @@ def upload_to_temp_host(video_path):
         data = response.json()
         url = data["data"]["url"]
         direct_url = url.replace("tmpfiles.org/", "tmpfiles.org/dl/")
+        
+        print("⏳ Waiting 5 seconds for CDN propagation...")
+        time.sleep(5)
+        
         return direct_url
     else:
         raise Exception(f"Failed to upload video: {response.text}")
@@ -209,7 +214,7 @@ if __name__ == "__main__":
         # Render video locally
         video_path = render_video(slot["content"], slot["prefix"], file_name, is_promo=is_promo)
         
-        # Upload instantly to temporary public host to get a clean crawler URL
+        # Upload to host and wait 5 seconds for CDN propagation
         public_url = upload_to_temp_host(video_path)
         
         # Schedule in Buffer
