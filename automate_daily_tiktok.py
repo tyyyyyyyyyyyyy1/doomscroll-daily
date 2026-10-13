@@ -89,11 +89,9 @@ PROMO_HOOKS = [
 ]
 
 def generate_daily_batch():
-    # Use day of year + year + a random offset hash to ensure extreme variety across 365 days
     day_seed = int(datetime.now().strftime('%j')) + (datetime.now().year * 100)
     random.seed(day_seed)
     
-    # 1. Pick 3 unique thoughts
     thoughts = []
     used_thought_indices = set()
     while len(thoughts) < 3:
@@ -104,10 +102,7 @@ def generate_daily_batch():
             used_thought_indices.add(pair)
             thoughts.append(f"{THOUGHT_SUBJECTS[subj_idx]} {THOUGHT_TWISTS[twist_idx]}")
             
-    # 2. Pick 1 dark joke
     joke = random.choice(DARK_JOKES)
-    
-    # 3. Pick 2 unique promos
     promos = random.sample(PROMO_HOOKS, 2)
     
     return [
@@ -153,7 +148,7 @@ def commit_and_push_videos():
     else:
         print("ℹ️ No changes detected in video output. Skipping commit/push.")
 
-# --- 5. BUFFER GRAPHQL API SCHEDULER ---
+# --- 5. BUFFER GRAPHQL API SCHEDULER (WITH DETAILED MUTATION ERROR CHECKING) ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     url = "https://api.buffer.com"
     headers = {
@@ -190,10 +185,14 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
     res_data = response.json()
     
-    if response.status_code == 200 and "errors" not in res_data:
-        print(f"✅ Successfully scheduled for {scheduled_at_iso}")
+    data_payload = res_data.get("data", {}).get("createPost", {})
+    mutation_error = data_payload.get("message")
+    
+    if response.status_code == 200 and "errors" not in res_data and not mutation_error:
+        post_id = data_payload.get("post", {}).get("id", "Unknown ID")
+        print(f"✅ Successfully scheduled for {scheduled_at_iso} (Post ID: {post_id})")
     else:
-        print(f"❌ Buffer API Error: {response.status_code} - {res_data}")
+        print(f"❌ Buffer API Error: {response.status_code} - Full Response: {res_data}")
 
 # --- 6. MAIN PIPELINE ---
 if __name__ == "__main__":
