@@ -116,8 +116,12 @@ def generate_upgraded_dark_beat(duration=7):
     return AudioArrayClip(stereo_data, fps=sample_rate).with_duration(duration)
 
 def get_curated_audio_track(duration=7):
-    """Pulls a pro studio track from the local audio_library/ folder or falls back gracefully."""
-    audio_files = glob.glob(os.path.join(AUDIO_LIB_DIR, "*.mp3")) + glob.glob(os.path.join(AUDIO_LIB_DIR, "*.wav"))
+    """Pulls a pro studio track (.mp3, .wav, or .m4a) from the local audio_library/ folder or falls back gracefully."""
+    audio_files = (
+        glob.glob(os.path.join(AUDIO_LIB_DIR, "*.mp3")) + 
+        glob.glob(os.path.join(AUDIO_LIB_DIR, "*.wav")) + 
+        glob.glob(os.path.join(AUDIO_LIB_DIR, "*.m4a"))
+    )
     
     track_clip = None
     if audio_files:
@@ -136,7 +140,7 @@ def get_curated_audio_track(duration=7):
             print(f"⚠️ Error loading audio file {selected_track}: {e}")
 
     if not track_clip:
-        print("⚠️ audio_library/ is empty. Add .mp3 files to your repo's audio_library folder for studio sound.")
+        print("⚠️ audio_library/ is empty. Add .mp3 or .m4a files to your repo's audio_library folder for studio sound.")
         track_clip = generate_upgraded_dark_beat(duration)
 
     try:
@@ -337,4 +341,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered with curated audio library tracks, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered with curated audio library tracks (.mp3 & .m4a), hosted via Litterbox, and queued in Buffer!")
