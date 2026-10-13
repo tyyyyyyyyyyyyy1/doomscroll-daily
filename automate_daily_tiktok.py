@@ -12,7 +12,6 @@ PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 os.makedirs("daily_output", exist_ok=True)
 
 # --- 2. INFINITE PROCEDURAL THOUGHT ENGINE ---
-# Mixing these components generates thousands of unique combinations
 THOUGHT_SUBJECTS = [
     "Your brain", "Every mirror you look into", "If animals could talk", 
     "If you clean a vacuum cleaner", "What if birds", "Is cereal technically",
@@ -21,7 +20,7 @@ THOUGHT_SUBJECTS = [
     "Why do we say 'sleep like a baby'", "If a bald person works in a restaurant",
     "Does a straw have one hole", "If money doesn't grow on trees",
     "Why do we press harder on a remote", "If you drop soap on the floor"
-];
+]
 
 THOUGHT_TWISTS = [
     "named itself without your explicit consent.",
@@ -42,7 +41,7 @@ THOUGHT_TWISTS = [
     "why do banks have branches?",
     "when the batteries are clearly dead?",
     "is the floor clean or is the soap dirty?"
-];
+]
 
 PROMO_HOOKS = [
     f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}",
@@ -52,13 +51,10 @@ PROMO_HOOKS = [
 ]
 
 def generate_daily_batch():
-    """Generates 4 unique thoughts and 2 distinct promo strings for today."""
-    # Seed random using day-of-year so runs are deterministic per day
     day_seed = int(datetime.now().strftime('%j')) + datetime.now().year
     random.seed(day_seed)
     
     thoughts = []
-    # Ensure distinct combinations
     used_indices = set()
     while len(thoughts) < 4:
         subj_idx = random.randint(0, len(THOUGHT_SUBJECTS) - 1)
@@ -66,8 +62,7 @@ def generate_daily_batch():
         pair = (subj_idx, twist_idx)
         if pair not in used_indices:
             used_indices.add(pair)
-            thought_text = f"{THOUGHT_SUBJECTS[subj_idx]} {THOUGHT_TWISTS[twist_idx]}"
-            thoughts.append(thought_text)
+            thoughts.append(f"{THOUGHT_SUBJECTS[subj_idx]} {THOUGHT_TWISTS[twist_idx]}")
             
     promos = random.sample(PROMO_HOOKS, 2)
     
@@ -102,38 +97,52 @@ def render_video(text, filename, is_promo=False, duration=7):
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. BUFFER API SCHEDULER ---
+# --- 4. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     url = "https://api.buffer.com"
     headers = {
         "Authorization": f"Bearer {BUFFER_ACCESS_TOKEN}",
         "Content-Type": "application/json"
     }
+    
     mutation = """
-    mutation CreateScheduledPost($input: CreateScheduledPostInput!) {
-        createScheduledPost(input: $input) {
-            post { id scheduledAt }
+    mutation CreatePost($input: PostInput!) {
+        createPost(input: $input) {
+            ... on PostActionSuccess {
+                post { id dueAt }
+            }
+            ... on MutationError {
+                message
+            }
         }
     }
     """
+    
     variables = {
         "input": {
-            "channelId": BUFFER_PROFILE_ID,
-            "scheduledAt": scheduled_at_iso,
             "text": caption,
-            "media": { "video": { "url": video_url } }
+            "channelId": BUFFER_PROFILE_ID,
+            "schedulingType": "automatic",
+            "mode": "customScheduled",
+            "dueAt": scheduled_at_iso,
+            "assets": {
+                "videos": [{"url": video_url}]
+            }
         }
     }
+
     response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
-    if response.status_code == 200 and "errors" not in response.json():
+    res_data = response.json()
+    
+    if response.status_code == 200 and "errors" not in res_data:
         print(f"✅ Successfully scheduled for {scheduled_at_iso}")
     else:
-        print(f"❌ Buffer API Error: {response.status_code} - {response.text}")
+        print(f"❌ Buffer API Error: {response.status_code} - {res_data}")
 
-# --- 5. MAIN EXECUTION PIPELINE ---
+# --- 5. MAIN PIPELINE ---
 if __name__ == "__main__":
-    today_str = datetime.now().strftime('%Y-%m-%d')
-    print(f"🚀 Generating infinite procedural batch for {today_str}...\n")
+    tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+    print(f"🚀 Generating procedural batch for {tomorrow}...\n")
 
     slots = generate_daily_batch()
 
@@ -142,10 +151,9 @@ if __name__ == "__main__":
         is_promo = slot["type"] == "promo"
         
         video_path = render_video(slot["content"], file_name, is_promo=is_promo)
-        scheduled_datetime = f"{today_str}T{slot['time']}:00Z"
+        scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
         caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #funny #weather #fyp"
         
         print(f"Slot #{idx} ({slot['time']}) created successfully.")
-        # schedule_to_buffer("https://your-host/video.mp4", caption, scheduled_datetime)
-
-    print("\n🎉 Today's 6 videos generated successfully! Ready for autopilot year-round.")
+        # When your videos are hosted/accessible, pass the public URL here:
+        # schedule_to_buffer("https://your-public-host/video.mp4", caption, scheduled_datetime)
