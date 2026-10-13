@@ -83,7 +83,7 @@ def fetch_random_reddit_image():
 
 # --- 4. DRIFT PHONK AUDIO & VOICE SAMPLE GENERATOR ---
 def generate_voice_sample(duration=7):
-    """Safely generates an eerie spoken-word voice snippet with explicit duration."""
+    """Safely generates an eerie spoken-word voice snippet looped to match duration."""
     try:
         phrases = [
             "Everyone is talking about it.",
@@ -99,7 +99,8 @@ def generate_voice_sample(duration=7):
         tts.save(temp_speech_path)
         
         voice_clip = AudioFileClip(temp_speech_path)
-        voice_clip = voice_clip.subclipped(0, min(duration, voice_clip.duration))
+        # Loop the voice clip to match the target duration seamlessly
+        voice_clip = voice_clip.loop(duration=duration)
         return voice_clip
     except Exception as e:
         print(f"⚠️ Voice sample skipped: {e}")
@@ -186,7 +187,7 @@ def generate_drift_phonk_audio(duration=7):
     try:
         voice_audio = generate_voice_sample(duration)
         if voice_audio:
-            voice_audio = voice_audio.with_duration(duration).with_volume_scaled(0.6)
+            voice_audio = voice_audio.with_volume_scaled(0.6)
             final_audio = CompositeAudioClip([beat_audio, voice_audio]).with_duration(duration)
             return final_audio
     except Exception as e:
