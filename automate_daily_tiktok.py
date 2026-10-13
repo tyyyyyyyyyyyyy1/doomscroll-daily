@@ -135,7 +135,7 @@ def render_video(text, prefix, filename, is_promo=False, duration=7):
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. UPLOAD TO LITTERBOX WITH USER-AGENT & DELAY ---
+# --- 4. UPLOAD TO LITTERBOX WITH CORRECT ENDPOINT ---
 def upload_to_litterbox(video_path):
     print(f"☁️ Uploading {video_path} to Litterbox host...")
     with open(video_path, "rb") as f:
@@ -149,7 +149,8 @@ def upload_to_litterbox(video_path):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
-        response = requests.post("https://litterbox.catbox.moe/resources/api.php", data=data, files=files, headers=headers)
+        # Corrected API endpoint URL with /resources/internals/api.php
+        response = requests.post("https://litterbox.catbox.moe/resources/internals/api.php", data=data, files=files, headers=headers)
     
     if response.status_code == 200 and response.text.startswith("http"):
         direct_url = response.text.strip()
@@ -221,7 +222,7 @@ if __name__ == "__main__":
         # 1. Render local video
         video_path = render_video(slot["content"], slot["prefix"], file_name, is_promo=is_promo)
         
-        # 2. Upload to Litterbox with User-Agent and pause 5 seconds for propagation
+        # 2. Upload to Litterbox with correct endpoint, User-Agent, and pause 5 seconds
         public_url = upload_to_litterbox(video_path)
         
         # 3. Schedule post via Buffer API
