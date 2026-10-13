@@ -83,11 +83,11 @@ def render_video(text, filename, is_promo=False, duration=7):
     prefix = "🚨 SITE ALERT:\n\n" if is_promo else "🧠 2 AM THOUGHT:\n\n"
     full_text = f"{prefix}\"{text}\""
 
+    # Removed explicit font argument so it safely falls back to Linux system fonts
     txt_clip = TextClip(
         text=full_text, 
         font_size=46, 
         color='white', 
-        font='Arial-Bold', 
         method='caption', 
         size=(900, None)
     ).with_duration(duration).with_position('center')
@@ -154,4 +154,4 @@ if __name__ == "__main__":
         scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
         caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #funny #weather #fyp"
         
-        print(f"Slot #{idx} ({slot['time']}) created successfully.")
+        print(f"Slot #{idx} ({slot['time']}) created successfully: {video_path}")
