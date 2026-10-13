@@ -98,13 +98,19 @@ def render_video(text, filename, is_promo=False, duration=7):
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. AUTO-COMMIT TO REPO ---
+# --- 4. AUTO-COMMIT TO REPO (SAFE CHECK) ---
 def commit_and_push_videos():
     subprocess.run(["git", "config", "--global", "user.name", "github-actions[bot]"], check=True)
     subprocess.run(["git", "config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
     subprocess.run(["git", "add", OUTPUT_DIR], check=True)
-    subprocess.run(["git", "commit", "-m", "🤖 Add daily automated TikTok video batch"], check=True)
-    subprocess.run(["git", "push"], check=True)
+    
+    status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+    if status.stdout.strip():
+        subprocess.run(["git", "commit", "-m", "🤖 Add daily automated TikTok video batch"], check=True)
+        subprocess.run(["git", "push"], check=True)
+        print("✅ Changes committed and pushed successfully.")
+    else:
+        print("ℹ️ No changes detected in video output. Skipping commit/push.")
 
 # --- 5. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
@@ -114,7 +120,6 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
         "Content-Type": "application/json"
     }
     
-    # Fixed type declaration to match CreatePostInput!
     mutation = """
     mutation CreatePost($input: CreatePostInput!) {
         createPost(input: $input) {
