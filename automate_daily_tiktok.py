@@ -140,30 +140,44 @@ def render_video(slot_data, filename, duration=7):
             
     return output_path
 
-# --- 6. UPLOAD TO LITTERBOX WITH USER-AGENT & DELAY ---
-def upload_to_litterbox(video_path):
+# --- 6. UPLOAD TO LITTERBOX WITH RETRIES & TIMEOUT ---
+def upload_to_litterbox(video_path, retries=3, backoff_factor=5):
     print(f"☁️ Uploading {video_path} to Litterbox host...")
-    with open(video_path, "rb") as f:
-        data = {
-            "reqtype": "fileupload",
-            "time": "24h"
-        }
-        files = {
-            "fileToUpload": f
-        }
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
-        response = requests.post("https://litterbox.catbox.moe/resources/internals/api.php", data=data, files=files, headers=headers)
+    url = "https://litterbox.catbox.moe/resources/internals/api.php"
     
-    if response.status_code == 200 and response.text.startswith("http"):
-        direct_url = response.text.strip()
-        print(f"✅ Upload complete: {direct_url}")
-        print("⏳ Waiting 5 seconds for host propagation before sending to Buffer...")
-        time.sleep(5)
-        return direct_url
-    else:
-        raise Exception(f"Failed to upload video to Litterbox: Status {response.status_code} - {response.text}")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+
+    for attempt in range(1, retries + 1):
+        try:
+            with open(video_path, "rb") as f:
+                data = {
+                    "reqtype": "fileupload",
+                    "time": "24h"
+                }
+                files = {
+                    "fileToUpload": f
+                }
+                response = requests.post(url, data=data, files=files, headers=headers, timeout=60)
+            
+            if response.status_code == 200 and response.text.startswith("http"):
+                direct_url = response.text.strip()
+                print(f"✅ Upload complete: {direct_url}")
+                print("⏳ Waiting 5 seconds for host propagation before sending to Buffer...")
+                time.sleep(5)
+                return direct_url
+            else:
+                print(f"⚠️ Attempt {attempt}/{retries} failed: Status {response.status_code} - {response.text.strip()}")
+        except Exception as e:
+            print(f"⚠️ Attempt {attempt}/{retries} exception: {e}")
+        
+        if attempt < retries:
+            sleep_time = backoff_factor * attempt
+            print(f"🔄 Retrying upload in {sleep_time} seconds...")
+            time.sleep(sleep_time)
+            
+    raise Exception("❌ Failed to upload video to Litterbox after multiple retry attempts.")
 
 # --- 7. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
