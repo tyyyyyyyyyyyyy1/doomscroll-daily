@@ -8,7 +8,6 @@ import numpy as np
 from io import BytesIO
 from PIL import Image
 from datetime import datetime, timedelta
-from gtts import gTTS
 from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip, AudioArrayClip, AudioFileClip, CompositeAudioClip
 from moviepy.audio import fx as afx
 
@@ -84,30 +83,7 @@ def fetch_random_reddit_image():
     print("⚠️ Using fallback visual color background.")
     return None
 
-# --- 4. CURATED AUDIO LIBRARY & VOICE ENGINE ---
-def generate_voice_sample(duration=7):
-    """Safely generates an eerie spoken-word voice snippet looped to match duration using MoviePy v2 effects."""
-    try:
-        phrases = [
-            "Everyone is talking about it.",
-            "I must watch closely.",
-            "Another day, another scroll.",
-            "Can you hear them coming?",
-            "Check the feed."
-        ]
-        selected_text = random.choice(phrases)
-        temp_speech_path = "temp_voice.mp3"
-        
-        tts = gTTS(text=selected_text, lang='en', slow=True)
-        tts.save(temp_speech_path)
-        
-        voice_clip = AudioFileClip(temp_speech_path)
-        voice_clip = voice_clip.with_effects([afx.AudioLoop(duration=duration)])
-        return voice_clip
-    except Exception as e:
-        print(f"⚠️ Voice sample skipped: {e}")
-        return None
-
+# --- 4. CURATED AUDIO LIBRARY ENGINE (PURE MUSIC) ---
 def generate_upgraded_dark_beat(duration=7):
     """Fallback deep bass generator if audio_library is empty."""
     sample_rate = 44100
@@ -117,7 +93,7 @@ def generate_upgraded_dark_beat(duration=7):
     return AudioArrayClip(stereo_data, fps=sample_rate).with_duration(duration)
 
 def get_curated_audio_track(duration=7):
-    """Pulls a pro studio track (.mp3, .wav, or .m4a) from the local audio_library/ folder or falls back gracefully."""
+    """Pulls a clean pro studio track (.mp3, .wav, or .m4a) from the local audio_library/ folder without any background voice."""
     audio_files = (
         glob.glob(os.path.join(AUDIO_LIB_DIR, "*.mp3")) + 
         glob.glob(os.path.join(AUDIO_LIB_DIR, "*.wav")) + 
@@ -144,15 +120,6 @@ def get_curated_audio_track(duration=7):
         print("⚠️ audio_library/ is empty. Add .mp3 or .m4a files to your repo's audio_library folder for studio sound.")
         track_clip = generate_upgraded_dark_beat(duration)
 
-    try:
-        voice_audio = generate_voice_sample(duration)
-        if voice_audio:
-            voice_audio = voice_audio.with_volume_scaled(0.65)
-            final_audio = CompositeAudioClip([track_clip, voice_audio]).with_duration(duration)
-            return final_audio
-    except Exception as e:
-        print(f"⚠️ Composite audio mixing warning: {e}")
-        
     return track_clip
 
 # --- 5. GENERATION ENGINE ---
@@ -212,7 +179,7 @@ def render_video(slot_data, filename, duration=7):
     
     video = CompositeVideoClip([bg, text_bg, txt_clip])
     
-    # --- ATTACH CURATED STUDIO AUDIO ---
+    # --- ATTACH PURE CURATED STUDIO AUDIO ---
     try:
         audio_clip = get_curated_audio_track(duration)
         video = video.with_audio(audio_clip)
@@ -342,4 +309,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered cleanly with .m4a/.mp3 tracks, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered with pure studio music tracks, hosted via Litterbox, and queued in Buffer!")
