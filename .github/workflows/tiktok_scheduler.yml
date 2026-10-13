@@ -1,0 +1,34 @@
+name: Daily TikTok Video Automation
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs automatically every night at midnight UTC
+  workflow_dispatch: # Allows you to manually run it anytime from the GitHub website
+
+jobs:
+  build-and-schedule:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install FFmpeg (Required for video rendering)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python Dependencies
+        run: |
+          pip install moviepy requests
+
+      - name: Run Video Pipeline Script
+        env:
+          BUFFER_ACCESS_TOKEN: ${{ secrets.BUFFER_ACCESS_TOKEN }}
+          BUFFER_PROFILE_ID: ${{ secrets.BUFFER_PROFILE_ID }}
+        run: |
+          python automate_daily_tiktok.py
