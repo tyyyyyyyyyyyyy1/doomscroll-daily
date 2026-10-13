@@ -17,9 +17,9 @@ PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 OUTPUT_DIR = "daily_output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Subreddits combining your exact index.js meme sources[span_1](start_span)[span_1](end_span) with visual background categories
+# Subreddits combining your exact index.js meme sources and visual background categories
 BACKGROUND_SUBREDDITS = [
-    # Original index.js meme sources[span_2](start_span)[span_2](end_span)
+    # Original index.js meme sources
     "dankmemes",
     "me_irl",
     "PrequelMemes",
@@ -53,42 +53,48 @@ FALLBACK_JOKES = ["My grandfather has the heart of a lion... and a lifetime ban 
 FALLBACK_REDDIT = [{"sub": "r/AskReddit", "user": "u/DoomScroller99", "upvotes": "42.5k", "text": "\"I also choose this guy's dead wife.\""}]
 FALLBACK_PROMOS = [f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}"]
 
-# --- 3. REDDIT LIVE IMAGE BACKGROUND FETCH ENGINE ---
+# --- 3. ROBUST REDDIT LIVE IMAGE BACKGROUND FETCH ENGINE ---
 def fetch_random_reddit_image():
-    """Fetches a direct image URL from Reddit JSON API, pulling from index.js and backdrop subreddits[span_3](start_span)[span_3](end_span)."""
+    """Tries multiple subreddits until it successfully fetches a valid background image."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
-    sub = random.choice(BACKGROUND_SUBREDDITS)
-    url = f"https://www.reddit.com/r/{sub}/hot.json?limit=50"
     
-    try:
-        res = requests.get(url, headers=headers, timeout=10)
-        if res.status_code == 200:
-            posts = res.json().get("data", {}).get("children", [])
-            valid_images = []
-            
-            for post in posts:
-                post_data = post.get("data", {})
-                img_url = post_data.get("url", "")
+    # Shuffle subreddits so it picks a fresh category every time
+    subs_to_try = list(BACKGROUND_SUBREDDITS)
+    random.shuffle(subs_to_try)
+    
+    for sub in subs_to_try:
+        url = f"https://www.reddit.com/r/{sub}/hot.json?limit=30"
+        try:
+            res = requests.get(url, headers=headers, timeout=5)
+            if res.status_code == 200:
+                posts = res.json().get("data", {}).get("children", [])
+                valid_images = []
                 
-                # Check for direct image URLs, excluding stickied and NSFW posts
-                if (img_url.endswith(".jpg") or img_url.endswith(".png") or img_url.endswith(".jpeg")) \
-                   and not post_data.get("stickied") \
-                   and not post_data.get("over_18"):
-                    valid_images.append(img_url)
+                for post in posts:
+                    post_data = post.get("data", {})
+                    img_url = post_data.get("url", "")
+                    
+                    # Accept standard image formats
+                    if any(img_url.endswith(ext) for ext in [".jpg", ".png", ".jpeg"]) \
+                       and not post_data.get("stickied") \
+                       and not post_data.get("over_18"):
+                        valid_images.append(img_url)
+                
+                if valid_images:
+                    selected_url = random.choice(valid_images)
+                    img_res = requests.get(selected_url, headers=headers, timeout=5)
+                    if img_res.status_code == 200:
+                        temp_path = "temp_bg.jpg"
+                        img = Image.open(BytesIO(img_res.content)).convert("RGB")
+                        img.save(temp_path)
+                        print(f"🖼️ Successfully loaded background image from r/{sub}")
+                        return temp_path
+        except Exception:
+            continue # If one subreddit fails, seamlessly try the next one
             
-            if valid_images:
-                selected_url = random.choice(valid_images)
-                img_res = requests.get(selected_url, headers=headers, timeout=10)
-                if img_res.status_code == 200:
-                    temp_path = "temp_bg.jpg"
-                    img = Image.open(BytesIO(img_res.content)).convert("RGB")
-                    img.save(temp_path)
-                    return temp_path
-    except Exception as e:
-        print(f"⚠️ Failed to fetch Reddit background image: {e}")
-    
+    print("⚠️ All subreddits failed to yield an image, using fallback color.")
     return None
 
 # --- 4. GENERATION ENGINE ---
@@ -115,18 +121,18 @@ def generate_daily_batch():
         {"type": "promo",   "prefix": "[SITE ALERT]\n\n",    "time": "21:30", "content": selected_promos[1]}
     ]
 
-# --- 5. VIDEO RENDERING ENGINE ---
+# --- 5. VIDEO RENDERING ENGINE (WITH INCREASED VERTICAL SPACE) ---
 def render_video(slot_data, filename, duration=7):
     is_promo = slot_data["type"] == "promo"
     is_reddit = slot_data["type"] == "reddit"
     
-    # Fetch live Reddit background image
+    # Fetch live Reddit background image with multi-subreddit fallback loop
     bg_image_path = fetch_random_reddit_image()
     
     if bg_image_path and os.path.exists(bg_image_path):
         bg = ImageClip(bg_image_path).with_duration(duration).resized(new_size=(1080, 1920))
     else:
-        # Fallback dark color if image fetch fails
+        # Fallback bright red for promos, deep dark blue/gray for normal posts
         bg_color = (255, 51, 75) if is_promo else (18, 22, 31)
         bg = ColorClip(size=(1080, 1920), color=bg_color, duration=duration)
     
@@ -139,16 +145,16 @@ def render_video(slot_data, filename, duration=7):
         prefix = slot_data["prefix"]
         full_text = f"{prefix}\"{content}\"" if not is_promo else f"{prefix}{content}"
 
-    # Expanded dark backing shield to guarantee text readability over meme images
-    text_bg = ColorClip(size=(1000, 1200), color=(0, 0, 0), duration=duration).with_opacity(0.75).with_position('center')
+    # INCREASED VERTICAL SPACE: Expanded dark box height from 1200px to 1500px for more up/down room
+    text_bg = ColorClip(size=(1000, 1500), color=(0, 0, 0), duration=duration).with_opacity(0.75).with_position('center')
 
-    # Expanded width (960px) and adjusted font size (32/36pt) to prevent text clipping
+    # Expanded width and vertical text box constraints (960x1400)
     txt_clip = TextClip(
         text=full_text, 
         font_size=32 if is_reddit else 36, 
         color='white', 
         method='caption', 
-        size=(960, None)
+        size=(960, 1400)
     ).with_duration(duration).with_position('center')
     
     video = CompositeVideoClip([bg, text_bg, txt_clip])
@@ -246,7 +252,7 @@ if __name__ == "__main__":
     for idx, slot in enumerate(slots, start=1):
         file_name = f"tiktok_slot_{idx}.mp4"
         
-        # 1. Render local video (fetches dynamic Reddit meme image + applies text margins)
+        # 1. Render local video (fetches background image with fallback loop + applies vertical space)
         video_path = render_video(slot, file_name)
         
         # 2. Upload to Litterbox host
