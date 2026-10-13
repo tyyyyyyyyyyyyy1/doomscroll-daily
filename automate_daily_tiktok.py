@@ -18,6 +18,8 @@ PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 
 OUTPUT_DIR = "daily_output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+AUDIO_LIB_DIR = "audio_library"
+os.makedirs(AUDIO_LIB_DIR, exist_ok=True)
 
 # --- 2. SAFE JSON LOADER ---
 def load_json_file(filepath, fallback_data):
@@ -81,7 +83,7 @@ def fetch_random_reddit_image():
     print("⚠️ Using fallback visual color background.")
     return None
 
-# --- 4. DRIFT PHONK AUDIO & VOICE SAMPLE GENERATOR ---
+# --- 4. CURATED AUDIO LIBRARY & VOICE ENGINE ---
 def generate_voice_sample(duration=7):
     """Safely generates an eerie spoken-word voice snippet looped to match duration."""
     try:
@@ -99,101 +101,54 @@ def generate_voice_sample(duration=7):
         tts.save(temp_speech_path)
         
         voice_clip = AudioFileClip(temp_speech_path)
-        # Loop the voice clip to match the target duration seamlessly
         voice_clip = voice_clip.loop(duration=duration)
         return voice_clip
     except Exception as e:
         print(f"⚠️ Voice sample skipped: {e}")
         return None
 
-def generate_drift_phonk_audio(duration=7):
-    """Generates a heavy drift phonk track with explicit duration mapping and voice integration."""
+def generate_upgraded_dark_beat(duration=7):
+    """Fallback deep bass generator if audio_library is empty."""
     sample_rate = 44100
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
-    
-    tempo_bpm = 132
-    beat_interval = 60.0 / tempo_bpm
-    
-    root_freq = random.choice([51.91, 55.00, 61.74])
-    scale_offsets = [1.0, 1.189, 1.335, 1.498, 1.782]
-    
-    sub_bass = np.zeros_like(t)
-    cowbell_melody = np.zeros_like(t)
-    percussion = np.zeros_like(t)
-    
-    # 1. Rolling 808 Sub-Bass
-    current_beat = 0.0
-    while current_beat < duration:
-        hit_idx = int(current_beat * sample_rate)
-        hit_len = int(0.4 * sample_rate)
-        if hit_idx + hit_len < len(t):
-            t_hit = np.linspace(0, 0.4, hit_len)
-            freq_env = root_freq * (1 + 2.0 * np.exp(-15 * t_hit))
-            bass_wave = np.sin(2 * np.pi * freq_env * t_hit) + 0.4 * np.sin(2 * np.pi * (freq_env * 2) * t_hit)
-            envelope = np.exp(-3 * t_hit) * (1 - np.exp(-50 * t_hit))
-            sub_bass[hit_idx:hit_idx+hit_len] += bass_wave * envelope * 0.8
-        current_beat += beat_interval
+    sub_bass = np.sin(2 * np.pi * 55.0 * t) * np.exp(-1.5 * t) * 0.7
+    stereo_data = np.vstack([sub_bass, sub_bass]).T
+    return AudioArrayClip(stereo_data, fps=sample_rate).with_duration(duration)
 
-    # 2. Aggressive Cowbell Melody
-    melody_notes = [0, 3, 5, 3, 7, 5, 3, 0]
-    step_duration = beat_interval / 2
-    curr_time = 0.0
-    note_pointer = random.randint(0, len(melody_notes) - 1)
+def get_curated_audio_track(duration=7):
+    """Pulls a pro studio track from the local audio_library/ folder or falls back gracefully."""
+    audio_files = glob.glob(os.path.join(AUDIO_LIB_DIR, "*.mp3")) + glob.glob(os.path.join(AUDIO_LIB_DIR, "*.wav"))
     
-    while curr_time < duration:
-        note_idx = int(curr_time * sample_rate)
-        note_len = int(0.18 * sample_rate)
-        if note_idx + note_len < len(t):
-            scale_step = scale_offsets[melody_notes[note_pointer] % len(scale_offsets)]
-            cowbell_freq = root_freq * 8 * scale_step
-            
-            t_note = np.linspace(0, 0.18, note_len)
-            glide_freq = cowbell_freq * (1 + 1.5 * np.exp(-30 * t_note))
-            bell_wave = (np.sin(2 * np.pi * glide_freq * t_note) + 
-                         0.5 * np.sin(2 * np.pi * (glide_freq * 1.5) * t_note) +
-                         0.3 * np.sin(2 * np.pi * (glide_freq * 2.0) * t_note))
-            
-            bell_env = np.exp(-12 * t_note)
-            cowbell_melody[note_idx:note_idx+note_len] += bell_wave * bell_env * 0.35
-            
-        note_pointer = (note_pointer + 1) % len(melody_notes)
-        curr_time += step_duration
-
-    # 3. Trap Percussion & Hi-Hats
-    current_beat = 0.0
-    beat_count = 0
-    while current_beat < duration:
-        hit_idx = int(current_beat * sample_rate)
-        hit_len = int(0.12 * sample_rate)
-        if hit_idx + hit_len < len(t):
-            t_hit = np.linspace(0, 0.12, hit_len)
-            if beat_count % 4 == 2:
-                snare = np.random.uniform(-1, 1, hit_len) * np.exp(-20 * t_hit) * 0.4
-                percussion[hit_idx:hit_idx+hit_len] += snare
+    track_clip = None
+    if audio_files:
+        selected_track = random.choice(audio_files)
+        print(f"🎵 Mixing studio track: {os.path.basename(selected_track)}")
+        try:
+            raw_clip = AudioFileClip(selected_track)
+            if raw_clip.duration > duration + 2:
+                max_start = raw_clip.duration - duration - 1
+                start_time = random.uniform(0, max_start)
+                track_clip = raw_clip.subclipped(start_time, start_time + duration)
             else:
-                hat = np.random.uniform(-0.5, 0.5, int(hit_len/2)) * np.exp(-60 * t_hit[:int(hit_len/2)]) * 0.12
-                percussion[hit_idx:int(hit_idx + hit_len/2)] += hat
-        current_beat += beat_interval / 2
-        beat_count += 1
+                track_clip = raw_clip.subclipped(0, min(duration, raw_clip.duration))
+            track_clip = track_clip.fade_in(0.2).fade_out(0.4)
+        except Exception as e:
+            print(f"⚠️ Error loading audio file {selected_track}: {e}")
 
-    master_mix = sub_bass + cowbell_melody + percussion
-    master_mix = np.tanh(master_mix * 2.2) * 0.8
-    stereo_data = np.vstack([master_mix, master_mix]).T
-    
-    # Explicitly set duration on the generated array audio clip
-    beat_audio = AudioArrayClip(stereo_data, fps=sample_rate).with_duration(duration)
-    
-    # Safely merge with voice sample
+    if not track_clip:
+        print("⚠️ audio_library/ is empty. Add .mp3 files to your repo's audio_library folder for studio sound.")
+        track_clip = generate_upgraded_dark_beat(duration)
+
     try:
         voice_audio = generate_voice_sample(duration)
         if voice_audio:
-            voice_audio = voice_audio.with_volume_scaled(0.6)
-            final_audio = CompositeAudioClip([beat_audio, voice_audio]).with_duration(duration)
+            voice_audio = voice_audio.with_volume_scaled(0.65)
+            final_audio = CompositeAudioClip([track_clip, voice_audio]).with_duration(duration)
             return final_audio
     except Exception as e:
-        print(f"⚠️ Composite audio fallback triggered: {e}")
+        print(f"⚠️ Composite audio mixing warning: {e}")
         
-    return beat_audio
+    return track_clip
 
 # --- 5. GENERATION ENGINE ---
 def generate_daily_batch():
@@ -252,12 +207,12 @@ def render_video(slot_data, filename, duration=7):
     
     video = CompositeVideoClip([bg, text_bg, txt_clip])
     
-    # --- ATTACH DRIFT PHONK AUDIO WITH VOCALS ---
+    # --- ATTACH CURATED STUDIO AUDIO ---
     try:
-        audio_clip = generate_drift_phonk_audio(duration)
+        audio_clip = get_curated_audio_track(duration)
         video = video.with_audio(audio_clip)
     except Exception as e:
-        print(f"⚠️ Error generating drift phonk audio: {e}")
+        print(f"⚠️ Error attaching audio track: {e}")
 
     output_path = os.path.join(OUTPUT_DIR, filename)
     video.write_videofile(output_path, fps=24, codec="libx264", audio_codec="aac")
@@ -382,4 +337,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered with drift phonk & eerie voice samples, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered with curated audio library tracks, hosted via Litterbox, and queued in Buffer!")
