@@ -17,21 +17,6 @@ PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 OUTPUT_DIR = "daily_output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Subreddits combining your exact index.js meme sources and visual background categories
-BACKGROUND_SUBREDDITS = [
-    "dankmemes",
-    "me_irl",
-    "PrequelMemes",
-    "wholesomememes",
-    "eyebleach",
-    "memes",
-    "liminalspace",
-    "shitposting",
-    "blursedimages",
-    "outrun",
-    "natureisfuckinglit"
-]
-
 # --- 2. SAFE JSON LOADER ---
 def load_json_file(filepath, fallback_data):
     if os.path.exists(filepath):
@@ -50,54 +35,41 @@ FALLBACK_JOKES = ["My grandfather has the heart of a lion... and a lifetime ban 
 FALLBACK_REDDIT = [{"sub": "r/AskReddit", "user": "u/DoomScroller99", "upvotes": "42.5k", "text": "\"I also choose this guy's dead wife.\""}]
 FALLBACK_PROMOS = [f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}"]
 
-# --- 3. ROBUST REDDIT LIVE IMAGE BACKGROUND FETCH ENGINE ---
+# --- 3. BULLETPROOF MEME & BACKGROUND FETCH ENGINE ---
 def fetch_random_reddit_image():
-    """Fetches a meme image from Reddit using a browser-like request or falls back cleanly."""
+    """Fetches high-quality meme images from a public API aggregating your target subreddits."""
+    target_subs = "dankmemes+me_irl+PrequelMemes+wholesomememes+eyebleach+memes+shitposting+blursedimages"
+    url = f"https://meme-api.com/gimme/{target_subs}"
+    
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
-    subs_to_try = list(BACKGROUND_SUBREDDITS)
-    random.shuffle(subs_to_try)
-    
-    for sub in subs_to_try:
-        url = f"https://www.reddit.com/r/{sub}/hot.json?limit=25"
-        try:
-            print(f"🔍 Attempting to fetch background image from r/{sub}...")
-            res = requests.get(url, headers=headers, timeout=8)
+    try:
+        print(f"🔍 Fetching meme background from API pools...")
+        res = requests.get(url, headers=headers, timeout=8)
+        
+        if res.status_code == 200:
+            data = res.json()
+            img_url = data.get("url")
+            subreddit = data.get("subreddit", "unknown")
             
-            if res.status_code == 200:
-                data = res.json()
-                posts = data.get("data", {}).get("children", [])
-                valid_images = []
+            if img_url and img_url.startswith("http"):
+                print(f"📥 Downloading background image from r/{subreddit}: {img_url}")
+                img_res = requests.get(img_url, headers=headers, timeout=8)
                 
-                for post in posts:
-                    post_data = post.get("data", {})
-                    img_url = post_data.get("url", "")
-                    
-                    if any(img_url.endswith(ext) for ext in [".jpg", ".png", ".jpeg"]) \
-                       and not post_data.get("stickied") \
-                       and not post_data.get("over_18"):
-                        valid_images.append(img_url)
-                
-                if valid_images:
-                    selected_url = random.choice(valid_images)
-                    print(f"📥 Downloading image from: {selected_url}")
-                    img_res = requests.get(selected_url, headers=headers, timeout=8)
-                    
-                    if img_res.status_code == 200:
-                        temp_path = "temp_bg.jpg"
-                        img = Image.open(BytesIO(img_res.content)).convert("RGB")
-                        img.save(temp_path)
-                        print(f"✅ Successfully set background from r/{sub}")
-                        return temp_path
-            else:
-                print(f"⚠️ r/{sub} returned status code {res.status_code}")
-        except Exception as e:
-            print(f"⚠️ Error fetching from r/{sub}: {e}")
-            continue
-            
-    print("⚠️ Reddit fetch skipped or blocked. Using fallback visual color background.")
+                if img_res.status_code == 200:
+                    temp_path = "temp_bg.jpg"
+                    img = Image.open(BytesIO(img_res.content)).convert("RGB")
+                    img.save(temp_path)
+                    print(f"✅ Successfully set background image!")
+                    return temp_path
+        else:
+            print(f"⚠️ Meme API returned status code {res.status_code}")
+    except Exception as e:
+        print(f"⚠️ Error fetching background image: {e}")
+        
+    print("⚠️ Using fallback visual color background.")
     return None
 
 # --- 4. GENERATION ENGINE ---
@@ -124,7 +96,7 @@ def generate_daily_batch():
         {"type": "promo",   "prefix": "[SITE ALERT]\n\n",    "time": "21:30", "content": selected_promos[1]}
     ]
 
-# --- 5. VIDEO RENDERING ENGINE ---
+# --- 5. VIDEO RENDERING ENGINE (WITH INCREASED VERTICAL SPACE) ---
 def render_video(slot_data, filename, duration=7):
     is_promo = slot_data["type"] == "promo"
     is_reddit = slot_data["type"] == "reddit"
@@ -145,7 +117,7 @@ def render_video(slot_data, filename, duration=7):
         prefix = slot_data["prefix"]
         full_text = f"{prefix}\"{content}\"" if not is_promo else f"{prefix}{content}"
 
-    # Generous vertical space & backing shield
+    # Increased vertical space & backing shield
     text_bg = ColorClip(size=(1000, 1500), color=(0, 0, 0), duration=duration).with_opacity(0.75).with_position('center')
 
     txt_clip = TextClip(
