@@ -1,63 +1,51 @@
 import os
-import json
+import glob
 import random
 import subprocess
 import time
 import requests
 from datetime import datetime, timedelta
-from moviepy import TextClip, CompositeVideoClip, ColorClip
+from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip
 
 # --- 1. CONFIGURATION ---
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
 BUFFER_PROFILE_ID = os.getenv("BUFFER_PROFILE_ID")
 PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 
+BACKGROUNDS_DIR = "backgrounds"
 OUTPUT_DIR = "daily_output"
+os.makedirs(BACKGROUNDS_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# --- 2. LOAD INDEPENDENT DATA LIBRARIES ---
-def load_json_file(filename, fallback_data):
-    if os.path.exists(filename):
-        with open(filename, "r", encoding="utf-8") as f:
-            return json.load(f)
+# --- 2. SAFE JSON LOADER ---
+def load_json_file(filepath, fallback_data):
+    if os.path.exists(filepath):
+        try:
+            import json
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list) and len(data) > 0:
+                    return data
+        except Exception as e:
+            print(f"⚠️ Error loading {filepath}: {e}. Using fallback data.")
     return fallback_data
 
-# Fallback core arrays if JSON files aren't created yet (expand these or fill your JSON files up to 486+ options)
-FALLBACK_THOUGHTS = [
-    "Your brain named itself without your explicit consent and thinks it's the smartest thing in the room.",
-    "If animals could talk, cows would probably be the most condescending creatures on earth.",
-    "Every mirror you look into is just a portal to a universe where you're slightly worse at making decisions."
-]
+# Fallbacks just in case external files are missing
+FALLBACK_THOUGHTS = ["Your brain named itself without your explicit consent."]
+FALLBACK_JOKES = ["My grandfather has the heart of a lion... and a lifetime ban from the zoo."]
+FALLBACK_REDDIT = [{"sub": "r/AskReddit", "user": "u/DoomScroller99", "upvotes": "42.5k", "text": "\"I also choose this guy's dead wife.\""}]
+FALLBACK_PROMOS = [f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}"]
 
-FALLBACK_JOKES = [
-    "My grandfather has the heart of a lion... and a lifetime ban from the local zoo.",
-    "Give a man a match, and he’ll be warm for a few hours. Set a man on fire, and he will be warm for the rest of his life.",
-    "I was digging in our garden and found a chest full of gold coins. I was about to run inside to tell my wife, but then I remembered why I was digging."
-]
-
-FALLBACK_REDDIT = [
-    {"sub": "r/AskReddit", "user": "u/DoomScroller99", "upvotes": "42.5k", "text": "\"I also choose this guy's dead wife.\""},
-    {"sub": "r/Showerthoughts", "user": "u/VoidGazer_42", "upvotes": "18.1k", "text": "\"Sir, this is a Wendy's drive-thru.\""},
-    {"sub": "r/UnpopularOpinion", "user": "u/NightOwl_X", "upvotes": "29.4k", "text": "\"I was today years old when I realized I make terrible choices.\""}
-]
-
-FALLBACK_PROMOS = [
-    f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}",
-    f"Your daily dose of brain-rot & local reality is live.\nThe Doomscroll Daily dashboard is live! 🧠\n\n{PROMO_LINK}",
-    f"Need an immediate distraction from actual work?\nExplore live streams and unhinged weather here:\n\n{PROMO_LINK}"
-]
-
+# --- 3. GENERATION ENGINE ---
 def generate_daily_batch():
-    # Load independent datasets from local JSON files if available
+    day_seed = int(datetime.now().strftime('%j')) + (datetime.now().year * 100)
+    random.seed(day_seed)
+    
     thoughts_pool = load_json_file("thoughts.json", FALLBACK_THOUGHTS)
     jokes_pool = load_json_file("jokes.json", FALLBACK_JOKES)
     reddit_pool = load_json_file("reddit.json", FALLBACK_REDDIT)
     promos_pool = load_json_file("promos.json", FALLBACK_PROMOS)
-
-    day_seed = int(datetime.now().strftime('%j')) + (datetime.now().year * 100)
-    random.seed(day_seed)
     
-    # Select unique, independent items for the day
     selected_thoughts = random.sample(thoughts_pool, min(3, len(thoughts_pool)))
     selected_joke = random.choice(jokes_pool)
     selected_reddit = random.choice(reddit_pool)
@@ -72,13 +60,21 @@ def generate_daily_batch():
         {"type": "promo",   "prefix": "[SITE ALERT]\n\n",    "time": "21:30", "content": selected_promos[1]}
     ]
 
-# --- 3. VIDEO RENDERING ENGINE ---
+# --- 4. VIDEO RENDERING ENGINE (IMAGE BACKGROUNDS + EXPANDED TEXT BOX) ---
 def render_video(slot_data, filename, duration=7):
     is_promo = slot_data["type"] == "promo"
     is_reddit = slot_data["type"] == "reddit"
     
-    bg_color = (255, 51, 75) if is_promo else (18, 22, 31)
-    bg = ColorClip(size=(1080, 1920), color=bg_color, duration=duration)
+    # Scan local backgrounds directory for funny images/memes
+    bg_files = glob.glob(os.path.join(BACKGROUNDS_DIR, "*.[jJ][pP][gG]")) + \
+               glob.glob(os.path.join(BACKGROUNDS_DIR, "*.[pP][nN][gG]"))
+    
+    if bg_files:
+        selected_bg = random.choice(bg_files)
+        bg = ImageClip(selected_bg).with_duration(duration).resized(new_size=(1080, 1920))
+    else:
+        bg_color = (255, 51, 75) if is_promo else (18, 22, 31)
+        bg = ColorClip(size=(1080, 1920), color=bg_color, duration=duration)
     
     if is_reddit:
         r_data = slot_data["content"]
@@ -88,20 +84,24 @@ def render_video(slot_data, filename, duration=7):
         prefix = slot_data["prefix"]
         full_text = f"{prefix}\"{content}\"" if not is_promo else f"{prefix}{content}"
 
+    # Expanded dark backing shield for high readability across chaotic backgrounds
+    text_bg = ColorClip(size=(1000, 1200), color=(0, 0, 0), duration=duration).with_opacity(0.70).with_position('center')
+
+    # Adjusted font size & expanded width to stop text clipping
     txt_clip = TextClip(
         text=full_text, 
-        font_size=38 if is_reddit else 42, 
+        font_size=32 if is_reddit else 36, 
         color='white', 
         method='caption', 
-        size=(940, None)
+        size=(960, None)
     ).with_duration(duration).with_position('center')
     
-    video = CompositeVideoClip([bg, txt_clip])
+    video = CompositeVideoClip([bg, text_bg, txt_clip])
     output_path = os.path.join(OUTPUT_DIR, filename)
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. UPLOAD TO LITTERBOX WITH USER-AGENT & DELAY ---
+# --- 5. UPLOAD TO LITTERBOX WITH USER-AGENT & DELAY ---
 def upload_to_litterbox(video_path):
     print(f"☁️ Uploading {video_path} to Litterbox host...")
     with open(video_path, "rb") as f:
@@ -126,7 +126,7 @@ def upload_to_litterbox(video_path):
     else:
         raise Exception(f"Failed to upload video to Litterbox: Status {response.status_code} - {response.text}")
 
-# --- 5. BUFFER GRAPHQL API SCHEDULER ---
+# --- 6. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     url = "https://api.buffer.com"
     headers = {
@@ -172,7 +172,7 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     else:
         print(f"❌ Buffer API Error: {response.status_code} - Full Response: {res_data}")
 
-# --- 6. MAIN PIPELINE ---
+# --- 7. MAIN PIPELINE ---
 if __name__ == "__main__":
     tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
     print(f"🚀 Generating daily batch for {tomorrow}...\n")
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     for idx, slot in enumerate(slots, start=1):
         file_name = f"tiktok_slot_{idx}.mp4"
         
-        # 1. Render local video
+        # 1. Render local video (using background images and safe text dimensions)
         video_path = render_video(slot, file_name)
         
         # 2. Upload to Litterbox and pause 5 seconds
