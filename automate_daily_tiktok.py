@@ -4,10 +4,11 @@ import random
 import subprocess
 import time
 import requests
+import numpy as np
 from io import BytesIO
 from PIL import Image
 from datetime import datetime, timedelta
-from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip
+from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip, AudioArrayClip
 
 # --- 1. CONFIGURATION ---
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
@@ -45,13 +46,11 @@ def fetch_random_reddit_image():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
-    # Blocklist to prevent TikTok shadowbans/flags
     blocked_keywords = [
         "nsfw", "porn", "sex", "boobs", "ass", "dick", "cock", "pussy", 
         "horny", "erection", "naked", "nude", "onlyfans", "cum", "penis", "vagina"
     ]
     
-    # Try up to 5 times to secure a clean, SFW meme
     for attempt in range(5):
         try:
             res = requests.get(url, headers=headers, timeout=8)
@@ -61,7 +60,6 @@ def fetch_random_reddit_image():
                 title = data.get("title", "").lower()
                 subreddit = data.get("subreddit", "unknown")
                 
-                # Check if title contains any restricted words
                 if any(word in title for word in blocked_keywords):
                     print(f"🛡️ Filtered out NSFW/explicit meme from r/{subreddit}: '{title[:30]}...'")
                     continue
@@ -82,7 +80,43 @@ def fetch_random_reddit_image():
     print("⚠️ Using fallback visual color background.")
     return None
 
-# --- 4. GENERATION ENGINE ---
+# --- 4. PROCEDURAL UNIQUE PHONK AUDIO GENERATOR ---
+def generate_unique_phonk_audio(duration=7):
+    """Programmatically generates a unique aggressive, bass-heavy phonk loop for each video."""
+    sample_rate = 44100
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    
+    # Randomize key/frequencies per video so every track is completely unique
+    base_freq = random.choice([55.0, 65.41, 73.42, 82.41]) # Deep sub-bass notes (A1, C2, D2, E2)
+    tempo_bpm = random.randint(130, 160) # Fast aggressive phonk tempo
+    beat_interval = 60.0 / tempo_bpm
+    
+    # 1. Heavy distorted sub-bass layer (Phonk cowbell/bass style)
+    bass = np.sin(2 * np.pi * base_freq * t) * 0.4
+    bass += np.sin(2 * np.pi * (base_freq * 2) * t) * 0.2  # Harmonic
+    bass = np.clip(bass * 1.5, -0.7, 0.7) # Soft clipping for that aggressive distorted phonk crunch
+    
+    # 2. Percussive rhythmic pulse (hitting on the beat grid)
+    percussion = np.zeros_like(t)
+    current_beat = 0.0
+    while current_beat < duration:
+        hit_idx = int(current_beat * sample_rate)
+        hit_len = int(0.1 * sample_rate)
+        if hit_idx + hit_len < len(t):
+            # Sharp pitched transient click/cowbell emulation
+            t_hit = np.linspace(0, 0.1, hit_len)
+            percussion[hit_idx:hit_idx+hit_len] = np.sin(2 * np.pi * (base_freq * 6) * t_hit) * np.exp(-15 * t_hit) * 0.5
+        current_beat += beat_interval / 2 # Eighth note pulses
+        
+    # Combine channels into stereo array
+    audio_data = bass + percussion
+    audio_data = np.clip(audio_data, -1.0, 1.0)
+    stereo_data = np.vstack([audio_data, audio_data]).T
+    
+    print(f"🎵 Generated unique procedural phonk audio (Base Freq: {base_freq}Hz, BPM: {tempo_bpm})")
+    return AudioArrayClip(stereo_data, fps=sample_rate)
+
+# --- 5. GENERATION ENGINE ---
 def generate_daily_batch():
     day_seed = int(datetime.now().strftime('%j')) + (datetime.now().year * 100)
     random.seed(day_seed)
@@ -106,7 +140,7 @@ def generate_daily_batch():
         {"type": "promo",   "prefix": "[SITE ALERT]\n\n",    "time": "21:30", "content": selected_promos[1]}
     ]
 
-# --- 5. VIDEO RENDERING ENGINE (WITH INCREASED VERTICAL SPACE) ---
+# --- 6. VIDEO RENDERING ENGINE ---
 def render_video(slot_data, filename, duration=7):
     is_promo = slot_data["type"] == "promo"
     is_reddit = slot_data["type"] == "reddit"
@@ -127,7 +161,6 @@ def render_video(slot_data, filename, duration=7):
         prefix = slot_data["prefix"]
         full_text = f"{prefix}\"{content}\"" if not is_promo else f"{prefix}{content}"
 
-    # Increased vertical space & backing shield
     text_bg = ColorClip(size=(1000, 1500), color=(0, 0, 0), duration=duration).with_opacity(0.75).with_position('center')
 
     txt_clip = TextClip(
@@ -139,8 +172,16 @@ def render_video(slot_data, filename, duration=7):
     ).with_duration(duration).with_position('center')
     
     video = CompositeVideoClip([bg, text_bg, txt_clip])
+    
+    # --- ATTACH UNIQUE PROCEDURAL AUDIO ---
+    try:
+        audio_clip = generate_unique_phonk_audio(duration)
+        video = video.with_audio(audio_clip)
+    except Exception as e:
+        print(f"⚠️ Error generating audio track: {e}")
+
     output_path = os.path.join(OUTPUT_DIR, filename)
-    video.write_videofile(output_path, fps=24, codec="libx264")
+    video.write_videofile(output_path, fps=24, codec="libx264", audio_codec="aac")
     
     if bg_image_path and os.path.exists(bg_image_path):
         try:
@@ -150,7 +191,7 @@ def render_video(slot_data, filename, duration=7):
             
     return output_path
 
-# --- 6. UPLOAD TO LITTERBOX WITH RETRIES & TIMEOUT ---
+# --- 7. UPLOAD TO LITTERBOX WITH RETRIES ---
 def upload_to_litterbox(video_path, retries=3, backoff_factor=5):
     print(f"☁️ Uploading {video_path} to Litterbox host...")
     url = "https://litterbox.catbox.moe/resources/internals/api.php"
@@ -189,7 +230,7 @@ def upload_to_litterbox(video_path, retries=3, backoff_factor=5):
             
     raise Exception("❌ Failed to upload video to Litterbox after multiple retry attempts.")
 
-# --- 7. BUFFER GRAPHQL API SCHEDULER ---
+# --- 8. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     url = "https://api.buffer.com"
     headers = {
@@ -235,7 +276,7 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     else:
         print(f"❌ Buffer API Error: {response.status_code} - Full Response: {res_data}")
 
-# --- 8. MAIN PIPELINE ---
+# --- 9. MAIN PIPELINE ---
 if __name__ == "__main__":
     tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
     print(f"🚀 Generating daily batch for {tomorrow}...\n")
@@ -262,4 +303,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered with unique audio, hosted via Litterbox, and queued in Buffer!")
