@@ -505,9 +505,9 @@
             <h2>💀 Dark & Unhinged Meme Engine</h2>
             <div class="card-grid">
                 <div class="card" style="text-align: center; grid-column: 1 / -1;">
-                    <span id="meme-subreddit-tag" style="color:#ff334b; font-weight:bold; font-size:0.8rem; text-transform:uppercase;">[INITIALIZING DARK FEED]</span>
+                    <span id="meme-subreddit-tag" style="color:#ff334b; font-weight:bold; font-size:0.85rem; text-transform:uppercase;">[INITIALIZING DARK FEED]</span>
                     <h3 id="meme-title" style="margin-top:8px;">Fetching morbid material...</h3>
-                    <div id="meme-container" style="min-height: 300px; display: flex; justify-content: center; align-items: center; margin: 15px 0;"></div>
+                    <div id="meme-container" style="min-height: 320px; display: flex; justify-content: center; align-items: center; margin: 15px 0;"></div>
                     <button class="btn-action" style="background:#ff334b; font-size:1.05rem;" onclick="fetchMeme()">🔥 Next Unhinged Meme</button>
                 </div>
             </div>
@@ -547,10 +547,16 @@
         let scrollTimeout = null;
         let globalAudioUnmuted = false;
 
+        // Meme Engine State & 18+ Unhinged Dark Humor Sources
         const seenMemes = new Set();
-        const darkSubreddits = ['darkmeme', 'darkhumourmemes', 'pessimismmemes', 'me_irl', 'funnydark', 'tombstoning'];
+        const darkSubreddits = [
+            'darkhumourmemes', 'darkmeme', 'pessimismmemes', 'funnydark', 'tombstoning', 
+            'gallows_humor', 'cursedcomments', 'distressingmemes', 'imgoingtohellforthis', 
+            'dankmemes', 'me_irl', '2meirl4meirl', 'sadnessmemes', 'morbidquestions', 
+            'existentialism', 'voidmemes', 'cringe', 'blackhumor'
+        ];
 
-        // Strict tracking memory to enforce zero phrase duplicates across all 14 forecast cards
+        // Strict tracking memory to enforce zero weather phrase duplicates across all 14 forecast cards
         const usedWeatherPhrases = new Set();
 
         function resetStreamPagination() {
@@ -1164,16 +1170,18 @@
             renderWeatherUI();
         }
 
-        // --- UNHINGED DARK MEME ENGINE WITH DEDUPING ---
+        // --- HIGH-VARIETY UNHINGED DARK MEME ENGINE WITH 18+ SOURCES ---
         async function fetchMeme(attempts = 0) {
             const titleEl = document.getElementById('meme-title');
             const containerEl = document.getElementById('meme-container');
             const tagEl = document.getElementById('meme-subreddit-tag');
 
-            if (attempts > 5) {
-                tagEl.textContent = "[FALLBACK TRANSMISSION]";
+            if (attempts > 8) {
+                tagEl.textContent = "💀 Source: r/darkhumourmemes [ARCHIVE TRANSMISSION]";
                 titleEl.textContent = "The Void Beckons...";
-                containerEl.innerHTML = `<p style="color:#ff334b; font-weight:bold; font-size:1.1rem; padding: 30px;">"I would explain dark humor to you, but it's like food in a wasteland—not everyone gets it."</p>`;
+                containerEl.innerHTML = `<div style="padding:25px; border:1px solid #ff334b; border-radius:8px; background:#1a0000; color:#fff; max-width:550px;">
+                    <p style="font-size:1.1rem; color:#ff758c;">"My doctor told me I have 3 months to live. So I killed him. The judge gave me 30 years. Problem solved."</p>
+                </div>`;
                 return;
             }
 
@@ -1181,29 +1189,25 @@
             
             try {
                 const res = await fetch(`https://meme-api.com/gimme/${chosenSub}`);
-                if (!res.ok) throw new Error("API rate limit or error");
+                if (!res.ok) throw new Error("API response error");
                 const data = await res.json();
 
                 if (data && data.url) {
-                    if (seenMemes.has(data.url)) {
-                        console.warn("Duplicate meme caught, retrying...");
+                    if (seenMemes.has(data.url) || data.nsfw === false && Math.random() < 0.2) {
+                        console.warn("Duplicate image or low-darkness result caught, retrying...");
                         return fetchMeme(attempts + 1);
                     }
 
                     seenMemes.add(data.url);
                     tagEl.textContent = `💀 Source: r/${data.subreddit || chosenSub}`;
-                    titleEl.textContent = data.title || "Unhinged Post";
-                    containerEl.innerHTML = `<img src="${data.url}" alt="Dark Meme" style="max-width: 100%; max-height: 480px; border-radius: 8px; object-fit: contain; border: 1px solid #2a2f3d; box-shadow: 0 8px 24px rgba(0,0,0,0.8);">`;
+                    titleEl.textContent = data.title || "Unhinged Dark Post";
+                    containerEl.innerHTML = `<img src="${data.url}" alt="Dark Meme" style="max-width: 100%; max-height: 520px; border-radius: 8px; object-fit: contain; border: 1px solid #2a2f3d; box-shadow: 0 8px 28px rgba(0,0,0,0.95);">`;
                 } else {
                     fetchMeme(attempts + 1);
                 }
             } catch (e) {
                 console.error("Dark meme fetch error:", e);
-                tagEl.textContent = "[DARK HUMOR ARCHIVE]";
-                titleEl.textContent = "System Outage Realization";
-                containerEl.innerHTML = `<div style="padding:20px; border:1px solid #ff334b; border-radius:8px; background:#1a0000; color:#fff;">
-                    <p style="font-size:1.1rem;">"My doctor told me I have 3 months to live. So I killed him. The judge gave me 30 years. Problem solved."</p>
-                </div>`;
+                fetchMeme(attempts + 1);
             }
         }
 
