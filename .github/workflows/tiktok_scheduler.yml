@@ -27,7 +27,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install moviepy requests
+          pip install moviepy requests numpy 
 
       - name: Run Video Pipeline Script
         env:
