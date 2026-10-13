@@ -13,7 +13,8 @@ PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 OUTPUT_DIR = "daily_output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# --- 2. INFINITE PROCEDURAL THOUGHT ENGINE ---
+# --- 2. MASSIVE EXPANDED CONTENT LIBRARIES ---
+
 THOUGHT_SUBJECTS = [
     "Your brain", "Every mirror you look into", "If animals could talk", 
     "If you clean a vacuum cleaner", "What if birds", "Is cereal technically",
@@ -21,7 +22,11 @@ THOUGHT_SUBJECTS = [
     "If you choke a smurf", "What was the best thing", "If tomato is a fruit",
     "Why do we say 'sleep like a baby'", "If a bald person works in a restaurant",
     "Does a straw have one hole", "If money doesn't grow on trees",
-    "Why do we press harder on a remote", "If you drop soap on the floor"
+    "Why do we press harder on a remote", "If you drop soap on the floor",
+    "Your shadow", "If fish get thirsty", "Wifi signals", "GPS voices",
+    "The person who invented the alarm clock", "If doors could scream",
+    "An ant carrying a potato chip", "Your skeleton", "Pigeons in parking lots",
+    "The concept of time zones", "If statues blinked", "Refrigerators at 3 AM"
 ]
 
 THOUGHT_TWISTS = [
@@ -42,47 +47,83 @@ THOUGHT_TWISTS = [
     "or does it technically have two holes?",
     "why do banks have branches?",
     "when the batteries are clearly dead?",
-    "is the floor clean or is the soap dirty?"
+    "is the floor clean or is the soap dirty?",
+    "is plotting your exact daily routine.",
+    "do they drink the ocean or ignore it?",
+    "are just invisible ghosts whispering to your phone.",
+    "knows every wrong turn you've ever taken.",
+    "must have been universally hated by humanity.",
+    "when someone tries to slam them shut.",
+    "is legally moving furniture without a permit.",
+    "is trapped inside you wearing a meat suit.",
+    "are plotting a hostile takeover of urban areas.",
+    "was entirely made up to confuse travelers.",
+    "only when nobody is looking directly at them.",
+    "humming songs you forgot you even knew."
+]
+
+DARK_JOKES = [
+    "My grandfather has the heart of a lion... and a lifetime ban from the local zoo.",
+    "Give a man a match, and he’ll be warm for a few hours. Set a man on fire, and he will be warm for the rest of his life.",
+    "I was digging in our garden and found a chest full of gold coins. I was about to run inside to tell my wife, but then I remembered why I was digging in the garden.",
+    "Even people who are hard to get along with bring a lot of joy to the room... whenever they leave it.",
+    "As I get older, I remember all the people I've lost along the way. Maybe a career as a tour guide wasn't for me.",
+    "My wife told me to stop impersonating a flamingo. I had to put my foot down.",
+    "Building a puzzle is all fun and games until you lose the last piece and realize the box art lied.",
+    "A man walks into a library and asks the librarian, 'Do you have any books on paranoia?' She leans in close and whispers, 'They're right behind you.'",
+    "I broke my hand playing poker last night. Turns out, holding a royal flush doesn't stop someone from hitting you with a folding chair.",
+    "My boss told me to have a good day... so I went home.",
+    "Never test the depth of the water with both feet. Unless you're already sinking, then it doesn't matter.",
+    "Parallel lines have so much in common. It’s a shame they’ll never meet."
 ]
 
 PROMO_HOOKS = [
     f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}",
     f"Your daily dose of brain-rot & local reality.\nThe Doomscroll Daily dashboard is live! 🧠\n\n{PROMO_LINK}",
     f"Need a distraction from reality?\nExplore live streams, unhinged weather & memes:\n\n{PROMO_LINK}",
-    f"Stop scrolling blindly. Get your daily dose of chaos at:\n\n{PROMO_LINK}"
+    f"Stop scrolling blindly. Get your daily dose of chaos at:\n\n{PROMO_LINK}",
+    f"Why check 5 different apps when you can get your unhinged updates in one place?\n\n{PROMO_LINK}",
+    f"The internet is getting boring. We fixed it.\nExplore the chaos feed live:\n\n{PROMO_LINK}",
+    f"Weather reports, live feeds, and certified digital nonsense.\nCheck out the hub:\n\n{PROMO_LINK}",
+    f"Your screen time is already ruined. Might as well make it count:\n\n{PROMO_LINK}"
 ]
 
 def generate_daily_batch():
-    day_seed = int(datetime.now().strftime('%j')) + datetime.now().year
+    # Use day of year + year + a random offset hash to ensure extreme variety across 365 days
+    day_seed = int(datetime.now().strftime('%j')) + (datetime.now().year * 100)
     random.seed(day_seed)
     
+    # 1. Pick 3 unique thoughts
     thoughts = []
-    used_indices = set()
-    while len(thoughts) < 4:
+    used_thought_indices = set()
+    while len(thoughts) < 3:
         subj_idx = random.randint(0, len(THOUGHT_SUBJECTS) - 1)
         twist_idx = random.randint(0, len(THOUGHT_TWISTS) - 1)
         pair = (subj_idx, twist_idx)
-        if pair not in used_indices:
-            used_indices.add(pair)
+        if pair not in used_thought_indices:
+            used_thought_indices.add(pair)
             thoughts.append(f"{THOUGHT_SUBJECTS[subj_idx]} {THOUGHT_TWISTS[twist_idx]}")
             
+    # 2. Pick 1 dark joke
+    joke = random.choice(DARK_JOKES)
+    
+    # 3. Pick 2 unique promos
     promos = random.sample(PROMO_HOOKS, 2)
     
     return [
-        {"type": "thought", "time": "08:00", "content": thoughts[0]},
-        {"type": "thought", "time": "11:00", "content": thoughts[1]},
-        {"type": "promo",   "time": "13:00", "content": promos[0]},
-        {"type": "thought", "time": "16:00", "content": thoughts[2]},
-        {"type": "thought", "time": "19:00", "content": thoughts[3]},
-        {"type": "promo",   "time": "21:30", "content": promos[1]}
+        {"type": "thought", "prefix": "🧠 2 AM THOUGHT:\n\n", "time": "08:00", "content": thoughts[0]},
+        {"type": "thought", "prefix": "💀 DARK HUMOR:\n\n",    "time": "11:00", "content": joke},
+        {"type": "promo",   "prefix": "🚨 SITE ALERT:\n\n",    "time": "13:00", "content": promos[0]},
+        {"type": "thought", "prefix": "🧠 2 AM THOUGHT:\n\n", "time": "16:00", "content": thoughts[1]},
+        {"type": "thought", "prefix": "🧠 2 AM THOUGHT:\n\n", "time": "19:00", "content": thoughts[2]},
+        {"type": "promo",   "prefix": "🚨 SITE ALERT:\n\n",    "time": "21:30", "content": promos[1]}
     ]
 
 # --- 3. VIDEO RENDERING ENGINE ---
-def render_video(text, filename, is_promo=False, duration=7):
+def render_video(text, prefix, filename, is_promo=False, duration=7):
     bg_color = (255, 51, 75) if is_promo else (18, 22, 31)
     bg = ColorClip(size=(1080, 1920), color=bg_color, duration=duration)
     
-    prefix = "🚨 SITE ALERT:\n\n" if is_promo else "🧠 2 AM THOUGHT:\n\n"
     full_text = f"{prefix}\"{text}\""
 
     txt_clip = TextClip(
@@ -141,7 +182,7 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
             "mode": "customScheduled",
             "dueAt": scheduled_at_iso,
             "assets": {
-                "videos": [{"url": video_url}]
+                "video": {"url": video_url}
             }
         }
     }
@@ -166,7 +207,7 @@ if __name__ == "__main__":
         file_name = f"tiktok_slot_{idx}.mp4"
         is_promo = slot["type"] == "promo"
         
-        video_path = render_video(slot["content"], file_name, is_promo=is_promo)
+        video_path = render_video(slot["content"], slot["prefix"], file_name, is_promo=is_promo)
         rendered_slots.append((video_path, slot))
         print(f"Slot #{idx} ({slot['time']}) created successfully.")
 
@@ -180,7 +221,7 @@ if __name__ == "__main__":
         file_name = os.path.basename(video_path)
         public_url = f"https://raw.githubusercontent.com/{repo_owner_repo}/main/{OUTPUT_DIR}/{file_name}"
         scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
-        caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #funny #weather #fyp"
+        caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #darkhumor #weather #fyp"
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
