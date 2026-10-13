@@ -10,6 +10,7 @@ from PIL import Image
 from datetime import datetime, timedelta
 from gtts import gTTS
 from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip, AudioArrayClip, AudioFileClip, CompositeAudioClip
+from moviepy.audio import fx as afx
 
 # --- 1. CONFIGURATION ---
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
@@ -85,7 +86,7 @@ def fetch_random_reddit_image():
 
 # --- 4. CURATED AUDIO LIBRARY & VOICE ENGINE ---
 def generate_voice_sample(duration=7):
-    """Safely generates an eerie spoken-word voice snippet looped to match duration."""
+    """Safely generates an eerie spoken-word voice snippet looped to match duration using MoviePy v2 effects."""
     try:
         phrases = [
             "Everyone is talking about it.",
@@ -101,7 +102,7 @@ def generate_voice_sample(duration=7):
         tts.save(temp_speech_path)
         
         voice_clip = AudioFileClip(temp_speech_path)
-        voice_clip = voice_clip.loop(duration=duration)
+        voice_clip = voice_clip.with_effects([afx.AudioLoop(duration=duration)])
         return voice_clip
     except Exception as e:
         print(f"⚠️ Voice sample skipped: {e}")
@@ -135,7 +136,7 @@ def get_curated_audio_track(duration=7):
                 track_clip = raw_clip.subclipped(start_time, start_time + duration)
             else:
                 track_clip = raw_clip.subclipped(0, min(duration, raw_clip.duration))
-            track_clip = track_clip.fade_in(0.2).fade_out(0.4)
+            track_clip = track_clip.with_effects([afx.AudioFadeIn(0.2), afx.AudioFadeOut(0.4)])
         except Exception as e:
             print(f"⚠️ Error loading audio file {selected_track}: {e}")
 
@@ -341,4 +342,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered with curated audio library tracks (.mp3 & .m4a), hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered cleanly with .m4a/.mp3 tracks, hosted via Litterbox, and queued in Buffer!")
