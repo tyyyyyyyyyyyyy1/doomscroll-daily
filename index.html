@@ -550,7 +550,7 @@
         const seenMemes = new Set();
         const darkSubreddits = ['darkmeme', 'darkhumourmemes', 'pessimismmemes', 'me_irl', 'funnydark', 'tombstoning'];
 
-        // Tracking used phrases across entire forecast run to enforce ZERO duplicates
+        // Strict tracking memory to enforce zero phrase duplicates across all 14 forecast cards
         const usedWeatherPhrases = new Set();
 
         function resetStreamPagination() {
@@ -611,48 +611,110 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        // --- DYNAMIC PROCEDURAL PERIOD-LEVEL ABSURDITY GENERATOR (GUARANTEED NO DUPLICATES) ---
+        // --- MASSIVE 56-OPTION PROCEDURAL PERIOD ENGINE ---
         function getPeriodText(periodName, temp, rain, code) {
             const cond = getWeatherDetails(code).text.toLowerCase();
             const r = Math.round((Number(rain) || 0) * 10) / 10;
             const t = Math.round(Number(temp) || 0);
 
-            // Phrase pools for building procedural unique sentences
             const pools = {
                 heavyRain: {
-                    lead: ["Torrential sky-juice assault", "Severe atmospheric downpour", "Monsoonal deluge protocol", "Aggressive moisture dump", "Cloud-burst rage incident"],
-                    metric: [`(${r}mm)`, `locking in ${r}mm precipitation`, `flooding gutters with ${r}mm`, `releasing ${r}mm of water`],
-                    unhinged: ["Umbrellas fold backward in defeat.", "Socks soaked within four seconds.", "Roads convert into local rivers.", "Seagulls navigating with maritime maps.", "Gutter drains begging for mercy."]
+                    lead: [
+                        "Torrential sky-juice assault", "Severe atmospheric downpour", "Monsoonal deluge protocol", "Aggressive cloud-water dump", "Sky-drain overflow incident",
+                        "Relentless gutter-flooding event", "Vertical river bombardment", "Unforgiving aquatic downpour", "Extreme cloud-leak disaster", "Heavy moisture strike",
+                        "Soggy stormfront surge", "Category-5 umbrella destroyer", "Catastrophic cloud-burst", "Soaking wetness barrage"
+                    ],
+                    metric: [
+                        `(${r}mm)`, `dumping ${r}mm precipitation`, `releasing ${r}mm of water`, `locking in ${r}mm wetness`, `flooding grid with ${r}mm`, `yielding ${r}mm rain`
+                    ],
+                    unhinged: [
+                        "Umbrellas fold backward in defeat.", "Socks soaked within four seconds.", "Roads convert into local rivers.", "Seagulls navigating with maritime maps.", "Gutter drains begging for mercy.",
+                        "Outdoor sneakers officially ruined.", "Puddles disguised as deep lakes.", "Pedestrians seeking high ground.", "Footwear survival probability zero.", "Cars creating massive water splashes."
+                    ]
                 },
                 lightRain: {
-                    lead: ["Nuisance drizzle disturbance", "Passive-aggressive sky-spit", "Soggy ambient humidity", "Annoying misting episode", "Irritating precipitation haze"],
-                    metric: [`(${r}mm)`, `delivering ${r}mm trace wetness`, `dropping ${r}mm annoying moisture`, `producing ${r}mm spray`],
-                    unhinged: ["Enough to ruin your hair styling.", "Shoes turn damp and questionable.", "Glasses covered in tiny water spots.", "Disrespecting your footwear choices.", "Making asphalt slick and miserable."]
+                    lead: [
+                        "Nuisance drizzle disturbance", "Passive-aggressive sky-spit", "Soggy ambient humidity", "Annoying misting episode", "Irritating precipitation haze",
+                        "Weak rain-cloud drizzle", "Subtle water-droplet spray", "Persistent damp air lingering", "Slight cloud leakage", "Annoying moisture haze",
+                        "Uncomfortable mist curtain", "Weak sky-spitting event", "Mild dampness infiltration", "Light road-wetting drizzle"
+                    ],
+                    metric: [
+                        `(${r}mm)`, `delivering ${r}mm trace wetness`, `dropping ${r}mm annoying moisture`, `producing ${r}mm spray`, `emitting ${r}mm weak drizzle`
+                    ],
+                    unhinged: [
+                        "Enough to ruin your hair styling.", "Shoes turn damp and questionable.", "Glasses covered in tiny water spots.", "Disrespecting your footwear choices.", "Making asphalt slick and miserable.",
+                        "Not enough rain to skip work.", "Leaving annoying water streaks.", "Ambient humidity causing friction.", "Jackets smelling like wet dog.", "Irritating mist clinging to skin."
+                    ]
                 },
                 snow: {
-                    lead: ["Sub-zero blizzard assault", "Polar snowdump protocol", "Arctic flurry bombardment", "Frozen atmospheric chaos", "Brittle frost incident"],
-                    metric: [`(${r}mm equiv)`, `dropping ${r}mm snow mass`, `at ${t}°C with ${r}mm ice`, `locking freezing chill`],
-                    unhinged: ["Local snowplow mafia takes full control.", "Walking outside feels like frozen bricks to the face.", "Teardrops freeze directly onto eyelashes.", "Vehicle engines groan in existential agony.", "Raccoons holding strategy meetings over warm hoods."]
+                    lead: [
+                        "Sub-zero blizzard assault", "Polar snowdump protocol", "Arctic flurry bombardment", "Frozen atmospheric chaos", "Brittle frost incident",
+                        "Ice-crystal storm strike", "Freezing tundra invasion", "Glacial snow-shower wave", "Violent winter frost dump", "Whiteout snow disturbance",
+                        "Icy pavement lockdown", "Heavy snowfall siege", "Shivering flurry onslaught", "Frozen sky-slush attack"
+                    ],
+                    metric: [
+                        `(${r}mm equiv)`, `dropping ${r}mm snow mass`, `at ${t}°C with ${r}mm ice`, `locking freezing chill at ${t}°C`, `depositing ${r}mm slush`
+                    ],
+                    unhinged: [
+                        "Local snowplow mafia takes full control.", "Walking outside feels like frozen bricks to the face.", "Teardrops freeze directly onto eyelashes.", "Vehicle engines groan in existential agony.", "Raccoons holding strategy meetings over warm hoods.",
+                        "Icy sidewalks engineered to break posture.", "Facial hair converted to icicles.", "Car doors frozen shut in solidarity.", "Nostril hairs freeze upon breathing.", "Stepping outside triggers deep regret."
+                    ]
                 },
                 extremeHeat: {
-                    lead: ["Solar laser pavement meltdown", "Orbital microwave heatwave", "Thermal incineration dome", "Unforgiving sun bombardment", "Lava-level solar strike"],
-                    metric: [`(${t}°C)`, `pushing thermal limits to ${t}°C`, `heating asphalt to ${t}°C`, `baking the grid at ${t}°C`],
-                    unhinged: ["Steering wheels brand your palms on contact.", "Enthusiasm evaporates instantly.", "Walking on pavement feels like a 500-degree oven.", "Sweat becomes your permanent outfit.", "Seeking air conditioning is an official survival maneuver."]
+                    lead: [
+                        "Solar laser pavement meltdown", "Orbital microwave heatwave", "Thermal incineration dome", "Unforgiving sun bombardment", "Lava-level solar strike",
+                        "Pavement-baking heat explosion", "Severe thermal wave assault", "Extreme temperature spike", "Blistered asphalt nightmare", "Scorching atmospheric blast",
+                        "Searing ultraviolet laser", "Uncontrolled heat wave", "Brutal solar radiation dump", "Melting asphalt incident"
+                    ],
+                    metric: [
+                        `(${t}°C)`, `pushing thermal limits to ${t}°C`, `heating asphalt to ${t}°C`, `baking the grid at ${t}°C`, `pegging thermals at ${t}°C`
+                    ],
+                    unhinged: [
+                        "Steering wheels brand your palms on contact.", "Enthusiasm evaporates instantly.", "Walking on pavement feels like a 500-degree oven.", "Sweat becomes your permanent outfit.", "Seeking air conditioning is an official survival maneuver.",
+                        "Leather car seats claiming fresh skin.", "Brain converting to scrambled eggs.", "Direct sunlight feels like physical punishment.", "Shade areas turning into high-value real estate.", "Plastic items slowly bending in heat."
+                    ]
                 },
                 extremeCold: {
-                    lead: ["Deep space arctic freeze", "Invasive cold air mass", "Polar frostbite hazard", "Zero-mercury lockdown", "Glacial chill assault"],
-                    metric: [`(${t}°C)`, `bottoming out at ${t}°C`, `wind chill plunging to ${t}°C`, `freezing local grid at ${t}°C`],
-                    unhinged: ["Car batteries surrender completely.", "Breath turns into instant icicles.", "Sidewalks engineered to ruin your posture.", "Teeth chatter in sub-zero rhythm.", "Hands remain tucked in pockets permanently."]
+                    lead: [
+                        "Deep space arctic freeze", "Invasive cold air mass", "Polar frostbite hazard", "Zero-mercury lockdown", "Glacial chill assault",
+                        "Sub-zero tundra plunge", "Hypothermic atmospheric strike", "Brutal arctic breeze wave", "Freezing airmass lockdown", "Ice-age temperature drop",
+                        "Bone-chilling cold wave", "Shivering polar vortex", "Severe freeze surge", "Numbness-inducing frost"
+                    ],
+                    metric: [
+                        `(${t}°C)`, `bottoming out at ${t}°C`, `wind chill plunging to ${t}°C`, `freezing local grid at ${t}°C`, `holding deep freeze at ${t}°C`
+                    ],
+                    unhinged: [
+                        "Car batteries surrender completely.", "Breath turns into instant icicles.", "Sidewalks engineered to ruin your posture.", "Teeth chatter in sub-zero rhythm.", "Hands remain tucked in pockets permanently.",
+                        "Breath forming dense clouds of distress.", "Outdoor conversations capped at five seconds.", "Winter coats feeling like thin paper.", "Chilled air slicing directly into bones.", "Cold coffee turning to ice instantly."
+                    ]
                 },
                 dryClear: {
-                    lead: ["Suspiciously clear sunny skies", "Deceptively peaceful atmosphere", "Crisp bright solar illusion", "Pure unadulterated sunshine", "Eerily calm weather bubble"],
-                    metric: [`(${t}°C, 0mm rain)`, `holding steady at ${t}°C`, `tranquil ${t}°C condition`, `zero moisture detected`],
-                    unhinged: ["Nature is plotting something behind your back.", "Feels like a temporary glitch in the simulation.", "Local wildlife holding quiet strategy meetings.", "Enjoy clear pavement before the next catastrophe.", "A rare moment of peaceful atmospheric treaty."]
+                    lead: [
+                        "Suspiciously clear sunny skies", "Deceptively peaceful atmosphere", "Crisp bright solar illusion", "Pure unadulterated sunshine", "Eerily calm weather bubble",
+                        "Unusually quiet sunny stretch", "Fake tranquility solar window", "Clear atmospheric vacuum", "Bright skies holding treaty", "Quiet sunshine duration",
+                        "Radiant sunshine illusion", "Clean dry sky profile", "Peaceful solar alignment", "Tranquil clear sky conditions"
+                    ],
+                    metric: [
+                        `(${t}°C, 0mm rain)`, `holding steady at ${t}°C`, `tranquil ${t}°C condition`, `zero moisture detected`, `clean ${t}°C atmosphere`
+                    ],
+                    unhinged: [
+                        "Nature is plotting something behind your back.", "Feels like a temporary glitch in the simulation.", "Local wildlife holding quiet strategy meetings.", "Enjoy clear pavement before the next catastrophe.", "A rare moment of peaceful atmospheric treaty.",
+                        "Clouds completely MIA without explanation.", "Clear roads waiting for inevitable chaos.", "Sunlight pretending everything is totally fine.", "Zero rainfall causing temporary comfort.", "A suspicious atmospheric ceasefire."
+                    ]
                 },
                 dryCloudy: {
-                    lead: ["Dry gray cloud overcast", "Cloudy atmospheric stalling", "Ambient gloom existence", "Deceptive cloud cover", "High-level cloud drama"],
-                    metric: [`(${t}°C, 0mm rain)`, `at ${t}°C with zero moisture`, `holding ${t}°C ambient temperature`, `0mm precipitation delivered`],
-                    unhinged: ["High-level cloud drama with zero water delivery.", "Raccoons planning tactical alley maneuvers.", "Atmospheric blue-balls with no rainfall.", "Pavements stay dry while skies remain moody.", "Perfect weather for indoor doomscrolling."]
+                    lead: [
+                        "Dry gray cloud overcast", "Cloudy atmospheric stalling", "Ambient gloom existence", "Deceptive cloud cover", "High-level cloud drama",
+                        "Gray ceiling stalling pattern", "Overcast moisture tease", "Gloomy atmospheric roof", "Dry overcast blanket", "Stagnant cloud layer",
+                        "Moody overcast conditions", "Zero-rain overcast stretch", "Static gray cloud layer", "Passive overcast afternoon"
+                    ],
+                    metric: [
+                        `(${t}°C, 0mm rain)`, `at ${t}°C with zero moisture`, `holding ${t}°C ambient temperature`, `0mm precipitation delivered`, `stable gray ${t}°C`
+                    ],
+                    unhinged: [
+                        "High-level cloud drama with zero water delivery.", "Raccoons planning tactical alley maneuvers.", "Atmospheric blue-balls with no rainfall.", "Pavements stay dry while skies remain moody.", "Perfect weather for indoor doomscrolling.",
+                        "Sky looking threatening without paying off.", "Dark clouds lingering without raining.", "Ambient gray gloom sapping human motivation.", "Overcast roof blocking all direct sunlight.", "Weather app predicting rain that never arrives."
+                    ]
                 }
             };
 
@@ -666,11 +728,10 @@
 
             const pool = pools[category];
 
-            // Pick unique combination of Lead + Metric + Unhinged ending
             let selectedSentence = "";
             let attempts = 0;
 
-            while (attempts < 50) {
+            while (attempts < 100) {
                 const lead = pool.lead[Math.floor(Math.random() * pool.lead.length)];
                 const metric = pool.metric[Math.floor(Math.random() * pool.metric.length)];
                 const unhinged = pool.unhinged[Math.floor(Math.random() * pool.unhinged.length)];
@@ -684,13 +745,12 @@
                 attempts++;
             }
 
-            // Fallback unique appended sentence if pool exhausts
-            selectedSentence = `${pool.lead[0]} (${t}°C, ${r}mm). Unique atmospheric event #${usedWeatherPhrases.size + 1}.`;
+            selectedSentence = `${pool.lead[0]} (${t}°C, ${r}mm). Unique entry #${usedWeatherPhrases.size + 1}.`;
             usedWeatherPhrases.add(selectedSentence);
             return selectedSentence;
         }
 
-        // --- LENGTHENED, GUARANTEED UNIQUE OVERALL DAY PARAGRAPH GENERATOR ---
+        // --- MASSIVE 14+ PARAGRAPH OVERALL DAY REPORT GENERATOR ---
         function generateOutrageousReport(maxTemp, precipSum, weatherCode, dayIndex = 0, pTemps = {}, pRains = {}, pCodes = {}) {
             let tempC = Math.round(Number(maxTemp) || 15);
             let rainAmt = Math.round((Number(precipSum) || 0) * 10) / 10;
@@ -699,53 +759,141 @@
             let headline = "";
             let overallText = "";
 
-            // Dynamic Headline Pools
             const headlines = {
-                snow: ["❄️ CRIPPLING FROST SYNDICATE WARNING", "🌨️ POLAR SNOWPAGEDDON INCIDENT", "🧊 ARCTIC BLIZZARD ASSAULT", "❄️ TUNDRA-GRADE FREEZE OUTLOOK"],
-                heavyRain: ["🌧️ SKY-JUICE MONSOON DISASTER", "⛈️ ATMOSPHERIC DOWNPOUR ASSAULT", "🌊 SKY-GUTTER OVERFLOW PROTOCOL", "🌧️ UNRELENTING DELUGE ALERT"],
-                lightRain: ["💧 TRACE MOISTURE DISAPPOINTMENT", "🌧️ ANNOYING DRIZZLE INCIDENT", "🤨 SUSPICIOUS SKY-SPIT NOTICE", "💧 PASSIVE-AGGRESSIVE MISTING REPORT"],
-                heat: ["☀️ SOLAR LASER PAVEMENT MELTDOWN", "🔥 MICROWAVE HEATWAVE BOMBARDMENT", "🌡️ UNFORGIVING THERMAL INCINERATION", "☀️ OVEN-GRID THERMAL STRIKE"],
-                cold: ["🧊 SUB-ZERO ARCTIC REALITY CHECK", "🥶 FROSTBITE ICE-ZOMBIE WARNING", "❄️ POLAR EXPRESS CHILL MASS", "🧊 GLACIAL LOCKDOWN NOTICE"],
-                dry: ["🤨 SUSPICIOUSLY CALM METEOROLOGICAL ANOMALY", "🌤️ DECEPTIVELY PEACEFUL ATMOSPHERIC TRAP", "🌫️ DRY AMBIENT OVERCAST EXISTENCE", "🌤️ SIMULATION GLITCH TRANQUILITY"]
+                snow: [
+                    "❄️ CRIPPLING FROST SYNDICATE WARNING", "🌨️ POLAR SNOWPAGEDDON INCIDENT", "🧊 ARCTIC BLIZZARD ASSAULT", "❄️ TUNDRA-GRADE FREEZE OUTLOOK",
+                    "🥶 POLAR EXPRESS CHILL MASS", "🧊 GLACIAL LOCKDOWN NOTICE", "❄️ FROZEN SKY-SLUSH BOMBARDMENT", "🌨️ SUB-ZERO BLIZZARD RAGE",
+                    "🧊 ICE-ZOMBIE SURVIVAL NOTICE", "❄️ ARCTIC AIRMASS SIEGE", "🥶 SNOWPLOW MARITAL LAW EVENT", "❄️ FROSTBITE HIGH-RISK INCIDENT",
+                    "🧊 HYPOTHERMIC ATMOSPHERIC STRIKE", "🌨️ WHITE-OUT WEATHER EMERGENCY"
+                ],
+                heavyRain: [
+                    "🌧️ SKY-JUICE MONSOON DISASTER", "⛈️ ATMOSPHERIC DOWNPOUR ASSAULT", "🌊 SKY-GUTTER OVERFLOW PROTOCOL", "🌧️ UNRELENTING DELUGE ALERT",
+                    "🌊 URBAN RIVER CONVERSION NOTICE", "🌧️ TORRENTIAL CLOUD-BURST RAGE", "⛈️ MONSOONAL WATER DUMP", "🌧️ SOAKED-FOOTWEAR CATASTROPHE",
+                    "🌊 GUTTER-DRAIN DISTRESS CALL", "🌧️ HEAVY MOISTURE BOMBARDMENT", "⛈️ CATACLYSMIC SKY-LEAK DISASTER", "🌧️ UMBRELLA DESTRUCTION EVENT",
+                    "🌊 AQUATIC ROADWAY LOCKDOWN", "🌧️ ATMOSPHERIC WATER-CANON STRIKE"
+                ],
+                lightRain: [
+                    "💧 TRACE MOISTURE DISAPPOINTMENT", "🌧️ ANNOYING DRIZZLE INCIDENT", "🤨 SUSPICIOUS SKY-SPIT NOTICE", "💧 PASSIVE-AGGRESSIVE MISTING REPORT",
+                    "🌧️ IRRITATING ATMOSPHERIC MIST", "💧 WEAK PRECIPITATION TANTRUM", "🌧️ SLICK-ASPHALT DRIZZLE HAZE", "💧 SOGGY HUMIDITY DISTURBANCE",
+                    "🌧️ MISTING SKY-JUICE TEASE", "💧 UNPLEASANT CLOUD-SPRAY INCIDENT", "🌧️ WEAK RAIN-CLOUD HAZE", "💧 GLASS-STREAKING DRIZZLE EVENT",
+                    "🌧️ SOGGY AMBIENT MISTING", "💧 DISRESPECTFUL SKY-SPIT OUTLOOK"
+                ],
+                heat: [
+                    "☀️ SOLAR LASER PAVEMENT MELTDOWN", "🔥 MICROWAVE HEATWAVE BOMBARDMENT", "🌡️ UNFORGIVING THERMAL INCINERATION", "☀️ OVEN-GRID THERMAL STRIKE",
+                    "🔥 ULTRAVIOLET RADIANT ASSAULT", "🌡️ SWELTERING HEATDOME LOCKDOWN", "☀️ PAVEMENT-MELTING SOLAR LASER", "🔥 SCORCHING ATMOSPHERIC BLAZE",
+                    "🌡️ EXTREME HEAT SURVIVAL NOTICE", "☀️ LIQUID-LAVA STEERING WHEEL EVENT", "🔥 BLISTERING THERMAL BOMBARDMENT", "🌡️ UNCONTROLLED SOLAR SCORCHER",
+                    "☀️ OPPRESSIVE OVEN-GRID HEAT", "🔥 SWEAT-PERMANENT THERMAL DOME"
+                ],
+                cold: [
+                    "🧊 SUB-ZERO ARCTIC REALITY CHECK", "🥶 FROSTBITE ICE-ZOMBIE WARNING", "❄️ POLAR EXPRESS CHILL MASS", "🧊 GLACIAL LOCKDOWN NOTICE",
+                    "🥶 NOSTRIL-FREEZE ARCTIC STRIKE", "🧊 POLAR VORTEX EMBRACE", "🥶 BONE-SLICING CHILL ASSAULT", "🧊 ZERO-MERCURY ENGINE GROAN",
+                    "🥶 HYPOTHERMIC POLAR INVASION", "🧊 ICE-TRAP PAVEMENT OUTLOOK", "🥶 DEEP SPACE ARCTIC BLANKET", "🧊 PARALYZING FROST LOCKDOWN",
+                    "🥶 CAR-BATTERY SURRENDER EVENT", "🧊 BRITTLE SUB-ZERO CHILL"
+                ],
+                dry: [
+                    "🤨 SUSPICIOUSLY CALM METEOROLOGICAL ANOMALY", "🌤️ DECEPTIVELY PEACEFUL ATMOSPHERIC TRAP", "🌫️ DRY AMBIENT OVERCAST EXISTENCE", "🌤️ SIMULATION GLITCH TRANQUILITY",
+                    "🤨 DECEPTIVE CEASEFIRE PROTOCOL", "🌤️ EERIE SKY TRANQUILITY", "🌫️ STAGNANT GRAY CLOUD CEILING", "🌤️ SUSPICIOUS SOLAR PEACE",
+                    "🤨 UNUSUALLY QUIET METEOROLOGICAL PAUSE", "🌤️ TEMPORARY WEATHER TREATY", "🌫️ DRY MOODY OVERCAST", "🌤️ ZERO-RAIN ATMOSPHERIC PUZZLE",
+                    "🤨 UNEXPLAINED CLEAR SKIES", "🌤️ AMBIENT TRANQUILITY BUBBLE"
+                ]
             };
 
-            // Dynamic Paragraph Pools
             const paragraphs = {
                 snow: [
                     `Today's atmosphere is executing an aggressive, cold-blooded assault with icy precipitation (${rainAmt}mm equiv). The sky has completely abandoned reason and chosen pure violence. Expect frozen facial hair, icy sidewalks engineered specifically to ruin your posture, and local raccoons staging a political coup over heated car hoods.`,
                     `A crippling polar freeze has descended upon your coordinates, dumping ${rainAmt}mm of frozen atmospheric chaos. The local snowplow mafia has declared martial law, and stepping outside without full tundra-grade armor guarantees instant regret. Your windows will freeze solid, so stay indoors and question every life choice.`,
                     `Sub-zero arctic forces have locked down the entire metropolitan area under ${rainAmt}mm of relentless frost. The wind-chill factor feels like getting repeatedly slapped in the nose with a bag of frozen ice cubes. Do not touch outdoor metal objects barehanded unless you wish to become permanent street art.`,
-                    `An uncompromising winter storm has seized the sky, blanketing roads under ${rainAmt}mm of snow equivalent. Visibility is zero, public transit is running on pure prayers, and frostbite is waiting right outside your doorstep. Burrow into your blankets and ignore reality.`
+                    `An uncompromising winter storm has seized the sky, blanketing roads under ${rainAmt}mm of snow equivalent. Visibility is zero, public transit is running on pure prayers, and frostbite is waiting right outside your doorstep. Burrow into your blankets and ignore reality.`,
+                    `The heavens are shaking out ${rainAmt}mm of frozen atmospheric dandruff across your neighborhood. Walking to the mailbox requires full mountaineering gear, and local ice patches have been legally classified as lethal weaponry. Remain inside near hot beverages.`,
+                    `A severe polar outbreak is plastering ${rainAmt}mm of icy slush across every driveable surface. Your car door locks are officially welded shut by frost, and wind gusts cut directly into your spine. Give up on outdoor productivity entirely today.`,
+                    `Glacial winds are ushering in ${rainAmt}mm of frozen snow mass today. Sidewalks are now high-speed slip-and-slides, and nostril hairs freeze on impact. Wrap yourself like a burrito and accept indoor house arrest.`,
+                    `Atmospheric chill levels have ruptured, dumping ${rainAmt}mm of snow chaos over the city grid. Snowplows are roaming in feral packs, and driveways are burying cars under heavy white barriers. Winter has claimed another victim.`,
+                    `A blizzard-grade wave of icy chaos has landed, depositing ${rainAmt}mm of snow mass. Walking outside will make your teeth chatter in chaotic rhythmic frequencies. Keep the furnace roaring and do not step outside.`,
+                    `Freezing arctic air has frozen all local moisture into ${rainAmt}mm of heavy road slush. Driving is strictly reserved for stunt professionals, and walking outside guarantees wet frozen pant legs. Protect your sanity indoors.`,
+                    `The local sky vault has unleashed ${rainAmt}mm of arctic frost across your exact location. The neighborhood has gone completely silent as nature executes a cold shutdown. Stay parked under heavy blankets.`,
+                    `A tundra-grade airmass has arrived with ${rainAmt}mm of icy snow delivery. Your vehicle will scream in pain when turning the ignition, and frost will coat your windows inside and out. Retreat to thermal safety.`,
+                    `Severe winter conditions are dumping ${rainAmt}mm of frozen white powder. Pedestrians look like shivering zombies, and visibility is down to five feet. Outdoor movement is thoroughly discouraged by nature.`,
+                    `An unrelenting wave of arctic flurries is locking down the area with ${rainAmt}mm of snow equivalent. Sidewalks are slippery traps and winds are slicing through coats. Your home is now your fortress.`
                 ],
                 heavyRain: [
                     `An unrelenting sky-juice downpour (${rainAmt}mm) is descending upon the city with zero concern for your footwear choices. The clouds are aggressively leaking moisture as if trying to wash your entire neighborhood directly into the nearest drainage ditch. Expect your socks to get soaked through within four seconds of exiting any doorway, rendering all umbrellas completely decorative.`,
                     `Mother Nature has entered maximum rage-mode, unleashing ${rainAmt}mm of relentless precipitation upon the grid. Flash-mob puddles are forming strategic tactical traps in front of public building entrances, waiting to claim another innocent pair of sneakers. Stay inside, embrace the damp gloom, and let the rhythmic sky-bass drum against your windows.`,
                     `A legitimate atmospheric monsoon has breached the perimeter, dropping ${rainAmt}mm of chaotic rain across your entire zip code. The streets have officially converted into urban rivers, and local seagulls are reportedly navigating with maritime maps. All outdoor plans are revoked by decree of the heavens—arm yourself with hot coffee.`,
-                    `Sky-gutters are bursting at the seams as ${rainAmt}mm of heavy rain hammer the asphalt relentlessly today. Outdoor foot traffic is officially doomed, wipers are fighting for their lives, and drains are making distressed gurgling sounds. Accept your wet indoor fate.`
+                    `Sky-gutters are bursting at the seams as ${rainAmt}mm of heavy rain hammer the asphalt relentlessly today. Outdoor foot traffic is officially doomed, wipers are fighting for their lives, and drains are making distressed gurgling sounds. Accept your wet indoor fate.`,
+                    `The sky is behaving like an overturned bucket today, flooding the local grid with ${rainAmt}mm of aggressive rainfall. Puddles are growing deep enough to harbor marine life, and wet pants legs are guaranteed within three steps of leaving your vehicle. Remain sheltered.`,
+                    `A severe rainstorm has targeted your location, dumping ${rainAmt}mm of water directly onto your neighborhood. Umbrellas are collapsing under the sheer pressure, and basements are sweating in fear. Crank up lo-fi beats and stay dry.`,
+                    `Massive cloud bursts are releasing ${rainAmt}mm of relentless sky-juice across the entire city. The sound of water pounding against roofs is loud enough to drown out rational thought. Outdoor activity is officially cancelled.`,
+                    `Torrential atmospheric downpours are unloading ${rainAmt}mm of water over your streets. Hydroplaning is the dominant form of driving, and shoe leather is absorbing maximum dampness. Seek indoor refuge immediately.`,
+                    `A heavy wave of precipitation has locked over your coordinates with ${rainAmt}mm of rain. Drainage systems are overwhelmed, creating instant lakes in parking lots. Your socks stand zero chance today.`,
+                    `Heavy precipitation walls are crashing down with ${rainAmt}mm of total water sum. The sky looks like a dark apocalyptic ocean that lost its floor. Embrace the gloomy storm vibes from safety.`,
+                    `An aggressive downpour event is sweeping through, leaving ${rainAmt}mm of standing water across all roadways. Wind gusts are blowing rain sideways directly into human faces. Staying inside is mandatory.`,
+                    `The clouds are executing a massive liquid unloading sequence of ${rainAmt}mm. Puddles are strategically positioned to ruin dry shoes, and windshield wipers are overheating. Stay indoors where dry clothes exist.`,
+                    `Extreme rain density is striking the city with ${rainAmt}mm of rainfall. Gutters are overflowing into raging waterfalls, and stepping outside feels like taking a shower fully clothed. Protect your footwear.`,
+                    `A relentless aquatic siege has commenced, dropping ${rainAmt}mm of rain on the area. The air is 99% humidity and roads are slick hazards. Light a candle and refuse to step outside.`
                 ],
                 lightRain: [
                     `The weather apps want you to panic over ${rainAmt}mm of moisture, but in reality, the sky is merely threatening to spit on you with total disrespect. It is just enough drizzle to ruin any attempt at hair styling and leave annoying spots on your glasses, but nowhere near enough rain to give you a legitimate excuse to call out of work.`,
                     `An irritating haze of weak, lingering drizzle (${rainAmt}mm) is suspended in the air today like a cloud of ambient indecision. The sky lacks the courage to throw a real storm, choosing instead to drop pathetic misting droplets that exist purely to make asphalt slippery and make you second-guess leaving the house.`,
                     `The weather today is throwing a passive-aggressive atmospheric tantrum with ${rainAmt}mm of trace sky-juice. Puddles are barely shallow blurs, yet the air remains damp enough to make your jacket feel like a wet towel. Prepare for persistent gray gloom designed specifically to reduce human productivity by at least 40%.`,
-                    `A weak drizzle curtain (${rainAmt}mm) clings to the city today with annoying persistence. It’s not quite raining enough to justify an umbrella, but just enough to ensure your forehead stays damp and your jacket smells like wet dog all afternoon.`
+                    `A weak drizzle curtain (${rainAmt}mm) clings to the city today with annoying persistence. It’s not quite raining enough to justify an umbrella, but just enough to ensure your forehead stays damp and your jacket smells like wet dog all afternoon.`,
+                    `The sky is emitting a pathetic ${rainAmt}mm haze of mist that serves no real purpose other than ruining clean windshields. It's an atmospheric tease that delivers maximum annoyance with minimum water volume. Keep your wipers on low.`,
+                    `Persistent ambient dampness (${rainAmt}mm) hangs heavy in the air today. The sky is spitting weak droplets that coat every surface in an annoying thin sheen of water. Outdoor hair styling is officially wasted effort.`,
+                    `An irritating drizzle loop is playing across your area with ${rainAmt}mm of rain sum. It's not a storm—just a passive-aggressive atmospheric misting designed to lower your mood and make coffee taste necessary.`,
+                    `Weak precipitation clouds are leaking ${rainAmt}mm of light sky-juice. Puddles are minor blurs, but the air feels soggy enough to make jeans cling uncomfortably to your legs. Endure the mild gray gloom.`,
+                    `The atmosphere is delivering ${rainAmt}mm of nuisance drizzle across the grid today. It's a gray, uninspiring wet mess that leaves small water beads on your jacket without ever becoming a cool lightning storm.`,
+                    `A fine misting spray (${rainAmt}mm) is descending with total disregard for human comfort. Glasses wearers will suffer constant water-spot blindness, and pavement will stay slick and dark all day long.`,
+                    `Atmospheric humidity is condensing into ${rainAmt}mm of pathetic rain droplets today. The sky is undecided between cloudy and stormy, settling on an annoying middle ground that ruins clean shoes.`,
+                    `A light rain haze (${rainAmt}mm) coats the city streets in a dull damp shine. It's just enough moisture to turn fallen leaves into dangerous slip hazard zones. Mind your step outdoors.`,
+                    `Weak cloud drops (${rainAmt}mm) are falling intermittently today. The sky lacks the energy for a real tempest, opting instead for a slow, annoying spray that makes everything slightly uncomfortable.`,
+                    `Ambient drizzle lingering at ${rainAmt}mm is dampening outdoor morale today. The clouds are hanging low, spitting tiny droplets that refuse to dry off jackets. Stay inside and doomscroll.`
                 ],
                 heat: [
                     `The sun is behaving like an unhinged orbital microwave laser today, driving temperatures up to ${tempC}°C. Asphalt is softening into liquid lava, steering wheels will brand your palms upon contact, and human enthusiasm is evaporating on impact. Staying inside near air-conditioning is no longer just a preference—it is an official survival maneuver.`,
                     `Peak solar bombardment has taken over the weather grid with a sweltering peak of ${tempC}°C. Walking across a parking lot will feel like crossing the surface of a fresh pizza straight out of a 500-degree oven. Hydrate aggressively, avoid direct eye contact with the sun, and accept that sweat is your new permanent outfit.`,
                     `An oppressive thermal dome has locked over your coordinates, bringing an aggressive heat profile of ${tempC}°C. The city is radiating trapped thermal energy like an oversized oven, and even the local wildlife has given up on movement. Seek shelter immediately before your brain turns into lukewarm scrambled eggs.`,
-                    `Temperatures searing at ${tempC}°C are roasting the city grid today without remorse. Walking into direct sunlight feels like an immediate physical punishment, and leather seats are preparing to claim fresh skin layers. Remain anchored near fans.`
+                    `Temperatures searing at ${tempC}°C are roasting the city grid today without remorse. Walking into direct sunlight feels like an immediate physical punishment, and leather seats are preparing to claim fresh skin layers. Remain anchored near fans.`,
+                    `An orbital thermal beam has targeted your city, blasting thermals to ${tempC}°C. Asphalt is softening underfoot, and entering a parked car feels like crawling inside a preheated kiln. Hydrate or suffer immediate consequences.`,
+                    `Extreme solar output is baking the local grid at ${tempC}°C today. Shadow areas are packed like prime real estate as citizens fight for shelter from the blazing sky laser. Protect your skin at all costs.`,
+                    `Unforgiving heat waves are rippling across the pavement at ${tempC}°C. Sweat forms instantaneously upon stepping outside, and enthusiasm dissolves within seconds. Ice cream has a three-second lifespan outdoors.`,
+                    `A massive thermal spike has pushed outdoor temperatures to ${tempC}°C. The air feels thick enough to chew, and metal surfaces will cause immediate third-degree burns. Air conditioning is your only true friend.`,
+                    `The local sky heat lamp is set to maximum intensity today at ${tempC}°C. Walking outside feels like opening an oven door directly into your face. Minimal movement is strongly advised.`,
+                    `Brutal thermal bombardment is scorching the area at ${tempC}°C. The sun is showing zero mercy, turning concrete jungle alleys into searing heat traps. Stay hydrated and stay indoors.`,
+                    `Severe solar rays are pounding the city, pushing temps to a punishing ${tempC}°C. Car dashboards are warping, and humans are retreating to subterranean AC havens. Avoid all direct solar exposure.`,
+                    `A sweltering heat dome has blanketed the grid, locking thermals at ${tempC}°C. The air is still, heavy, and hot enough to bake bread on car hoods. Keep frozen ice packs close by.`,
+                    `Thermal radiation is surging across your zip code at ${tempC}°C today. Stepping onto blacktop pavement will melt shoe soles, and physical exertion is legally prohibited by common sense. Seek shade.`,
+                    `Unrelenting solar heat at ${tempC}°C is draining human energy across the city. The sun is raging, and fan motors are working overtime. Remain immobilized near cool airflow.`
                 ],
                 cold: [
                     `An unyielding polar airmass at ${tempC}°C has frozen the local reality grid. The invasive chill cuts through winter coats like paper, and your vehicle's engine will groan in existential agony when you turn the key. Embrace the frozen zombie aesthetic, keep your hands tucked safely in your pockets, and do not attempt prolonged outdoor conversation.`,
                     `Brittle sub-zero conditions (${tempC}°C) are dominating the skyline today with zero actual heat output despite any fake sunlight you might see. Walking outside will make your breath turn into instant icicles and your teeth chatter uncontrollably in under thirty seconds. Rest up, wrap yourself in heavy blankets, and ignore the outside world.`,
                     `A deep space arctic freeze has blanketed the city at ${tempC}°C, turning every puddle into a lethal posture-destroying trap. The neighborhood has gone dead silent as even the raccoons have retreated into secret heated underground sanctuaries. Your frostbitten soul demands warm soups and zero exposure to atmospheric air.`,
-                    `Frozen static air locked at ${tempC}°C has paralyzed outdoor life today. Nostril hairs freeze instantly upon inhalation, and car doors are glued shut in ice solidarity. Stay indoors where the heated air lives.`
+                    `Frozen static air locked at ${tempC}°C has paralyzed outdoor life today. Nostril hairs freeze instantly upon inhalation, and car doors are glued shut in ice solidarity. Stay indoors where the heated air lives.`,
+                    `Sub-zero arctic winds are slicing through the city at ${tempC}°C. Stepping outside feels like getting hit in the face with a frozen steel shovel. Keep your hands buried deep in your coat pockets.`,
+                    `A glacial plunge has locked thermals at ${tempC}°C today. Breath condenses into dense steam clouds, and car batteries are surrendering across every parking lot. Keep the furnace cranked high.`,
+                    `Brutal hypothermic conditions at ${tempC}°C are punishing anyone brave enough to go outside. Sidewalk ice is invisible and unforgiving, waiting to claim human posture. Remain anchored to warm blankets.`,
+                    `Deep space cold has descended upon the grid, freezing thermals at ${tempC}°C. Conversations outdoors are legally limited to three words before facial muscles freeze solid. Stay warm inside.`,
+                    `Polar chill forces are occupying the zip code at ${tempC}°C. Sunlight is pure fake visual lighting with zero thermal output. Do not let the bright sky fool you into leaving your jacket behind.`,
+                    `Extreme sub-zero chill at ${tempC}°C is freezing liquid on contact today. Engine oil is turning into thick molasses and windshield washer fluid is frozen in nozzles. Stay indoors and rest.`,
+                    `A paralyzing freeze has gripped the local area at ${tempC}°C. Metal door handles are biological traps and wind chill is slicing through layers. Protect your extremities from nature's wrath.`,
+                    `Invasive cold air at ${tempC}°C is penetrating building walls today. Frost is forming artistic ice crystals on window glass while outdoor life grinds to a shivering halt. Sip hot drinks.`,
+                    `Severe arctic chill locked at ${tempC}°C is dominating the afternoon. Teeth are chattering, eyes are watering, and tears are freezing onto cheeks instantly. Avoid outdoor exposure.`,
+                    `A hypothermic wind surge is holding the city hostage at ${tempC}°C. Street traffic is dead silent as humans retreat to heated sanctuary spaces. Keep your feet warm.`
                 ],
                 dry: [
                     `The weather today appears mild, calm, and visually unassuming at ${tempC}°C with 0mm of rain... which is deeply, deeply suspicious. Do not let this fake tranquility fool you for a single second—Mother Nature is merely regrouping and plotting her next dramatic stunt behind your back. Enjoy the dry pavement, but keep one eye on the sky at all times.`,
                     `A deceptively tranquil atmospheric bubble has parked over your location (${tempC}°C, 0mm rain). No storms, no blistering heat, no freezing blizzard—just an eerily comfortable day that feels like a glitch in the simulation. Local wildlife has been spotted holding quiet strategy meetings in back alleys, likely preparing for tomorrow's inevitable chaos.`,
                     `An ambient, dry gray overcast holds steady across the area today at ${tempC}°C with zero rainfall delivered. It is an unassuming, peaceful stretch of weather designed to lower your guard before the next meteorological disaster strikes. Take advantage of the clear roads while you can, because this peaceful treaty with the heavens will not last long.`,
-                    `Total atmospheric stability sits over the grid at ${tempC}°C with 0mm precipitation. The roads are clean, the skies are quiet, and nothing is exploding. Savor this surreal pause in global weather drama before Mother Nature remembers her script.`
+                    `Total atmospheric stability sits over the grid at ${tempC}°C with 0mm precipitation. The roads are clean, the skies are quiet, and nothing is exploding. Savor this surreal pause in global weather drama before Mother Nature remembers her script.`,
+                    `A rare moment of meteorological peace has arrived at ${tempC}°C with 0mm rain. No sky-juice downpours, no blistering heat rays—just smooth sailing pavement and calm skies. It feels completely fake, but enjoy it anyway.`,
+                    `Deceptive sky tranquility is dominating today's forecast at ${tempC}°C with zero moisture on radar. The atmosphere is holding its breath, providing a clean window for outdoor errands before chaos resumes.`,
+                    `An eerily calm weather treaty holds firm over your coordinates at ${tempC}°C. Zero rain, zero drama, zero chaos. Local raccoons are using this peaceful pause to negotiate territory lines in alleys.`,
+                    `A stable gray ceiling rests over the city today at ${tempC}°C with 0mm rainfall. It's a quiet, unbothered day designed for peaceful productivity and zero footwear drama. Roads are clear.`,
+                    `The sky is behaving itself today, offering a dry ${tempC}°C environment with zero cloud-leak incidents. Take advantage of dry shoes and clear roads before Mother Nature recharges her batteries.`,
+                    `An ambient weather bubble has locked in at ${tempC}°C without a drop of rain in sight. Skies are neutral, winds are soft, and reality seems momentarily stable. Enjoy the quiet stretch.`,
+                    `A tranquil atmospheric cease-fire is in effect at ${tempC}°C with 0mm precipitation. Nature has temporarily paused her dramatic performances to let you walk outside in peace.`,
+                    `Smooth dry conditions hold steady at ${tempC}°C with zero rainfall delivered. The sky is behaving like a responsible adult for once. Walk outside with full confidence in your dry socks.`,
+                    `A peaceful, dry gray sky blanket rests at ${tempC}°C today. Zero weather alerts, zero rain probability, zero atmospheric stress. A perfect day to stay calm and execute plans.`,
+                    `Complete meteorological neutrality is locked at ${tempC}°C with 0mm total moisture. Nature is taking a brief coffee break today. Savor the dry pavement while it lasts.`
                 ]
             };
 
@@ -756,7 +904,7 @@
             else if (tempC > 25) category = "heat";
             else if (tempC < 0) category = "cold";
 
-            // Pick unique Headline
+            // Pick unique Headline from 14-option pool
             const hlList = headlines[category];
             for (let h of hlList) {
                 if (!usedWeatherPhrases.has(h)) {
@@ -767,7 +915,7 @@
             }
             if (!headline) headline = `${hlList[0]} [DAY ${dayIndex + 1}]`;
 
-            // Pick unique Paragraph
+            // Pick unique Paragraph from 14-option pool
             const pList = paragraphs[category];
             for (let p of pList) {
                 if (!usedWeatherPhrases.has(p)) {
@@ -781,7 +929,7 @@
                 usedWeatherPhrases.add(overallText);
             }
 
-            // ACCURATE & GUARANTEED UNIQUE period text for each 6-hour block
+            // Generate 4 period texts with ZERO repetition guarantee
             const morning = getPeriodText("Morning", pTemps.m, pRains.m, pCodes.m);
             const afternoon = getPeriodText("Afternoon", pTemps.a, pRains.a, pCodes.a);
             const evening = getPeriodText("Evening", pTemps.e, pRains.e, pCodes.e);
@@ -919,7 +1067,7 @@
             }
             document.getElementById('hourly-grid-container').innerHTML = hourlyHTML;
 
-            // Clear phrase memory before rendering forecast lists
+            // Reset strict unique phrase memory before each render pass
             usedWeatherPhrases.clear();
             renderExtendedForecast('seven-daily-container', 7);
             
