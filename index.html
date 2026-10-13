@@ -379,19 +379,19 @@
     </div>
 
     <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Bulletins</button>
-        <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News</button>
+        <button class="tab-btn active" onclick="switchTab('bulletin-tab', this)">📌 Top 3 World Bulletins</button>
+        <button class="tab-btn" onclick="switchTab('news-tab', this)">📰 News Feeds</button>
         <button class="tab-btn" onclick="switchTab('weather-tab', this)">🌤️ Weather</button>
         <button class="tab-btn" onclick="switchTab('media-tab', this)">📺 Multi-Platform Stream</button>
         <button class="tab-btn" onclick="switchTab('meme-tab', this)">💀 Dark & Unhinged Memes</button>
-        <button class="tab-btn" onclick="switchTab('game-tab', this)">🎮 RPG Adventure</button>
         <button class="tab-btn" onclick="switchTab('thought-tab', this)">🧠 2 AM Thoughts</button>
     </div>
 
-    <!-- Tab 1: Bulletins -->
+    <!-- Tab 1: Top 3 Outrageous Bulletins -->
     <div id="bulletin-tab" class="tab-pane active">
         <section>
-            <h2>📌 Daily Bulletins</h2>
+            <h2>📌 Top 3 Most Outrageous & Absurd World Bulletins</h2>
+            <p style="text-align: center; color: #8f9bba; margin-bottom: 20px;">The absolute most unhinged real-world news stories from around the globe this week.</p>
             <div id="bulletins-container" class="card-grid"></div>
         </section>
     </div>
@@ -409,7 +409,7 @@
         </section>
     </div>
 
-    <!-- Tab 3: Advanced Weather Sub-Tabs -->
+    <!-- Tab 3: Weather -->
     <div id="weather-tab" class="tab-pane">
         <section>
             <h2>🌤️ Live Weather & Outrageous Reports</h2>
@@ -458,7 +458,6 @@
                         <iframe id="radar-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
                     </div>
 
-                    <!-- User Friendly Storm Intensity Legend -->
                     <div class="radar-legend">
                         <div class="legend-item"><div class="legend-color" style="background: #38bdf8;"></div> Light Drizzle / Snow Flurries</div>
                         <div class="legend-item"><div class="legend-color" style="background: #22c55e;"></div> Moderate Rain</div>
@@ -516,19 +515,7 @@
         </section>
     </div>
 
-    <!-- Tab 6: RPG Text Adventure -->
-    <div id="game-tab" class="tab-pane">
-        <section>
-            <h2>🎮 Procedural Text Adventure</h2>
-            <div class="card">
-                <h3 id="game-title">The Great Grocery Cart Stand-Off</h3>
-                <p id="game-text">You are blocking the cereal aisle at 2 AM...</p>
-                <div id="game-choices" style="display: flex; gap: 10px; margin-top: 15px;"></div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Tab 7: Thoughts -->
+    <!-- Tab 6: Thoughts -->
     <div id="thought-tab" class="tab-pane">
         <section>
             <h2>🧠 2 AM Intrusive Thoughts</h2>
@@ -561,7 +548,6 @@
         let scrollTimeout = null;
         let globalAudioUnmuted = false;
 
-        // MEME DEDUPING & DARK HUMOR POOLS
         const seenMemes = new Set();
         const darkSubreddits = ['darkmeme', 'darkhumourmemes', 'pessimismmemes', 'me_irl', 'funnydark', 'tombstoning'];
 
@@ -623,7 +609,8 @@
             return { icon: "🌤️", text: "Variable Sky" };
         }
 
-        function generateOutrageousReport(maxTemp, precipSum, weatherCode) {
+        // --- STRICT RAIN THRESHOLD & VARIETY GENERATOR ---
+        function generateOutrageousReport(maxTemp, precipSum, weatherCode, dayIndex = 0) {
             let tempC = Number(maxTemp) || 15;
             let condition = getWeatherDetails(weatherCode).text.toLowerCase();
             let rainAmt = Number(precipSum) || 0;
@@ -635,44 +622,65 @@
             let evening = "";
             let night = "";
 
-            if (condition.includes('snow')) {
+            // Strictly check for real rain (>1.0 mm) vs fake drizzle/cloud hype
+            if (condition.includes('snow') && rainAmt > 0.5) {
                 headline = "❄️ CRIPPLING FROST & ICE SYNDICATE WARNING";
-                overallText = `Today's atmosphere is executing an aggressive cold-blooded assault with icy precipitation (${rainAmt}mm equiv). The sky has completely abandoned reason and chosen violence. Expect frozen facial hair, icy sidewalks engineered specifically to ruin your posture, and local raccoons staging a coup over heated vehicle hoods.`;
+                overallText = `Today's atmosphere is executing an aggressive cold-blooded assault with icy precipitation (${rainAmt}mm equiv). Expect frozen facial hair, icy sidewalks engineered specifically to ruin your posture, and local raccoons staging a coup over heated vehicle hoods.`;
                 morning = "Brutal sub-zero frostbite hazard. Crawling out of bed requires military-grade willpower.";
                 afternoon = "Malicious snow clouds block the sun. Visibility drops as the local snowplow mafia takes control.";
                 evening = "Temperatures plummet. Black ice forms traps across all major intersections.";
                 night = "Arctic wasteland conditions. Your windows will freeze solid; do not open them under any circumstances.";
-            } else if (condition.includes('thunderstorm')) {
+            } else if (condition.includes('thunderstorm') && rainAmt > 2.0) {
                 headline = "🌩️ THUNDERDOME METEOROLOGICAL TANTRAM";
-                overallText = `Mother Nature has entered maximum rage-mode with ${rainAmt}mm of downpour. Flash-mob lightning strikes and booming atmospheric noise will dominate today's weather profile. Electronics will vibrate with anxiety, and all outdoor plans are officially revoked by decree of the heavens.`;
-                morning = "Ominous dark clouds roll in like an impending invasion. Sudden gusts knock over outdoor furniture.";
+                overallText = `Mother Nature has entered maximum rage-mode with ${rainAmt}mm of heavy downpour. Flash-mob lightning strikes and booming atmospheric noise will dominate today's weather profile. Outdoor plans are officially revoked.`;
+                morning = "Ominous dark clouds roll in like an impending invasion. Sudden gusts knock over outdoor chairs.";
                 afternoon = "Deafening thunderclaps rock the neighborhood. Torrential downpours turn gutters into rapids.";
                 evening = "Intermittent lightning illuminates the skyline. Puddles reach lake-sized proportions.";
-                night = "Rumbling sky-bass continues into the dark hours. High risk of power-grid flickering and roof-drumming rain.";
-            } else if (condition.includes('rain')) {
+                night = "Rumbling sky-bass continues into the dark hours. High risk of power-grid flickering.";
+            } else if (rainAmt >= 1.0) {
+                // Actual heavy/moderate rain
                 headline = "🌧️ SKY-JUICE MOISTURE ASSAULT DETECTED";
-                overallText = `A unrelenting downpour (${rainAmt}mm) is descending upon the city. The clouds are aggressively leaking sky-juice with zeroes given for your footwear choices. Expect socks to get soaked through within four seconds of exiting any building.`;
+                overallText = `A legitimate downpour (${rainAmt}mm) is descending upon the city. The clouds are aggressively leaking sky-juice with zero concern for your footwear choices. Expect socks to get soaked through within four seconds.`;
                 morning = "Persistent drizzling grayness that immediately ruins any attempt at hair styling.";
-                afternoon = "Rainfall accelerates. Puddles form strategic traps directly in front of public entranceways.";
+                afternoon = "Rainfall accelerates. Puddles form strategic traps directly in front of public entrances.";
                 evening = "Soggy commute home. Umbrellas will fold backward under localized gust-attacks.";
                 night = "Damp, gloomy drizzle. Wet asphalt reflections give the streets an aggressive cyberpunk aesthetic.";
+            } else if (rainAmt > 0 && rainAmt < 1.0) {
+                // Fake Drizzle / Trace Moisture
+                const fakeRainHeadlines = [
+                    "🤨 FALSE ALARM SKY-SPIT INCIDENT",
+                    "🤡 0.4MM MOISTURE DISAPPOINTMENT",
+                    "💧 ATMOSPHERIC DROPS OF ANXIETY"
+                ];
+                headline = fakeRainHeadlines[dayIndex % fakeRainHeadlines.length];
+                overallText = `The weather app wants you to panic over ${rainAmt}mm of moisture, but in reality, the sky is merely threatening to spit on you. You'll see clouds acting suspicious, but your shoes will remain completely safe.`;
+                morning = "Overcast drama with zero real rainfall. The clouds are bluffs.";
+                afternoon = "A single rogue raindrop hits your forehead, tricking you into thinking it's pouring.";
+                evening = "Gray ambient gloom designed specifically to reduce human productivity by 40%.";
+                night = "Bone-dry streets despite the dramatic gray overcast sky.";
             } else if (tempC > 25) {
                 headline = "☀️ SOLAR AGGRESSION & PAVEMENT MELTDOWN";
-                overallText = `The sun is behaving like an unhinged microwave laser today. Temperatures are soaring high enough to melt asphalt and make human enthusiasm evaporate on contact. Staying indoors near air-conditioning is no longer optional—it's a survival tactic.`;
+                overallText = `The sun is behaving like an unhinged microwave laser today. Temperatures are soaring high enough to melt asphalt and make human enthusiasm evaporate on contact. Air-conditioning is a survival tactic.`;
                 morning = "The sun rises with immediate aggressive heat. Sweat begins forming before you finish breakfast.";
                 afternoon = "Peak solar bombardment. Steering wheels turn into liquid lava and shoes stick to blacktop.";
                 evening = "Sweltering dusk. The city radiates trapped thermal heat like an oversized pizza oven.";
                 night = "Heavy warm breeze. Sleep will require maximum fan power and minimal blanket usage.";
             } else if (tempC < 0) {
                 headline = "🧊 SUB-ZERO ARCTIC REALITY CHECK";
-                overallText = `An unyielding polar airmass is locked over your coordinates. The wind-chill factor feels like getting slapped in the face with a bag of frozen ice cubes. Embrace the local ice-zombie aesthetic and do not attempt to touch metal objects barehanded.`;
+                overallText = `An unyielding polar airmass is locked over your coordinates. The wind-chill factor feels like getting slapped in the face with a bag of ice cubes. Do not attempt to touch metal objects barehanded.`;
                 morning = "Invasive freezing chill that makes your teeth chatter uncontrollably in under thirty seconds.";
                 afternoon = "Brittle sunlight with zero actual heat output. Cold wind slices through heavy winter coats.";
                 evening = "Rapid drop in degrees. Frost patterns form aggressive artwork on car windshields.";
                 night = "Deep space cold. The neighborhood goes dead silent as even the local wildlife hibernates.";
             } else {
-                headline = "🤨 SUSPICIOUSLY CALM METEOROLOGICAL ANOMALY";
-                overallText = `The weather today appears mild, calm, and visually unassuming... which is deeply suspicious. Do not let this fake tranquility fool you. Nature is merely regrouping and plotting its next chaotic stunt behind your back.`;
+                // Dry / Calm
+                const dryHeadlines = [
+                    "🤨 SUSPICIOUSLY CALM METEOROLOGICAL ANOMALY",
+                    "🌤️ DECEPTIVELY PEACEFUL ATMOSPHERIC TRAP",
+                    "🌫️ GRAY AMBIENT EXISTENCE DETECTED"
+                ];
+                headline = dryHeadlines[dayIndex % dryHeadlines.length];
+                overallText = `The weather today appears mild, calm, and visually unassuming... which is deeply suspicious. Do not let this fake tranquility fool you. Nature is merely regrouping for its next chaotic stunt.`;
                 morning = "Deceptively pleasant breeze with gentle light. You will suspect an alien invasion is brewing.";
                 afternoon = "Mild temperatures continue. Local wildlife is spotted holding secret strategy meetings in alleys.";
                 evening = "Comfortable twilight, but the atmospheric pressure hints at future chaos.";
@@ -844,7 +852,7 @@
                 const isSnow = getWeatherDetails(dayCode).text.toLowerCase().includes('snow');
                 const precipTypeLabel = isSnow ? "❄️ Snow" : "🌧️ Rain";
 
-                const outrageousReportHTML = generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], precipSum, dayCode);
+                const outrageousReportHTML = generateOutrageousReport(rawWeatherData.daily.temperature_2m_max[day], precipSum, dayCode, day);
 
                 dailyHTML += `
                     <div class="daily-weather-card">
@@ -911,7 +919,6 @@
                 const data = await res.json();
 
                 if (data && data.url) {
-                    // Check for duplicate URLs to prevent repeats
                     if (seenMemes.has(data.url)) {
                         console.warn("Duplicate meme caught, retrying...");
                         return fetchMeme(attempts + 1);
@@ -926,7 +933,6 @@
                 }
             } catch (e) {
                 console.error("Dark meme fetch error:", e);
-                // Fallback unhinged text content
                 tagEl.textContent = "[DARK HUMOR ARCHIVE]";
                 titleEl.textContent = "System Outage Realization";
                 containerEl.innerHTML = `<div style="padding:20px; border:1px solid #ff334b; border-radius:8px; background:#1a0000; color:#fff;">
@@ -944,6 +950,48 @@
         ];
         function generateThought() {
             document.getElementById('thought-text').textContent = `"${intrusiveThoughts[Math.floor(Math.random() * intrusiveThoughts.length)]}"`;
+        }
+
+        // --- TOP 3 OUTRAGEOUS WORLD BULLETINS ---
+        function renderTop3Bulletins() {
+            const container = document.getElementById('bulletins-container');
+            const top3Stories = [
+                {
+                    title: "🐢 Fugitive 100-Pound Tortoise Captured After World's Slowest Escape Attempt",
+                    desc: "A massive 100-pound tortoise named Lard escaped his fenced backyard in Colorado, leading animal control and county sheriffs on a grueling 'low-speed chase' before being triumphantly carried home by multiple officers.",
+                    source: "UPI Odd News",
+                    link: "https://www.upi.com/Odd_News/2026/09/28/tortoise-Jefferson-County-Colorado/9431790610409/"
+                },
+                {
+                    title: "🦈 Nor'easter Floodwaters Wash Live Shark Down New Jersey Residential Street",
+                    desc: "A severe nor'easter storm pushed floodwaters into Surf City, NJ, allowing a live shark to swim directly down a paved neighborhood street and up a resident's driveway before returning to sea.",
+                    source: "Scotty & Tony News",
+                    link: "https://www.scottyandtony.com/2026/10/weird-news-update-on-fri-2-october-2026.html"
+                },
+                {
+                    title: "🐊 Man Charged Over Fake AI Crocodile Picture Triggering Citywide Emergency Search",
+                    desc: "Authorities in Singapore arrested and charged a man after he generated a hyper-realistic AI image of a saltwater crocodile lurking in a popular recreational reservoir, causing widespread public panic.",
+                    source: "Kuwait Times World News",
+                    link: "https://kuwaittimes.com/article/50632/world/singapore-charges-man-over-fake-ai-crocodile-picture/"
+                }
+            ];
+
+            let html = "";
+            top3Stories.forEach((story, idx) => {
+                html += `
+                    <div class="card" style="border-left: 4px solid var(--accent-color);">
+                        <span style="color:var(--accent-color); font-weight:bold; font-size:0.8rem; text-transform:uppercase;">🚨 World Bulletin #${idx + 1}</span>
+                        <h3 style="margin-top:5px;">${story.title}</h3>
+                        <p>${story.desc}</p>
+                        <a href="${story.link}" target="_blank" class="card-footer-link">
+                            <span>Read Full Article on ${story.source}</span>
+                            <span>🔗 Link</span>
+                        </a>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
 
         // --- NEWS ENGINE ---
@@ -997,7 +1045,6 @@
             let reelCards = [];
 
             try {
-                // 1. YOUTUBE SHORTS
                 if (platform === 'youtube') {
                     if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "YOUR_KEY_HERE") {
                         console.error("YouTube API Key missing or invalid.");
@@ -1029,10 +1076,7 @@
                             }
                         });
                     }
-                }
-
-                // 2. WIKIMEDIA COMMONS VIDEO API
-                else if (platform === 'wikimedia') {
+                } else if (platform === 'wikimedia') {
                     const sroffset = (streamPage - 1) * 5;
                     const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query + " filetype:video")}&gsrnamespace=6&gsrlimit=5&gsroffset=${sroffset}&prop=imageinfo&iiprop=url|mime|mediatype&format=json&origin=*`;
                     console.log("Fetching Wikimedia API:", wikiUrl);
@@ -1057,10 +1101,7 @@
                             }
                         });
                     }
-                }
-
-                // 3. PIXABAY VIDEOS
-                else if (platform === 'pixabay-video') {
+                } else if (platform === 'pixabay-video') {
                     const encodedQuery = encodeURIComponent(query);
                     const pixabayVidUrl = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${encodedQuery}&per_page=10&page=${streamPage}`;
                     console.log("Fetching Pixabay Video API:", pixabayVidUrl);
@@ -1085,10 +1126,7 @@
                             }
                         });
                     }
-                }
-
-                // 4. PIXABAY IMAGES
-                else if (platform === 'pixabay-image') {
+                } else if (platform === 'pixabay-image') {
                     const encodedQuery = encodeURIComponent(query);
                     const pixabayImgUrl = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodedQuery}&image_type=photo&per_page=10&page=${streamPage}`;
                     console.log("Fetching Pixabay Image API:", pixabayImgUrl);
@@ -1235,15 +1273,9 @@
 
         // Initialize Startup
         initLiveWeather();
+        renderTop3Bulletins();
         fetchNews('local-news');
         fetchMeme();
-
-        document.getElementById('bulletins-container').innerHTML = `
-            <div class="card">
-                <h3>System Operational</h3>
-                <p>Localized weather radar & multi-platform engine active.</p>
-            </div>
-        `;
     </script>
 </body>
 </html>
