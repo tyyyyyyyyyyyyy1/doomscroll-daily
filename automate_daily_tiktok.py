@@ -148,7 +148,7 @@ def commit_and_push_videos():
     else:
         print("ℹ️ No changes detected in video output. Skipping commit/push.")
 
-# --- 5. BUFFER GRAPHQL API SCHEDULER (WITH DETAILED MUTATION ERROR CHECKING) ---
+# --- 5. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     url = "https://api.buffer.com"
     headers = {
@@ -214,11 +214,13 @@ if __name__ == "__main__":
     commit_and_push_videos()
 
     repo_owner_repo = "tyyyyy/doomscroll-daily" 
+    timestamp_buster = int(datetime.now().timestamp())
 
     print("\n📅 Sending schedule requests to Buffer...")
     for video_path, slot in rendered_slots:
         file_name = os.path.basename(video_path)
-        public_url = f"https://raw.githubusercontent.com/{repo_owner_repo}/main/{OUTPUT_DIR}/{file_name}"
+        # Standard GitHub raw URL with a cache-buster parameter so Buffer fetches the newest commit instantly
+        public_url = f"https://raw.githubusercontent.com/{repo_owner_repo}/main/{OUTPUT_DIR}/{file_name}?v={timestamp_buster}"
         scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
         caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #darkhumor #weather #fyp"
         
