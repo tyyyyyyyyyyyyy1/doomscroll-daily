@@ -395,7 +395,7 @@
         </section>
     </div>
 
-    <!-- Tab 2: News -->
+    <!-- Tab 2: News Feeds with Infinite "View More Results" -->
     <div id="news-tab" class="tab-pane">
         <section>
             <h2>📰 Real-Time News Feeds</h2>
@@ -404,7 +404,12 @@
                 <button class="sub-tab-btn" onclick="switchNewsSubTab('world-news', this)">🌐 World Headlines</button>
                 <button class="sub-tab-btn" onclick="switchNewsSubTab('tech-news', this)">💻 Tech & Science</button>
             </div>
+            
             <div id="local-news-grid" class="card-grid"></div>
+
+            <div style="text-align: center; margin-top: 25px;">
+                <button id="news-load-more-btn" class="btn-action" style="background: #00f2fe; color: #000; font-size: 1rem; padding: 12px 24px;" onclick="loadMoreNews()">➕ View More Results</button>
+            </div>
         </section>
     </div>
 
@@ -519,8 +524,8 @@
         <section>
             <h2>🧠 2 AM Intrusive Thoughts</h2>
             <div class="card" style="text-align: center;">
-                <p id="thought-text" style="font-size: 1.1rem; font-style: italic; margin: 20px 0;">"If animals could talk, which one would be the most obnoxious?"</p>
-                <button class="btn-action" onclick="generateThought()">Give Me Another Thought</button>
+                <p id="thought-text" style="font-size: 1.15rem; font-style: italic; margin: 25px 0; line-height: 1.5; color: #00f2fe;">"If animals could talk, which one would be the most obnoxious?"</p>
+                <button class="btn-action" style="font-size: 1.05rem; padding: 12px 24px;" onclick="generateThought()">🧠 Give Me Another Unhinged Thought</button>
             </div>
         </section>
     </div>
@@ -532,7 +537,21 @@
     <script>
         console.log("Script execution started.");
         
-        const YOUTUBE_API_KEY = "AIzaSyAmhqUX0iC-XYC3W4cL6DcInxFdCGAXK_8"; 
+        // --- MULTI-KEY ROUND ROBIN YOUTUBE API ROTATION ARRAY ---
+        // Add all your Google Cloud YouTube API keys here. The code automatically cycles through them and handles quota exhaustion!
+        const youtubeApiKeys = [
+            "AIzaSyAmhqUX0iC-XYC3W4cL6DcInxFdCGAXK_8",
+            "YOUR_KEY_2_HERE",
+            "YOUR_KEY_3_HERE"
+        ];
+        let currentApiKeyIndex = 0;
+
+        function getNextYouTubeApiKey() {
+            const key = youtubeApiKeys[currentApiKeyIndex];
+            currentApiKeyIndex = (currentApiKeyIndex + 1) % youtubeApiKeys.length;
+            return key;
+        }
+
         const PIXABAY_API_KEY = "58012291-a9821e278a489f49bf9424a79";
 
         let currentTempUnit = 'C'; 
@@ -547,7 +566,12 @@
         let scrollTimeout = null;
         let globalAudioUnmuted = false;
 
-        // Strictly curated dark humor & cursed comment/reply subreddits
+        // News Pagination State
+        let currentNewsFeedKey = 'local-news';
+        let newsVisibleCount = 6;
+        let cachedNewsItems = [];
+
+        // Dark humor & cursed comment subreddits
         const seenMemes = new Set();
         const darkSubreddits = [
             'darkhumourmemes', 
@@ -1216,7 +1240,6 @@
                     if (data.url && (data.url.endsWith('.jpg') || data.url.endsWith('.png') || data.url.endsWith('.jpeg') || data.url.endsWith('.gif') || data.url.includes('i.redd.it') || data.url.includes('i.imgur.com'))) {
                         containerEl.innerHTML = `<img src="${data.url}" alt="Dark Meme" style="max-width: 100%; max-height: 520px; border-radius: 8px; object-fit: contain; border: 1px solid #2a2f3d; box-shadow: 0 8px 28px rgba(0,0,0,0.95);">`;
                     } else if (data.selftext || data.title) {
-                        // Cursed text comment/reply post fallback
                         containerEl.innerHTML = `
                             <div style="padding:25px; border:1px solid #2a2f3d; border-left: 4px solid #ff334b; border-radius:8px; background:#12161f; color:#fff; max-width:580px; text-align:left;">
                                 <p style="font-size:1.15rem; color:#f1f2f6; line-height:1.5; font-weight:bold; margin-bottom:8px;">"${data.title}"</p>
@@ -1236,15 +1259,127 @@
             }
         }
 
-        // --- THOUGHTS ---
+        // --- MASSIVE 100+ UNHINGED 2 AM THOUGHTS POOL ---
         const intrusiveThoughts = [
             "If animals could talk, which one would be the most obnoxious?",
             "Your brain has named itself without your explicit consent.",
             "Every mirror you look into is slightly outdated by the speed of light.",
-            "If you clean a vacuum cleaner, you become a vacuum cleaner."
+            "If you clean a vacuum cleaner, you become a vacuum cleaner.",
+            "What if birds are government drones and trees are their charging stations?",
+            "Is cereal technically a soup?",
+            "If Cinderella's shoe fit her perfectly, why did it fall off?",
+            "Water isn't wet. Wetness is a condition water causes to other things.",
+            "Your future self is watching you right now through memories.",
+            "If you choke a smurf, what color does it turn?",
+            "What was the best thing before sliced bread was invented?",
+            "If tomato is a fruit, then ketchup is technically a smoothie.",
+            "Why do we say 'sleep like a baby' when babies wake up crying every two hours?",
+            "If a bald person works in a restaurant, do they still wear a hairnet?",
+            "Does a straw have one hole or two holes?",
+            "If money doesn't grow on trees, why do banks have branches?",
+            "Why do we press harder on a remote control remote when the batteries are dying?",
+            "If you drop soap on the floor, is the floor clean or is the soap dirty?",
+            "Why is it called 'quick sand' when it slowly sucks you down to your doom?",
+            "If invisible people close their eyes, can they see through their eyelids?",
+            "Why do we park in a driveway and drive on a parkway?",
+            "If practice makes perfect, and nobody is perfect, why practice?",
+            "Why do fat chance and slim chance mean the exact same thing?",
+            "If you punch yourself and it hurts, are you weak or are you strong?",
+            "Why is abbreviation such a long word?",
+            "If a book about failures sells poorly, is it a success or a failure?",
+            "Can a short person tall-k to someone?",
+            "Why do night owls call themselves night owls when owls sleep during the day?",
+            "If you're in a spaceship travelling at light speed and turn on headlights, what happens?",
+            "Why do we sing 'take me out to the ball game' when we are already there?",
+            "If you try to fail and succeed, which one did you actually do?",
+            "Why do croutons come in airtight packets when they are just stale bread?",
+            "Is it possible to sneeze without closing your eyes?",
+            "Why do people say 'heads up' when you should actually duck?",
+            "If the universe is expanding, what is it expanding into?",
+            "Why do we buy hot dogs in packs of 10 and hot dog buns in packs of 8?",
+            "If all the nations in the world agreed to disarm, who would protect us from the aliens?",
+            "Why do we wear a pair of pants, but only a single shirt?",
+            "If you swim underwater, are you technically a submarine?",
+            "Why do delivery drivers knock on your door when they texted you 5 minutes ago?",
+            "Can animals have existential dread or do they just vibe?",
+            "If a ghost walks through a wall, why doesn't gravity make them fall through the floor?",
+            "Why do we cook bacon and bake cookies?",
+            "If your knee is called a knee, why isn't your elbow called an arm-pit?",
+            "Why do people whisper in movie theaters when the movie hasn't started yet?",
+            "If you bite your finger off, is it boneless meat or crunchy bone?",
+            "Why do we put circular pizzas in square boxes and eat them as triangles?",
+            "If peanut butter is smooth, why does it stick to the roof of my mouth?",
+            "Why do we say 'woke up this morning' as if there was another option?",
+            "If you swallow your own tongue, do you instantly suffocate?",
+            "Why do people say 'raw sewage' when all sewage is pretty gross?",
+            "If blind people dream, do they see images or just hear sounds?",
+            "Why do we call it a 'building' when it's already built?",
+            "If you're waiting for the waiter, aren't you the waiter?",
+            "Why do we say 'it's always in the last place you look' when obviously you stop looking?",
+            "If a tree falls in a forest and nobody is around, does it make a sound?",
+            "Why do we drive on the left side in some countries and right in others?",
+            "Why do we say 'cold as ice' when ice can get way colder?",
+            "If you're in the dark alone, why does your brain instantly invent monsters?",
+            "Why do we say 'head over heels' when your head is normally above your heels?",
+            "If a mime gets arrested, do they tell them they have the right to remain silent?",
+            "Why do we pay taxes to fix roads, and then pay tolls to drive on them?",
+            "If you glue a piece of buttered toast to the back of a cat and drop it, what happens?",
+            "Why do we use the phrase 'apple of my eye' when eyeballs are terrifying?",
+            "If vampires hate garlic, how do they eat Italian food?",
+            "Why do we say 'scared out of your wits'—where do your wits go?",
+            "If you have a million dollars in pennies, where do you store them?",
+            "Why do we say 'easy as pie' when making a pie from scratch is a nightmare?",
+            "If you wear a turtle-neck sweater, do you look like a turtle?",
+            "Why do we say 'time flies like an arrow' but 'fruit flies like a banana'?",
+            "If you dig a hole straight through the center of the earth, where do you pop out?",
+            "Why do we call it 'fast food' when it stays in your stomach for three days?",
+            "If you're a vegetarian, are animal crackers allowed?",
+            "Why do people say 'no offense' right before saying something deeply offensive?",
+            "If a snail has a house on its back, is it homeless or a homeowner?",
+            "Why do we say 'straight as an arrow' when arrows curve downwards?",
+            "If you sleepwalk into the kitchen, who is really making the midnight snack?",
+            "Why do we say 'dog eat dog world'—what do cats do?",
+            "If you drop your phone, why does slow motion vision kick in?",
+            "Why do we say 'break a leg' for good luck in theater?",
+            "If you have an imaginary friend, do they have an imaginary friend too?",
+            "Why do we say 'sharp as a tack' when tacks are mostly blunt?",
+            "If you clean your house while angry, is it aggressive dusting?",
+            "Why do we say 'sick as a dog' when dogs seem totally fine eating garbage?",
+            "If you buy a bed, are you paying for a rectangular wooden platform?",
+            "Why do we say 'cool as a cucumber'—what makes cucumbers so chill?",
+            "If you get fired on your day off, did you even work?",
+            "Why do we say 'lights out' when the lights are actually turned on?",
+            "If you wear camouflage in the forest, can birds land on your head?",
+            "Why do we say 'busy as a bee' when bees just fly in circles?",
+            "If you build a snowman in summer, is it an act of defiance?",
+            "Why do we say 'piece of cake' when cake is scientifically complex to bake?",
+            "If you walk backward, does time reverse in your brain?",
+            "Why do we say 'bright eyed and bushy tailed'—who looks like a squirrel?",
+            "If you have a pet fish, do you ever wonder what it's thinking?",
+            "Why do we say 'sweet dreams' when nightmares exist?",
+            "If you put sunglasses on a dog, does it instantly look cooler?",
+            "Why do we say 'running on fumes' when cars don't even use fumes?",
+            "If you eat pasta in bed, are you living your best life or committing a crime?"
         ];
+
+        const seenThoughts = new Set();
         function generateThought() {
-            document.getElementById('thought-text').textContent = `"${intrusiveThoughts[Math.floor(Math.random() * intrusiveThoughts.length)]}"`;
+            if (seenThoughts.size >= intrusiveThoughts.length) {
+                seenThoughts.clear();
+            }
+
+            let randomThought = "";
+            let attempts = 0;
+            while (attempts < 50) {
+                randomThought = intrusiveThoughts[Math.floor(Math.random() * intrusiveThoughts.length)];
+                if (!seenThoughts.has(randomThought)) {
+                    seenThoughts.add(randomThought);
+                    break;
+                }
+                attempts++;
+            }
+
+            document.getElementById('thought-text').textContent = `"${randomThought}"`;
         }
 
         // --- TOP 3 OUTRAGEOUS WORLD BULLETINS ---
@@ -1289,40 +1424,86 @@
             container.innerHTML = html;
         }
 
-        // --- NEWS ENGINE ---
-        async function fetchNews(feedKey) {
+        // --- NEWS ENGINE WITH PAGINATION ---
+        async function fetchNews(feedKey, isAppend = false) {
             const feeds = {
                 'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
                 'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
                 'tech-news': 'https://techcrunch.com/feed/'
             };
             const grid = document.getElementById('local-news-grid');
+            const loadBtn = document.getElementById('news-load-more-btn');
+
+            if (!isAppend) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #00f2fe; padding: 20px;">Loading news articles...</div>`;
+                newsVisibleCount = 6;
+                currentNewsFeedKey = feedKey;
+                cachedNewsItems = [];
+            }
+
             try {
-                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feeds[feedKey])}`);
-                const data = await res.json();
+                if (cachedNewsItems.length === 0) {
+                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feeds[feedKey])}`);
+                    const data = await res.json();
+                    if (data && data.items) {
+                        cachedNewsItems = data.items;
+                    }
+                }
+
+                if (cachedNewsItems.length === 0) {
+                    grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1; text-align:center;">No articles found for this feed.</p>`;
+                    if (loadBtn) loadBtn.style.display = 'none';
+                    return;
+                }
+
+                const slice = cachedNewsItems.slice(0, newsVisibleCount);
                 let html = "";
-                data.items.slice(0, 6).forEach(item => {
+
+                slice.forEach(item => {
+                    const cleanDesc = item.description ? item.description.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...' : 'No preview available.';
+                    const pubDateStr = item.pubDate ? new Date(item.pubDate).toLocaleDateString() : 'Recent';
+
                     html += `
                         <div class="card">
                             <h3>${item.title}</h3>
-                            <p>${item.description.replace(/<[^>]*>?/gm, '').substring(0, 110)}...</p>
-                            <a href="${item.link}" target="_blank" class="card-footer-link"><span>Read Full Story</span><span>${new Date(item.pubDate).toLocaleDateString()}</span></a>
+                            <p>${cleanDesc}</p>
+                            <a href="${item.link}" target="_blank" class="card-footer-link">
+                                <span>Read Full Story</span>
+                                <span>${pubDateStr}</span>
+                            </a>
                         </div>
                     `;
                 });
+
                 grid.innerHTML = html;
+
+                if (loadBtn) {
+                    if (newsVisibleCount >= cachedNewsItems.length) {
+                        loadBtn.style.display = 'none';
+                    } else {
+                        loadBtn.style.display = 'inline-block';
+                        loadBtn.textContent = `➕ View More Results (${cachedNewsItems.length - newsVisibleCount} Remaining)`;
+                    }
+                }
+
             } catch (e) {
                 console.error("News API error:", e);
-                grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1;">Failed to load feed.</p>`;
+                grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1; text-align:center;">Failed to load news feed.</p>`;
             }
         }
+
+        function loadMoreNews() {
+            newsVisibleCount += 6;
+            fetchNews(currentNewsFeedKey, true);
+        }
+
         function switchNewsSubTab(feedKey, btn) {
             document.querySelectorAll('#news-tab .sub-tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            fetchNews(feedKey);
+            fetchNews(feedKey, false);
         }
 
-        // --- MULTI-PLATFORM STREAM ENGINE ---
+        // --- MULTI-PLATFORM STREAM ENGINE WITH ROUND-ROBIN KEY ROTATION ---
         let isLoadingEmbeds = false;
 
         async function loadMultiPlatformStream(isAppend = false) {
@@ -1341,17 +1522,37 @@
 
             try {
                 if (platform === 'youtube') {
-                    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "YOUR_KEY_HERE") {
-                        console.error("YouTube API Key missing or invalid.");
-                        return;
+                    // Try fetching with automatic key rotation and quota exhaustion failover
+                    let success = false;
+                    let attempts = 0;
+                    let data = null;
+
+                    while (!success && attempts < youtubeApiKeys.length) {
+                        const activeKey = getNextYouTubeApiKey();
+                        let ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${activeKey}`;
+                        if (youtubeNextPageToken) ytUrl += `&pageToken=${youtubeNextPageToken}`;
+                        
+                        console.log(`Fetching YouTube API with key index ${currentApiKeyIndex}:`, ytUrl);
+                        try {
+                            const res = await fetch(ytUrl);
+                            if (res.status === 403 || res.status === 429) {
+                                console.warn(`YouTube API Key quota exceeded (status ${res.status}). Rotating to next key...`);
+                                attempts++;
+                                continue;
+                            }
+                            if (!res.ok) throw new Error(`YouTube HTTP error! status: ${res.status}`);
+                            data = await res.json();
+                            success = true;
+                        } catch (err) {
+                            console.warn("YouTube fetch attempt failed with key, trying next:", err);
+                            attempts++;
+                        }
                     }
-                    let ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query + " shorts")}&type=video&videoDuration=short&key=${YOUTUBE_API_KEY}`;
-                    if (youtubeNextPageToken) ytUrl += `&pageToken=${youtubeNextPageToken}`;
-                    
-                    console.log("Fetching YouTube API:", ytUrl);
-                    const res = await fetch(ytUrl);
-                    if (!res.ok) throw new Error(`YouTube HTTP error! status: ${res.status}`);
-                    const data = await res.json();
+
+                    if (!success || !data) {
+                        throw new Error("All configured YouTube API keys exhausted quota or failed.");
+                    }
+
                     youtubeNextPageToken = data.nextPageToken || "";
                     if (data.items) {
                         data.items.forEach(item => {
