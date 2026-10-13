@@ -35,9 +35,9 @@ FALLBACK_JOKES = ["My grandfather has the heart of a lion... and a lifetime ban 
 FALLBACK_REDDIT = [{"sub": "r/AskReddit", "user": "u/DoomScroller99", "upvotes": "42.5k", "text": "\"I also choose this guy's dead wife.\""}]
 FALLBACK_PROMOS = [f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}"]
 
-# --- 3. BULLETPROOF MEME & BACKGROUND FETCH ENGINE ---
+# --- 3. FILTERED MEME & BACKGROUND FETCH ENGINE ---
 def fetch_random_reddit_image():
-    """Fetches high-quality meme images from a public API aggregating your target subreddits."""
+    """Fetches high-quality meme images while filtering out NSFW, sexual, and explicit terms for TikTok safety."""
     target_subs = "dankmemes+me_irl+PrequelMemes+wholesomememes+eyebleach+memes+shitposting+blursedimages"
     url = f"https://meme-api.com/gimme/{target_subs}"
     
@@ -45,30 +45,40 @@ def fetch_random_reddit_image():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
-    try:
-        print(f"🔍 Fetching meme background from API pools...")
-        res = requests.get(url, headers=headers, timeout=8)
-        
-        if res.status_code == 200:
-            data = res.json()
-            img_url = data.get("url")
-            subreddit = data.get("subreddit", "unknown")
-            
-            if img_url and img_url.startswith("http"):
-                print(f"📥 Downloading background image from r/{subreddit}: {img_url}")
-                img_res = requests.get(img_url, headers=headers, timeout=8)
+    # Blocklist to prevent TikTok shadowbans/flags
+    blocked_keywords = [
+        "nsfw", "porn", "sex", "boobs", "ass", "dick", "cock", "pussy", 
+        "horny", "erection", "naked", "nude", "onlyfans", "cum", "penis", "vagina"
+    ]
+    
+    # Try up to 5 times to secure a clean, SFW meme
+    for attempt in range(5):
+        try:
+            res = requests.get(url, headers=headers, timeout=8)
+            if res.status_code == 200:
+                data = res.json()
+                img_url = data.get("url")
+                title = data.get("title", "").lower()
+                subreddit = data.get("subreddit", "unknown")
                 
-                if img_res.status_code == 200:
-                    temp_path = "temp_bg.jpg"
-                    img = Image.open(BytesIO(img_res.content)).convert("RGB")
-                    img.save(temp_path)
-                    print(f"✅ Successfully set background image!")
-                    return temp_path
-        else:
-            print(f"⚠️ Meme API returned status code {res.status_code}")
-    except Exception as e:
-        print(f"⚠️ Error fetching background image: {e}")
-        
+                # Check if title contains any restricted words
+                if any(word in title for word in blocked_keywords):
+                    print(f"🛡️ Filtered out NSFW/explicit meme from r/{subreddit}: '{title[:30]}...'")
+                    continue
+                
+                if img_url and img_url.startswith("http"):
+                    print(f"📥 Downloading clean background image from r/{subreddit}")
+                    img_res = requests.get(img_url, headers=headers, timeout=8)
+                    
+                    if img_res.status_code == 200:
+                        temp_path = "temp_bg.jpg"
+                        img = Image.open(BytesIO(img_res.content)).convert("RGB")
+                        img.save(temp_path)
+                        print(f"✅ Successfully set clean background image!")
+                        return temp_path
+        except Exception as e:
+            print(f"⚠️ Error fetching background image attempt {attempt+1}: {e}")
+            
     print("⚠️ Using fallback visual color background.")
     return None
 
