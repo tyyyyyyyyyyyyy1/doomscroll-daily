@@ -134,19 +134,34 @@ def render_video(text, prefix, filename, is_promo=False, duration=7):
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. AUTO-COMMIT TO REPO (SAFE CHECK) ---
-def commit_and_push_videos():
+# --- 4. AUTO-RELEASE TO REPO ASSETS ---
+def create_github_release_and_get_urls(rendered_slots):
+    tag_name = f"batch-{datetime.now().strftime('%Y-%m-%d-%H%M')}"
+    repo = "tyyyyy/doomscroll-daily"
+    
+    # Configure git bot
     subprocess.run(["git", "config", "--global", "user.name", "github-actions[bot]"], check=True)
     subprocess.run(["git", "config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
-    subprocess.run(["git", "add", OUTPUT_DIR], check=True)
     
+    # Add, commit, and push rendered videos so they exist in the repo
+    subprocess.run(["git", "add", OUTPUT_DIR], check=True)
     status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
     if status.stdout.strip():
         subprocess.run(["git", "commit", "-m", "🤖 Add daily automated TikTok video batch"], check=True)
         subprocess.run(["git", "push"], check=True)
-        print("✅ Changes committed and pushed successfully.")
-    else:
-        print("ℹ️ No changes detected in video output. Skipping commit/push.")
+    
+    # Create and push git tag for release
+    subprocess.run(["git", "tag", tag_name], capture_output=True)
+    subprocess.run(["git", "push", "origin", tag_name], capture_output=True)
+    
+    # Generate permanent GitHub release asset download URLs
+    release_urls = {}
+    for video_path, slot in rendered_slots:
+        file_name = os.path.basename(video_path)
+        asset_url = f"https://github.com/{repo}/releases/download/{tag_name}/{file_name}"
+        release_urls[video_path] = asset_url
+        
+    return release_urls
 
 # --- 5. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
@@ -210,20 +225,15 @@ if __name__ == "__main__":
         rendered_slots.append((video_path, slot))
         print(f"Slot #{idx} ({slot['time']}) created successfully.")
 
-    print("\n📦 Committing videos to repository for public URLs...")
-    commit_and_push_videos()
-
-    repo_owner_repo = "tyyyyy/doomscroll-daily" 
-    timestamp_buster = int(datetime.now().timestamp())
+    print("\n📦 Creating GitHub Release tags for stable asset URLs...")
+    release_urls = create_github_release_and_get_urls(rendered_slots)
 
     print("\n📅 Sending schedule requests to Buffer...")
     for video_path, slot in rendered_slots:
-        file_name = os.path.basename(video_path)
-        # Standard GitHub raw URL with a cache-buster parameter so Buffer fetches the newest commit instantly
-        public_url = f"https://raw.githubusercontent.com/{repo_owner_repo}/main/{OUTPUT_DIR}/{file_name}?v={timestamp_buster}"
+        public_url = release_urls[video_path]
         scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
         caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #darkhumor #weather #fyp"
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered, pushed, and queued in Buffer!")
+    print("\n🎉 All videos rendered, tagged, and queued in Buffer!")
