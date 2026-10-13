@@ -135,23 +135,27 @@ def render_video(text, prefix, filename, is_promo=False, duration=7):
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. UPLOAD TO FREE TEMP HOST WITH PROPAGATION DELAY ---
-def upload_to_temp_host(video_path):
-    print(f"☁️ Uploading {video_path} to temporary public host...")
+# --- 4. UPLOAD TO LITTERBOX WITH PROPER DELAY ---
+def upload_to_litterbox(video_path):
+    print(f"☁️ Uploading {video_path} to Litterbox host...")
     with open(video_path, "rb") as f:
-        response = requests.post("https://tmpfiles.org/api/v1/upload", files={"file": f})
+        data = {
+            "reqtype": "fileupload",
+            "time": "24h"
+        }
+        files = {
+            "fileToUpload": f
+        }
+        response = requests.post("https://litterbox.catbox.moe/resources/api.php", data=data, files=files)
     
-    if response.status_code == 200:
-        data = response.json()
-        url = data["data"]["url"]
-        direct_url = url.replace("tmpfiles.org/", "tmpfiles.org/dl/")
-        
-        print("⏳ Waiting 5 seconds for CDN propagation...")
+    if response.status_code == 200 and response.text.startswith("http"):
+        direct_url = response.text.strip()
+        print(f"✅ Upload complete: {direct_url}")
+        print("⏳ Waiting 5 seconds for host propagation before sending to Buffer...")
         time.sleep(5)
-        
         return direct_url
     else:
-        raise Exception(f"Failed to upload video: {response.text}")
+        raise Exception(f"Failed to upload video to Litterbox: {response.text}")
 
 # --- 5. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
@@ -211,16 +215,16 @@ if __name__ == "__main__":
         file_name = f"tiktok_slot_{idx}.mp4"
         is_promo = slot["type"] == "promo"
         
-        # Render video locally
+        # 1. Render local video
         video_path = render_video(slot["content"], slot["prefix"], file_name, is_promo=is_promo)
         
-        # Upload to host and wait 5 seconds for CDN propagation
-        public_url = upload_to_temp_host(video_path)
+        # 2. Upload to Litterbox and pause 5 seconds for propagation
+        public_url = upload_to_litterbox(video_path)
         
-        # Schedule in Buffer
+        # 3. Schedule post via Buffer API
         scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
         caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #darkhumor #weather #fyp"
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered, hosted, and queued in Buffer!")
+    print("\n🎉 All videos rendered, hosted via Litterbox, and queued in Buffer!")
