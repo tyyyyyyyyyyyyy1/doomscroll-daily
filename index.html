@@ -537,12 +537,12 @@
     <script>
         console.log("Script execution started.");
         
-        // --- MULTI-KEY ROUND ROBIN YOUTUBE API ROTATION ARRAY ---
-        // Add all your Google Cloud YouTube API keys here. The code automatically cycles through them and handles quota exhaustion!
+        // --- MULTI-KEY ROUND ROBIN YOUTUBE API ROTATION ARRAY (4 Keys Added) ---
         const youtubeApiKeys = [
             "AIzaSyAmhqUX0iC-XYC3W4cL6DcInxFdCGAXK_8",
-            "YOUR_KEY_2_HERE",
-            "YOUR_KEY_3_HERE"
+            "AIzaSyBXZzVZff4CmQ8ZvyhOXq69_J5m0HeUI6Q",
+            "AIzaSyDHDi4897UMOF7S_hIOrnFRZInaHXX7ZVg",
+            "AIzaSyAb3ZcDbUW8yQetbvqG5tEkJFa_6R3GyjU"
         ];
         let currentApiKeyIndex = 0;
 
@@ -1522,7 +1522,6 @@
 
             try {
                 if (platform === 'youtube') {
-                    // Try fetching with automatic key rotation and quota exhaustion failover
                     let success = false;
                     let attempts = 0;
                     let data = null;
