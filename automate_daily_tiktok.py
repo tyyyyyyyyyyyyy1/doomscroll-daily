@@ -134,34 +134,19 @@ def render_video(text, prefix, filename, is_promo=False, duration=7):
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. AUTO-RELEASE TO REPO ASSETS ---
-def create_github_release_and_get_urls(rendered_slots):
-    tag_name = f"batch-{datetime.now().strftime('%Y-%m-%d-%H%M')}"
-    repo = "tyyyyy/doomscroll-daily"
+# --- 4. UPLOAD TO FREE TEMP HOST ---
+def upload_to_temp_host(video_path):
+    print(f"☁️ Uploading {video_path} to temporary public host...")
+    with open(video_path, "rb") as f:
+        response = requests.post("https://tmpfiles.org/api/v1/upload", files={"file": f})
     
-    # Configure git bot
-    subprocess.run(["git", "config", "--global", "user.name", "github-actions[bot]"], check=True)
-    subprocess.run(["git", "config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
-    
-    # Add, commit, and push rendered videos so they exist in the repo
-    subprocess.run(["git", "add", OUTPUT_DIR], check=True)
-    status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-    if status.stdout.strip():
-        subprocess.run(["git", "commit", "-m", "🤖 Add daily automated TikTok video batch"], check=True)
-        subprocess.run(["git", "push"], check=True)
-    
-    # Create and push git tag for release
-    subprocess.run(["git", "tag", tag_name], capture_output=True)
-    subprocess.run(["git", "push", "origin", tag_name], capture_output=True)
-    
-    # Generate permanent GitHub release asset download URLs
-    release_urls = {}
-    for video_path, slot in rendered_slots:
-        file_name = os.path.basename(video_path)
-        asset_url = f"https://github.com/{repo}/releases/download/{tag_name}/{file_name}"
-        release_urls[video_path] = asset_url
-        
-    return release_urls
+    if response.status_code == 200:
+        data = response.json()
+        url = data["data"]["url"]
+        direct_url = url.replace("tmpfiles.org/", "tmpfiles.org/dl/")
+        return direct_url
+    else:
+        raise Exception(f"Failed to upload video: {response.text}")
 
 # --- 5. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
@@ -215,25 +200,22 @@ if __name__ == "__main__":
     print(f"🚀 Generating procedural batch for {tomorrow}...\n")
 
     slots = generate_daily_batch()
-    rendered_slots = []
 
+    print("\n📅 Rendering, hosting, and sending schedule requests to Buffer...")
     for idx, slot in enumerate(slots, start=1):
         file_name = f"tiktok_slot_{idx}.mp4"
         is_promo = slot["type"] == "promo"
         
+        # Render video locally
         video_path = render_video(slot["content"], slot["prefix"], file_name, is_promo=is_promo)
-        rendered_slots.append((video_path, slot))
-        print(f"Slot #{idx} ({slot['time']}) created successfully.")
-
-    print("\n📦 Creating GitHub Release tags for stable asset URLs...")
-    release_urls = create_github_release_and_get_urls(rendered_slots)
-
-    print("\n📅 Sending schedule requests to Buffer...")
-    for video_path, slot in rendered_slots:
-        public_url = release_urls[video_path]
+        
+        # Upload instantly to temporary public host to get a clean crawler URL
+        public_url = upload_to_temp_host(video_path)
+        
+        # Schedule in Buffer
         scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
         caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #darkhumor #weather #fyp"
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered, tagged, and queued in Buffer!")
+    print("\n🎉 All videos rendered, hosted, and queued in Buffer!")
