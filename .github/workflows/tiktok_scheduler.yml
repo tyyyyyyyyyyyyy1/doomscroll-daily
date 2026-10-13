@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # <-- Allows the script to commit and push videos back to your repo
+  contents: write
 
 jobs:
   build-and-schedule:
