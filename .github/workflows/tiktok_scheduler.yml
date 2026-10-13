@@ -2,8 +2,11 @@ name: Daily TikTok Video Automation
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs automatically every night at midnight UTC
-  workflow_dispatch: # Allows manual testing from the Actions tab
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write # <-- Allows the script to commit and push videos back to your repo
 
 jobs:
   build-and-schedule:
