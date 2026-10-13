@@ -1,5 +1,6 @@
 import os
 import random
+import subprocess
 import requests
 from datetime import datetime, timedelta
 from moviepy import TextClip, CompositeVideoClip, ColorClip
@@ -9,7 +10,8 @@ BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
 BUFFER_PROFILE_ID = os.getenv("BUFFER_PROFILE_ID")
 PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 
-os.makedirs("daily_output", exist_ok=True)
+OUTPUT_DIR = "daily_output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # --- 2. INFINITE PROCEDURAL THOUGHT ENGINE ---
 THOUGHT_SUBJECTS = [
@@ -83,7 +85,6 @@ def render_video(text, filename, is_promo=False, duration=7):
     prefix = "🚨 SITE ALERT:\n\n" if is_promo else "🧠 2 AM THOUGHT:\n\n"
     full_text = f"{prefix}\"{text}\""
 
-    # Removed explicit font argument so it safely falls back to Linux system fonts
     txt_clip = TextClip(
         text=full_text, 
         font_size=46, 
@@ -93,11 +94,20 @@ def render_video(text, filename, is_promo=False, duration=7):
     ).with_duration(duration).with_position('center')
     
     video = CompositeVideoClip([bg, txt_clip])
-    output_path = os.path.join("daily_output", filename)
+    output_path = os.path.join(OUTPUT_DIR, filename)
     video.write_videofile(output_path, fps=24, codec="libx264")
     return output_path
 
-# --- 4. BUFFER GRAPHQL API SCHEDULER ---
+# --- 4. AUTO-COMMIT TO REPO ---
+def commit_and_push_videos():
+    """Commits and pushes generated videos back to GitHub so they have permanent public URLs."""
+    subprocess.run(["git", "config", "--global", "user.name", "github-actions[bot]"], check=True)
+    subprocess.run(["git", "config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
+    subprocess.run(["git", "add", OUTPUT_DIR], check=True)
+    subprocess.run(["git", "commit", "-m", "🤖 Add daily automated TikTok video batch"], check=True)
+    subprocess.run(["git", "push"], check=True)
+
+# --- 5. BUFFER GRAPHQL API SCHEDULER ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     url = "https://api.buffer.com"
     headers = {
@@ -139,19 +149,36 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     else:
         print(f"❌ Buffer API Error: {response.status_code} - {res_data}")
 
-# --- 5. MAIN PIPELINE ---
+# --- 6. MAIN PIPELINE ---
 if __name__ == "__main__":
     tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
     print(f"🚀 Generating procedural batch for {tomorrow}...\n")
 
     slots = generate_daily_batch()
+    rendered_slots = []
 
     for idx, slot in enumerate(slots, start=1):
         file_name = f"tiktok_slot_{idx}.mp4"
         is_promo = slot["type"] == "promo"
         
         video_path = render_video(slot["content"], file_name, is_promo=is_promo)
+        rendered_slots.append((video_path, slot))
+        print(f"Slot #{idx} ({slot['time']}) created successfully.")
+
+    # Push videos to GitHub to generate public raw URLs
+    print("\n📦 Committing videos to repository for public URLs...")
+    commit_and_push_videos()
+
+    # Get repository name dynamically from git remote or hardcode your username/repo
+    repo_owner_repo = "tyyyyy/doomscroll-daily" 
+
+    print("\n📅 Sending schedule requests to Buffer...")
+    for video_path, slot in rendered_slots:
+        file_name = os.path.basename(video_path)
+        public_url = f"https://raw.githubusercontent.com/{repo_owner_repo}/main/{OUTPUT_DIR}/{file_name}"
         scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
         caption = f"{slot['content']}\n\n#doomscrolldaily #brainrot #funny #weather #fyp"
         
-        print(f"Slot #{idx} ({slot['time']}) created successfully: {video_path}")
+        schedule_to_buffer(public_url, caption, scheduled_datetime)
+
+    print("\n🎉 All videos rendered, pushed, and queued in Buffer!")
