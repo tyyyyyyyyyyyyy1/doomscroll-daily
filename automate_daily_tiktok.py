@@ -80,40 +80,77 @@ def fetch_random_reddit_image():
     print("⚠️ Using fallback visual color background.")
     return None
 
-# --- 4. PROCEDURAL UNIQUE PHONK AUDIO GENERATOR ---
-def generate_unique_phonk_audio(duration=7):
-    """Programmatically generates a unique aggressive, bass-heavy phonk loop for each video."""
+# --- 4. MULTI-INSTRUMENT PHONK PRODUCTION GENERATOR ---
+def generate_complex_phonk_audio(duration=7):
+    """Composes a multi-instrument track with sub-bass, lead synth arpeggios, snares, and hi-hats."""
     sample_rate = 44100
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
     
-    # Randomize key/frequencies per video so every track is completely unique
-    base_freq = random.choice([55.0, 65.41, 73.42, 82.41]) # Deep sub-bass notes (A1, C2, D2, E2)
-    tempo_bpm = random.randint(130, 160) # Fast aggressive phonk tempo
+    tempo_bpm = random.randint(135, 155)
     beat_interval = 60.0 / tempo_bpm
     
-    # 1. Heavy distorted sub-bass layer (Phonk cowbell/bass style)
-    bass = np.sin(2 * np.pi * base_freq * t) * 0.4
-    bass += np.sin(2 * np.pi * (base_freq * 2) * t) * 0.2  # Harmonic
-    bass = np.clip(bass * 1.5, -0.7, 0.7) # Soft clipping for that aggressive distorted phonk crunch
+    # Root frequencies for a dark minor phonk scale (e.g., C minor / D# minor variants)
+    root_freq = random.choice([65.41, 73.42, 82.41]) # C2, D2, E2
+    scale_ratios = [1.0, 1.122, 1.259, 1.335, 1.498, 1.682, 1.888] # Minor scale intervals
     
-    # 2. Percussive rhythmic pulse (hitting on the beat grid)
-    percussion = np.zeros_like(t)
+    # Track buffers
+    bass_track = np.zeros_like(t)
+    lead_track = np.zeros_like(t)
+    perc_track = np.zeros_like(t)
+    
+    # 1. Rhythmic Sub-Bass & Cowbell Layer
     current_beat = 0.0
     while current_beat < duration:
         hit_idx = int(current_beat * sample_rate)
-        hit_len = int(0.1 * sample_rate)
+        hit_len = int(0.2 * sample_rate)
         if hit_idx + hit_len < len(t):
-            # Sharp pitched transient click/cowbell emulation
-            t_hit = np.linspace(0, 0.1, hit_len)
-            percussion[hit_idx:hit_idx+hit_len] = np.sin(2 * np.pi * (base_freq * 6) * t_hit) * np.exp(-15 * t_hit) * 0.5
-        current_beat += beat_interval / 2 # Eighth note pulses
+            t_hit = np.linspace(0, 0.2, hit_len)
+            # Pitch drop envelope for aggressive bounce
+            freq_env = root_freq * (1 + 2 * np.exp(-20 * t_hit))
+            sub_hit = np.sin(2 * np.pi * freq_env * t_hit) * np.exp(-8 * t_hit) * 0.5
+            bass_track[hit_idx:hit_idx+hit_len] += sub_hit
+        current_beat += beat_interval / 2 # Eighth-note groove
         
-    # Combine channels into stereo array
-    audio_data = bass + percussion
-    audio_data = np.clip(audio_data, -1.0, 1.0)
-    stereo_data = np.vstack([audio_data, audio_data]).T
+    # 2. Lead Synth Arpeggio Layer (Dark Melody)
+    note_duration = beat_interval / 4 # Sixteenth notes
+    current_time = 0.0
+    while current_time < duration:
+        note_idx = int(current_time * sample_rate)
+        note_len = int(0.12 * sample_rate)
+        if note_idx + note_len < len(t):
+            # Pick a random note from the minor scale
+            step = random.choice(scale_ratios)
+            note_freq = root_freq * 4 * step # Shifted up 2 octaves for lead
+            
+            t_note = np.linspace(0, 0.12, note_len)
+            # Square wave for aggressive synth bite
+            lead_note = np.sign(np.sin(2 * np.pi * note_freq * t_note)) * np.exp(-10 * t_note) * 0.15
+            lead_track[note_idx:note_idx+note_len] += lead_note
+        current_time += note_duration
+
+    # 3. Percussion / Snare & Hi-Hat Layer
+    current_beat = 0.0
+    beat_count = 0
+    while current_beat < duration:
+        hit_idx = int(current_beat * sample_rate)
+        hit_len = int(0.08 * sample_rate)
+        if hit_idx + hit_len < len(t):
+            t_hit = np.linspace(0, 0.08, hit_len)
+            if beat_count % 4 == 2: # Snare on backbeats (2 and 4)
+                noise = np.random.uniform(-1, 1, hit_len) * np.exp(-25 * t_hit) * 0.3
+                perc_track[hit_idx:hit_idx+hit_len] += noise
+            else: # Crisp hi-hat ticks
+                hat = np.sin(2 * np.pi * 3000 * t_hit) * np.exp(-50 * t_hit) * 0.1
+                perc_track[hit_idx:hit_idx+hit_len] += hat
+        current_beat += beat_interval / 2
+        beat_count += 1
+
+    # Mix all instruments together with soft limiting/clipping
+    master_mix = bass_track + lead_track + perc_track
+    master_mix = np.clip(master_mix, -0.9, 0.9)
+    stereo_data = np.vstack([master_mix, master_mix]).T
     
-    print(f"🎵 Generated unique procedural phonk audio (Base Freq: {base_freq}Hz, BPM: {tempo_bpm})")
+    print(f"🎛️ Produced multi-instrument phonk track (BPM: {tempo_bpm}, Root: {root_freq}Hz)")
     return AudioArrayClip(stereo_data, fps=sample_rate)
 
 # --- 5. GENERATION ENGINE ---
@@ -173,12 +210,12 @@ def render_video(slot_data, filename, duration=7):
     
     video = CompositeVideoClip([bg, text_bg, txt_clip])
     
-    # --- ATTACH UNIQUE PROCEDURAL AUDIO ---
+    # --- ATTACH MULTI-INSTRUMENT PRODUCTION TRACK ---
     try:
-        audio_clip = generate_unique_phonk_audio(duration)
+        audio_clip = generate_complex_phonk_audio(duration)
         video = video.with_audio(audio_clip)
     except Exception as e:
-        print(f"⚠️ Error generating audio track: {e}")
+        print(f"⚠️ Error generating multi-instrument audio: {e}")
 
     output_path = os.path.join(OUTPUT_DIR, filename)
     video.write_videofile(output_path, fps=24, codec="libx264", audio_codec="aac")
@@ -303,4 +340,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered with unique audio, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered with multi-instrument production, hosted via Litterbox, and queued in Buffer!")
