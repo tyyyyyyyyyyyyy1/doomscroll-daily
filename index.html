@@ -499,16 +499,16 @@
         </section>
     </div>
 
-    <!-- Tab 5: Unhinged Dark Memes -->
+    <!-- Tab 5: Unhinged Dark Memes & Cursed Comments -->
     <div id="meme-tab" class="tab-pane">
         <section>
-            <h2>💀 Dark & Unhinged Meme Engine</h2>
+            <h2>💀 Dark & Cursed Comment Engine</h2>
             <div class="card-grid">
                 <div class="card" style="text-align: center; grid-column: 1 / -1;">
-                    <span id="meme-subreddit-tag" style="color:#ff334b; font-weight:bold; font-size:0.85rem; text-transform:uppercase;">[INITIALIZING DARK FEED]</span>
-                    <h3 id="meme-title" style="margin-top:8px;">Fetching morbid material...</h3>
+                    <span id="meme-subreddit-tag" style="color:#ff334b; font-weight:bold; font-size:0.85rem; text-transform:uppercase;">[INITIALIZING UNFILTERED FEED]</span>
+                    <h3 id="meme-title" style="margin-top:8px;">Fetching dark material...</h3>
                     <div id="meme-container" style="min-height: 320px; display: flex; justify-content: center; align-items: center; margin: 15px 0;"></div>
-                    <button class="btn-action" style="background:#ff334b; font-size:1.05rem;" onclick="fetchMeme()">🔥 Next Unhinged Meme</button>
+                    <button class="btn-action" style="background:#ff334b; font-size:1.05rem;" onclick="fetchMeme()">🔥 Next Unhinged Dark Meme / Reply</button>
                 </div>
             </div>
         </section>
@@ -547,13 +547,23 @@
         let scrollTimeout = null;
         let globalAudioUnmuted = false;
 
-        // Meme Engine State & 18+ Unhinged Dark Humor Sources
+        // Strictly curated dark humor & cursed comment/reply subreddits
         const seenMemes = new Set();
         const darkSubreddits = [
-            'darkhumourmemes', 'darkmeme', 'pessimismmemes', 'funnydark', 'tombstoning', 
-            'gallows_humor', 'cursedcomments', 'distressingmemes', 'imgoingtohellforthis', 
-            'dankmemes', 'me_irl', '2meirl4meirl', 'sadnessmemes', 'morbidquestions', 
-            'existentialism', 'voidmemes', 'cringe', 'blackhumor'
+            'darkhumourmemes', 
+            'darkmeme', 
+            'funnydark', 
+            'gallows_humor', 
+            'cursedcomments', 
+            'distressingmemes', 
+            'imgoingtohellforthis', 
+            'dankmemes',
+            'clevercomebacks',
+            'rareinsults',
+            'pessimismmemes',
+            'blackhumor',
+            'offensivememes',
+            'darkhumor'
         ];
 
         // Strict tracking memory to enforce zero weather phrase duplicates across all 14 forecast cards
@@ -1170,17 +1180,17 @@
             renderWeatherUI();
         }
 
-        // --- HIGH-VARIETY UNHINGED DARK MEME ENGINE WITH 18+ SOURCES ---
+        // --- HIGH-VARIETY UNHINGED DARK MEME ENGINE WITH CURSED COMMENT RENDERING ---
         async function fetchMeme(attempts = 0) {
             const titleEl = document.getElementById('meme-title');
             const containerEl = document.getElementById('meme-container');
             const tagEl = document.getElementById('meme-subreddit-tag');
 
             if (attempts > 8) {
-                tagEl.textContent = "💀 Source: r/darkhumourmemes [ARCHIVE TRANSMISSION]";
-                titleEl.textContent = "The Void Beckons...";
+                tagEl.textContent = "💬 Source: r/cursedcomments [TEXT ARCHIVE]";
+                titleEl.textContent = "Unfiltered Cursed Response";
                 containerEl.innerHTML = `<div style="padding:25px; border:1px solid #ff334b; border-radius:8px; background:#1a0000; color:#fff; max-width:550px;">
-                    <p style="font-size:1.1rem; color:#ff758c;">"My doctor told me I have 3 months to live. So I killed him. The judge gave me 30 years. Problem solved."</p>
+                    <p style="font-size:1.1rem; color:#ff758c; font-weight:bold;">"My doctor told me I have 3 months to live. So I killed him. The judge gave me 30 years. Problem solved."</p>
                 </div>`;
                 return;
             }
@@ -1192,16 +1202,31 @@
                 if (!res.ok) throw new Error("API response error");
                 const data = await res.json();
 
-                if (data && data.url) {
-                    if (seenMemes.has(data.url) || data.nsfw === false && Math.random() < 0.2) {
-                        console.warn("Duplicate image or low-darkness result caught, retrying...");
+                if (data) {
+                    const postKey = data.url || data.postLink || data.title;
+                    if (seenMemes.has(postKey)) {
+                        console.warn("Duplicate item caught, retrying...");
                         return fetchMeme(attempts + 1);
                     }
 
-                    seenMemes.add(data.url);
+                    seenMemes.add(postKey);
                     tagEl.textContent = `💀 Source: r/${data.subreddit || chosenSub}`;
-                    titleEl.textContent = data.title || "Unhinged Dark Post";
-                    containerEl.innerHTML = `<img src="${data.url}" alt="Dark Meme" style="max-width: 100%; max-height: 520px; border-radius: 8px; object-fit: contain; border: 1px solid #2a2f3d; box-shadow: 0 8px 28px rgba(0,0,0,0.95);">`;
+                    titleEl.textContent = data.title || "Unhinged Post";
+
+                    if (data.url && (data.url.endsWith('.jpg') || data.url.endsWith('.png') || data.url.endsWith('.jpeg') || data.url.endsWith('.gif') || data.url.includes('i.redd.it') || data.url.includes('i.imgur.com'))) {
+                        containerEl.innerHTML = `<img src="${data.url}" alt="Dark Meme" style="max-width: 100%; max-height: 520px; border-radius: 8px; object-fit: contain; border: 1px solid #2a2f3d; box-shadow: 0 8px 28px rgba(0,0,0,0.95);">`;
+                    } else if (data.selftext || data.title) {
+                        // Cursed text comment/reply post fallback
+                        containerEl.innerHTML = `
+                            <div style="padding:25px; border:1px solid #2a2f3d; border-left: 4px solid #ff334b; border-radius:8px; background:#12161f; color:#fff; max-width:580px; text-align:left;">
+                                <p style="font-size:1.15rem; color:#f1f2f6; line-height:1.5; font-weight:bold; margin-bottom:8px;">"${data.title}"</p>
+                                ${data.selftext ? `<p style="font-size:0.95rem; color:#8f9bba; line-height:1.4;">${data.selftext}</p>` : ''}
+                                <span style="font-size:0.75rem; color:#00f2fe; margin-top:10px; display:block;">💬 Author: u/${data.author || 'anonymous'}</span>
+                            </div>
+                        `;
+                    } else {
+                        fetchMeme(attempts + 1);
+                    }
                 } else {
                     fetchMeme(attempts + 1);
                 }
