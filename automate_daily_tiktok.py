@@ -30,11 +30,9 @@ def load_json_file(filepath, fallback_data, is_promo=False):
             with open(filepath, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, list) and len(data) > 0:
-                    # If loading promos, automatically strip trailing numbers/hashes like #113
                     if is_promo:
                         cleaned_data = []
                         for item in data:
-                            # Removes anything like " #113" or "#1" from the end of the string
                             cleaned_item = re.sub(r'\s*#\d+\s*$', '', item)
                             cleaned_data.append(cleaned_item)
                         return cleaned_data
@@ -48,10 +46,15 @@ FALLBACK_JOKES = ["My grandfather has the heart of a lion... and a lifetime ban 
 FALLBACK_REDDIT = [{"sub": "r/AskReddit", "user": "u/DoomScroller99", "upvotes": "42.5k", "text": "\"I also choose this guy's dead wife.\""}]
 FALLBACK_PROMOS = [f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}"]
 
-# --- 3. FILTERED MEME & BACKGROUND FETCH ENGINE ---
+# --- 3. FILTERED MEME & BACKGROUND FETCH ENGINE (20 UNHINGED/DARK & SAFE SUBS) ---
 def fetch_random_reddit_image():
-    """Fetches high-quality meme images while filtering out NSFW, sexual, and explicit terms for TikTok safety."""
-    target_subs = "dankmemes+me_irl+PrequelMemes+wholesomememes+eyebleach+memes+shitposting+blursedimages"
+    """Fetches images from a 20-subreddit pool of dark/unhinged humor while strictly blocking NSFW content."""
+    target_subs = (
+        "me_irl+wholesomememes+eyebleach+blursedimages+shitposting+"
+        "meirl+2meirl4meirl+depression_memes+darkhumorjokes+HolUp+"
+        "BlackHumor_101+ImFinnaGoToHell+me_irlgbt+NonPoliticalTwitter+"
+        "me_irl4meirl+TrollXChromosomes+memes+dankmemes+PrequelMemes+meirl"
+    )
     url = f"https://meme-api.com/gimme/{target_subs}"
     
     headers = {
@@ -60,10 +63,11 @@ def fetch_random_reddit_image():
     
     blocked_keywords = [
         "nsfw", "porn", "sex", "boobs", "ass", "dick", "cock", "pussy", 
-        "horny", "erection", "naked", "nude", "onlyfans", "cum", "penis", "vagina"
+        "horny", "erection", "naked", "nude", "onlyfans", "cum", "penis", 
+        "vagina", "slut", "whore", "tits", "milf", "hentai", "ankha"
     ]
     
-    for attempt in range(5):
+    for attempt in range(10):
         try:
             res = requests.get(url, headers=headers, timeout=8)
             if res.status_code == 200:
@@ -71,9 +75,11 @@ def fetch_random_reddit_image():
                 img_url = data.get("url")
                 title = data.get("title", "").lower()
                 subreddit = data.get("subreddit", "unknown")
+                is_nsfw = data.get("nsfw", False)
                 
-                if any(word in title for word in blocked_keywords):
-                    print(f"🛡️ Filtered out NSFW/explicit meme from r/{subreddit}: '{title[:30]}...'")
+                # Double-check API safety flag and title keywords
+                if is_nsfw or any(word in title for word in blocked_keywords):
+                    print(f"🛡️ Filtered out NSFW post from r/{subreddit}: '{title[:30]}...'")
                     continue
                 
                 if img_url and img_url.startswith("http"):
@@ -318,4 +324,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered with clean promos, pure studio tracks, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered with strict 20-source dark meme filtering, pure studio tracks, hosted via Litterbox, and queued in Buffer!")
