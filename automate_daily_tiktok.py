@@ -264,7 +264,7 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
         # Attach network-specific required metadata
         metadata = {}
         if channel_id == INSTA_ID:
-            metadata = {"instagram": {"type": "reel"}}
+            metadata = {"instagram": {"type": "reel", "shouldShareToFeed": True}}
         elif channel_id == YOUTUBE_ID:
             video_title = caption.split('\n')[0][:80] if caption else "The Doomscroll Daily"
             metadata = {"youtube": {"title": video_title, "categoryId": "24"}}
