@@ -216,44 +216,65 @@ def render_video(slot_data, filename, duration=7):
             
     return output_path
 
-# --- 7. UPLOAD TO LITTERBOX WITH RETRIES ---
-def upload_to_litterbox(video_path, retries=3, backoff_factor=5):
-    print(f"☁️ Uploading {video_path} to Litterbox host...")
-    url = "https://litterbox.catbox.moe/resources/internals/api.php"
-    
+# --- 7. UPLOAD WITH LITTERBOX (FALLBACK TO CATBOX) ---
+def upload_video(video_path, retries=3, backoff_factor=5):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
 
+    # --- TRY LITTERBOX FIRST ---
+    print(f"☁️ Attempting upload of {video_path} to Litterbox...")
+    litterbox_url = "https://litterbox.catbox.moe/resources/internals/api.php"
+    
     for attempt in range(1, retries + 1):
         try:
             with open(video_path, "rb") as f:
-                data = {
-                    "reqtype": "fileupload",
-                    "time": "24h"
-                }
-                files = {
-                    "fileToUpload": f
-                }
-                response = requests.post(url, data=data, files=files, headers=headers, timeout=60)
+                data = {"reqtype": "fileupload", "time": "24h"}
+                files = {"fileToUpload": f}
+                response = requests.post(litterbox_url, data=data, files=files, headers=headers, timeout=60)
             
             if response.status_code == 200 and response.text.startswith("http"):
                 direct_url = response.text.strip()
-                print(f"✅ Upload complete: {direct_url}")
-                print("⏳ Waiting 5 seconds for host propagation before sending to Buffer...")
+                print(f"✅ Litterbox upload complete: {direct_url}")
                 time.sleep(5)
                 return direct_url
             else:
-                print(f"⚠️ Attempt {attempt}/{retries} failed: Status {response.status_code} - {response.text.strip()}")
+                print(f"⚠️ Litterbox attempt {attempt}/{retries} failed: Status {response.status_code} - {response.text.strip()}")
         except Exception as e:
-            print(f"⚠️ Attempt {attempt}/{retries} exception: {e}")
+            print(f"⚠️ Litterbox attempt {attempt}/{retries} exception: {e}")
         
         if attempt < retries:
             sleep_time = backoff_factor * attempt
-            print(f"🔄 Retrying upload in {sleep_time} seconds...")
+            print(f"🔄 Retrying Litterbox in {sleep_time} seconds...")
             time.sleep(sleep_time)
+
+    # --- FALLBACK TO CATBOX.MOE IF LITTERBOX FAILS 3 TIMES ---
+    print("⚠️ Litterbox failed after 3 attempts. Switching fallback to Catbox.moe...")
+    catbox_url = "https://catbox.moe/user/api.php"
+    
+    for attempt in range(1, retries + 1):
+        try:
+            with open(video_path, "rb") as f:
+                data = {"reqtype": "fileupload"}
+                files = {"fileToUpload": f}
+                response = requests.post(catbox_url, data=data, files=files, headers=headers, timeout=60)
             
-    raise Exception("❌ Failed to upload video to Litterbox after multiple retry attempts.")
+            if response.status_code == 200 and response.text.startswith("http"):
+                direct_url = response.text.strip()
+                print(f"✅ Catbox.moe fallback upload complete: {direct_url}")
+                time.sleep(5)
+                return direct_url
+            else:
+                print(f"⚠️ Catbox attempt {attempt}/{retries} failed: Status {response.status_code} - {response.text.strip()}")
+        except Exception as e:
+            print(f"⚠️ Catbox attempt {attempt}/{retries} exception: {e}")
+        
+        if attempt < retries:
+            sleep_time = backoff_factor * attempt
+            print(f"🔄 Retrying Catbox in {sleep_time} seconds...")
+            time.sleep(sleep_time)
+
+    raise Exception("❌ Failed to upload video to both Litterbox and Catbox after all retry attempts.")
 
 # --- 8. BUFFER GRAPHQL API SCHEDULER (MULTI-PLATFORM) ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
@@ -321,7 +342,7 @@ if __name__ == "__main__":
         file_name = f"multichannel_slot_{idx}.mp4"
         
         video_path = render_video(slot, file_name)
-        public_url = upload_to_litterbox(video_path)
+        public_url = upload_video(video_path)
         
         scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
         
@@ -336,4 +357,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered, hosted via Litterbox, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
+    print("\n🎉 All videos rendered, hosted via fallback engine, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
