@@ -211,10 +211,10 @@ def render_video(slot_data, filename, duration=7):
             
     return output_path
 
-# --- 7. UPLOAD VIA TMPFILES.ORG (RELIABLE HOSTING) ---
+# --- 7. UPLOAD VIA UGUU.SE (DIRECT BUFFER-COMPATIBLE HOSTING) ---
 def upload_video(video_path, retries=3, backoff_factor=5):
-    print(f"☁️ Uploading {video_path} to tmpfiles.org host...")
-    url = "https://tmpfiles.org/api/v1/upload"
+    print(f"☁️ Uploading {video_path} to uguu.se host...")
+    url = "https://uguu.se/upload"
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -223,20 +223,19 @@ def upload_video(video_path, retries=3, backoff_factor=5):
     for attempt in range(1, retries + 1):
         try:
             with open(video_path, "rb") as f:
-                files = {"file": f}
+                files = {"files[]": f}
                 response = requests.post(url, files=files, headers=headers, timeout=60)
             
             if response.status_code == 200:
                 res_json = response.json()
-                if res_json.get("status") == "success":
-                    # Convert tmpfiles URL format to a direct download link format (https://tmpfiles.org/dl/... -> https://tmpfiles.org/...)
-                    page_url = res_json.get("data", {}).get("url", "")
-                    if page_url:
-                        # tmpfiles provides a viewing URL, transform it to a direct link for Buffer
-                        direct_url = page_url.replace("tmpfiles.org/", "tmpfiles.org/dl/")
-                        print(f"✅ Upload complete: {direct_url}")
-                        time.sleep(5)
-                        return direct_url
+                if res_json.get("success") == True:
+                    files_list = res_json.get("files", [])
+                    if files_list and len(files_list) > 0:
+                        direct_url = files_list[0].get("url")
+                        if direct_url:
+                            print(f"✅ Upload complete: {direct_url}")
+                            time.sleep(5)
+                            return direct_url
             
             print(f"⚠️ Attempt {attempt}/{retries} failed: Status {response.status_code} - {response.text}")
         except Exception as e:
@@ -247,7 +246,7 @@ def upload_video(video_path, retries=3, backoff_factor=5):
             print(f"🔄 Retrying upload in {sleep_time} seconds...")
             time.sleep(sleep_time)
             
-    raise Exception("❌ Failed to upload video to tmpfiles.org after multiple retry attempts.")
+    raise Exception("❌ Failed to upload video to uguu.se after multiple retry attempts.")
 
 # --- 8. BUFFER GRAPHQL API SCHEDULER (MULTI-PLATFORM) ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
@@ -259,7 +258,7 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     
     for channel_id in CHANNEL_IDS:
         if not channel_id:
-            print("⚠️ Skipping empty channel ID.")
+            print("⚠️ Skipping empty channel ID. Check your GitHub Secrets for BUFFER_INSTAGRAM_PROFILE_ID or BUFFER_YOUTUBE_PROFILE_ID.")
             continue
 
         mutation = """
@@ -330,4 +329,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered, hosted via stable storage, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
+    print("\n🎉 All videos rendered, hosted via Uguu.se, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
