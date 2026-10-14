@@ -14,7 +14,11 @@ from moviepy.audio import fx as afx
 
 # --- 1. CONFIGURATION ---
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
-BUFFER_PROFILE_ID = os.getenv("BUFFER_PROFILE_ID")
+CHANNEL_IDS = [
+    os.getenv("BUFFER_PROFILE_ID"),           # TikTok ID
+    os.getenv("BUFFER_INSTAGRAM_PROFILE_ID"), # Instagram ID
+    os.getenv("BUFFER_YOUTUBE_PROFILE_ID")    # YouTube ID
+]
 PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 
 OUTPUT_DIR = "daily_output"
@@ -251,7 +255,7 @@ def upload_to_litterbox(video_path, retries=3, backoff_factor=5):
             
     raise Exception("❌ Failed to upload video to Litterbox after multiple retry attempts.")
 
-# --- 8. BUFFER GRAPHQL API SCHEDULER ---
+# --- 8. BUFFER GRAPHQL API SCHEDULER (MULTI-PLATFORM) ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     url = "https://api.buffer.com"
     headers = {
@@ -259,43 +263,51 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
         "Content-Type": "application/json"
     }
     
-    mutation = """
-    mutation CreatePost($input: CreatePostInput!) {
-        createPost(input: $input) {
-            ... on PostActionSuccess {
-                post { id dueAt }
-            }
-            ... on MutationError {
-                message
-            }
-        }
-    }
-    """
-    
-    variables = {
-        "input": {
-            "text": caption,
-            "channelId": BUFFER_PROFILE_ID,
-            "schedulingType": "automatic",
-            "mode": "customScheduled",
-            "dueAt": scheduled_at_iso,
-            "assets": {
-                "video": {"url": video_url}
-            }
-        }
-    }
+    for channel_id in CHANNEL_IDS:
+        if not channel_id:
+            print("⚠️ Skipping empty channel ID.")
+            continue
 
-    response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
-    res_data = response.json()
-    
-    data_payload = res_data.get("data", {}).get("createPost", {})
-    mutation_error = data_payload.get("message")
-    
-    if response.status_code == 200 and "errors" not in res_data and not mutation_error:
-        post_id = data_payload.get("post", {}).get("id", "Unknown ID")
-        print(f"✅ Successfully scheduled for {scheduled_at_iso} (Post ID: {post_id})")
-    else:
-        print(f"❌ Buffer API Error: {response.status_code} - Full Response: {res_data}")
+        mutation = """
+        mutation CreatePost($input: CreatePostInput!) {
+            createPost(input: $input) {
+                ... on PostActionSuccess {
+                    post { id dueAt }
+                }
+                ... on MutationError {
+                    message
+                }
+            }
+        }
+        """
+        
+        variables = {
+            "input": {
+                "text": caption,
+                "channelId": channel_id,
+                "schedulingType": "automatic",
+                "mode": "customScheduled",
+                "dueAt": scheduled_at_iso,
+                "assets": {
+                    "video": {"url": video_url}
+                }
+            }
+        }
+
+        try:
+            response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
+            res_data = response.json()
+            
+            data_payload = res_data.get("data", {}).get("createPost", {})
+            mutation_error = data_payload.get("message")
+            
+            if response.status_code == 200 and "errors" not in res_data and not mutation_error:
+                post_id = data_payload.get("post", {}).get("id", "Unknown ID")
+                print(f"✅ Successfully scheduled for channel {channel_id} at {scheduled_at_iso} (Post ID: {post_id})")
+            else:
+                print(f"❌ Buffer API Error for channel {channel_id}: {response.status_code} - Full Response: {res_data}")
+        except Exception as e:
+            print(f"❌ Exception while scheduling for channel {channel_id}: {e}")
 
 # --- 9. MAIN PIPELINE ---
 if __name__ == "__main__":
@@ -306,7 +318,7 @@ if __name__ == "__main__":
 
     print("\n📅 Rendering, hosting, and sending schedule requests to Buffer...")
     for idx, slot in enumerate(slots, start=1):
-        file_name = f"tiktok_slot_{idx}.mp4"
+        file_name = f"multichannel_slot_{idx}.mp4"
         
         video_path = render_video(slot, file_name)
         public_url = upload_to_litterbox(video_path)
@@ -324,4 +336,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered with strict 20-source dark meme filtering, pure studio tracks, hosted via Litterbox, and queued in Buffer!")
+    print("\n🎉 All videos rendered, hosted via Litterbox, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
