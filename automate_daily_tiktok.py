@@ -14,11 +14,11 @@ from moviepy.audio import fx as afx
 
 # --- 1. CONFIGURATION ---
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
-CHANNEL_IDS = [
-    os.getenv("BUFFER_PROFILE_ID"),           # TikTok ID
-    os.getenv("BUFFER_INSTAGRAM_PROFILE_ID"), # Instagram ID
-    os.getenv("BUFFER_YOUTUBE_PROFILE_ID")    # YouTube ID
-]
+TIKTOK_ID = os.getenv("BUFFER_PROFILE_ID")
+INSTA_ID = os.getenv("BUFFER_INSTAGRAM_PROFILE_ID")
+YOUTUBE_ID = os.getenv("BUFFER_YOUTUBE_PROFILE_ID")
+
+CHANNEL_IDS = [TIKTOK_ID, INSTA_ID, YOUTUBE_ID]
 PROMO_LINK = "https://tinyurl.com/DoomscrollDaily"
 
 OUTPUT_DIR = "daily_output"
@@ -50,7 +50,7 @@ FALLBACK_JOKES = ["My grandfather has the heart of a lion... and a lifetime ban 
 FALLBACK_REDDIT = [{"sub": "r/AskReddit", "user": "u/DoomScroller99", "upvotes": "42.5k", "text": "\"I also choose this guy's dead wife.\""}]
 FALLBACK_PROMOS = [f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}"]
 
-# --- 3. FILTERED MEME & BACKGROUND FETCH ENGINE (20 UNHINGED/DARK & SAFE SUBS) ---
+# --- 3. FILTERED MEME & BACKGROUND FETCH ENGINE ---
 def fetch_random_reddit_image():
     target_subs = (
         "me_irl+wholesomememes+eyebleach+blursedimages+shitposting+"
@@ -100,7 +100,7 @@ def fetch_random_reddit_image():
     print("⚠️ Using fallback visual color background.")
     return None
 
-# --- 4. CURATED AUDIO LIBRARY ENGINE (PURE MUSIC) ---
+# --- 4. CURATED AUDIO LIBRARY ENGINE ---
 def generate_upgraded_dark_beat(duration=7):
     sample_rate = 44100
     t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
@@ -211,7 +211,7 @@ def render_video(slot_data, filename, duration=7):
             
     return output_path
 
-# --- 7. UPLOAD VIA UGUU.SE (DIRECT BUFFER-COMPATIBLE HOSTING) ---
+# --- 7. UPLOAD VIA UGUU.SE ---
 def upload_video(video_path, retries=3, backoff_factor=5):
     print(f"☁️ Uploading {video_path} to uguu.se host...")
     url = "https://uguu.se/upload"
@@ -248,7 +248,7 @@ def upload_video(video_path, retries=3, backoff_factor=5):
             
     raise Exception("❌ Failed to upload video to uguu.se after multiple retry attempts.")
 
-# --- 8. BUFFER GRAPHQL API SCHEDULER (MULTI-PLATFORM) ---
+# --- 8. BUFFER GRAPHQL API SCHEDULER (MULTI-PLATFORM WITH METADATA) ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     url = "https://api.buffer.com"
     headers = {
@@ -258,8 +258,16 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
     
     for channel_id in CHANNEL_IDS:
         if not channel_id:
-            print("⚠️ Skipping empty channel ID. Check your GitHub Secrets for BUFFER_INSTAGRAM_PROFILE_ID or BUFFER_YOUTUBE_PROFILE_ID.")
+            print("⚠️ Skipping empty channel ID.")
             continue
+
+        # Attach network-specific required metadata
+        metadata = {}
+        if channel_id == INSTA_ID:
+            metadata = {"instagram": {"type": "reel"}}
+        elif channel_id == YOUTUBE_ID:
+            video_title = caption.split('\n')[0][:80] if caption else "The Doomscroll Daily"
+            metadata = {"youtube": {"title": video_title, "categoryId": "24"}}
 
         mutation = """
         mutation CreatePost($input: CreatePostInput!) {
@@ -274,18 +282,21 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
         }
         """
         
-        variables = {
-            "input": {
-                "text": caption,
-                "channelId": channel_id,
-                "schedulingType": "automatic",
-                "mode": "customScheduled",
-                "dueAt": scheduled_at_iso,
-                "assets": {
-                    "video": {"url": video_url}
-                }
+        input_payload = {
+            "text": caption,
+            "channelId": channel_id,
+            "schedulingType": "automatic",
+            "mode": "customScheduled",
+            "dueAt": scheduled_at_iso,
+            "assets": {
+                "video": {"url": video_url}
             }
         }
+        
+        if metadata:
+            input_payload["metadata"] = metadata
+
+        variables = {"input": input_payload}
 
         try:
             response = requests.post(url, json={"query": mutation, "variables": variables}, headers=headers)
@@ -329,4 +340,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime)
 
-    print("\n🎉 All videos rendered, hosted via Uguu.se, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
+    print("\n🎉 All videos rendered, hosted, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
