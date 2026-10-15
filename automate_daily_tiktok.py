@@ -232,42 +232,62 @@ def render_video(slot_data, filename, duration=7):
             
     return output_path
 
-# --- 7. UPLOAD VIA UGUU.SE ---
-def upload_video(video_path, retries=3, backoff_factor=5):
-    print(f"☁️ Uploading {video_path} to uguu.se host...")
-    url = "https://uguu.se/upload"
-    
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
+# --- 7. MULTI-PROVIDER FALLBACK UPLOAD ENGINE ---
+def upload_to_catbox(video_path):
+    url = "https://catbox.moe/user/api.php"
+    with open(video_path, "rb") as f:
+        files = {"fileToUpload": f}
+        data = {"reqtype": "fileupload"}
+        res = requests.post(url, data=data, files=files, timeout=60)
+    if res.status_code == 200 and res.text.strip().startswith("http"):
+        return res.text.strip()
+    raise Exception(f"Catbox failed with status {res.status_code}: {res.text[:100]}")
 
-    for attempt in range(1, retries + 1):
-        try:
-            with open(video_path, "rb") as f:
-                files = {"files[]": f}
-                response = requests.post(url, files=files, headers=headers, timeout=60)
-            
-            if response.status_code == 200:
-                res_json = response.json()
-                if res_json.get("success") == True:
-                    files_list = res_json.get("files", [])
-                    if files_list and len(files_list) > 0:
-                        direct_url = files_list[0].get("url")
-                        if direct_url:
-                            print(f"✅ Upload complete: {direct_url}")
-                            time.sleep(5)
-                            return direct_url
-            
-            print(f"⚠️ Attempt {attempt}/{retries} failed: Status {response.status_code} - {response.text}")
-        except Exception as e:
-            print(f"⚠️ Attempt {attempt}/{retries} exception: {e}")
-        
-        if attempt < retries:
-            sleep_time = backoff_factor * attempt
-            print(f"🔄 Retrying upload in {sleep_time} seconds...")
-            time.sleep(sleep_time)
-            
-    raise Exception("❌ Failed to upload video to uguu.se after multiple retry attempts.")
+def upload_to_litterbox(video_path):
+    url = "https://litterbox.catbox.moe/resources/internals/api.php"
+    with open(video_path, "rb") as f:
+        files = {"fileToUpload": f}
+        data = {"reqtype": "fileupload", "time": "24h"}
+        res = requests.post(url, data=data, files=files, timeout=60)
+    if res.status_code == 200 and res.text.strip().startswith("http"):
+        return res.text.strip()
+    raise Exception(f"Litterbox failed with status {res.status_code}: {res.text[:100]}")
+
+def upload_to_tmpfile(video_path):
+    url = "https://tmpfile.link/api/upload"
+    with open(video_path, "rb") as f:
+        files = {"file": f}
+        res = requests.post(url, files=files, timeout=60)
+    if res.status_code == 200:
+        res_json = res.json()
+        direct_url = res_json.get("downloadLink") or res_json.get("downloadLinkEncoded")
+        if direct_url:
+            return direct_url
+    raise Exception(f"Tmpfile failed with status {res.status_code}: {res.text[:100]}")
+
+def upload_video(video_path, attempts_per_host=3, backoff_factor=3):
+    providers = [
+        ("Catbox.moe", upload_to_catbox),
+        ("Litterbox (24h)", upload_to_litterbox),
+        ("tmpfile.link", upload_to_tmpfile)
+    ]
+
+    for provider_name, provider_func in providers:
+        print(f"☁️ Attempting uploads using {provider_name}...")
+        for attempt in range(1, attempts_per_host + 1):
+            try:
+                direct_url = provider_func(video_path)
+                print(f"✅ Upload succeeded via {provider_name}: {direct_url}")
+                time.sleep(3)
+                return direct_url
+            except Exception as e:
+                print(f"⚠️ [{provider_name}] Attempt {attempt}/{attempts_per_host} failed: {e}")
+                if attempt < attempts_per_host:
+                    time.sleep(backoff_factor * attempt)
+
+        print(f"❌ All {attempts_per_host} attempts failed for {provider_name}. Switching to next host...\n")
+
+    raise Exception("❌ Critical Failure: Video upload failed across all fallback file hosts.")
 
 # --- 8. BUFFER GRAPHQL API SCHEDULER (MULTI-PLATFORM WITH METADATA) ---
 def schedule_to_buffer(video_url, caption, scheduled_at_iso):
