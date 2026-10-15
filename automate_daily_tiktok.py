@@ -104,7 +104,9 @@ def generate_smart_caption(content_topic):
         print(f"⚠️ Gemini Caption Generation Error: {e}. Using fallback caption.")
         return f"{content_topic}\n\nLink in bio for more 👇\n\n#DankMemes #FYP #Viral #Relatable #DoomscrollDaily"
 
-# --- 3. FILTERED MEME & BACKGROUND FETCH ENGINE ---
+# --- 3. FILTERED MEME & BACKGROUND FETCH ENGINE (WITH DUPLICATE BLOCKER) ---
+USED_IMAGE_URLS = set()
+
 def fetch_random_reddit_image():
     target_subs = (
         "me_irl+wholesomememes+eyebleach+blursedimages+shitposting+"
@@ -124,7 +126,14 @@ def fetch_random_reddit_image():
         "vagina", "slut", "whore", "tits", "milf", "hentai", "ankha"
     ]
     
-    for attempt in range(10):
+    temp_path = "temp_bg.jpg"
+    if os.path.exists(temp_path):
+        try:
+            os.remove(temp_path)
+        except Exception:
+            pass
+    
+    for attempt in range(12):
         try:
             res = requests.get(url, headers=headers, timeout=8)
             if res.status_code == 200:
@@ -134,18 +143,22 @@ def fetch_random_reddit_image():
                 subreddit = data.get("subreddit", "unknown")
                 is_nsfw = data.get("nsfw", False)
                 
+                if img_url in USED_IMAGE_URLS:
+                    print(f"🔄 Image already used today. Skipping...")
+                    continue
+
                 if is_nsfw or any(word in title for word in blocked_keywords):
                     print(f"🛡️ Filtered out NSFW post from r/{subreddit}: '{title[:30]}...'")
                     continue
                 
                 if img_url and img_url.startswith("http"):
-                    print(f"📥 Downloading clean background image from r/{subreddit}")
+                    print(f"📥 Downloading clean unique background image from r/{subreddit}")
                     img_res = requests.get(img_url, headers=headers, timeout=8)
                     
                     if img_res.status_code == 200:
-                        temp_path = "temp_bg.jpg"
                         img = Image.open(BytesIO(img_res.content)).convert("RGB")
                         img.save(temp_path)
+                        USED_IMAGE_URLS.add(img_url)
                         print(f"✅ Successfully set clean background image!")
                         return temp_path
         except Exception as e:
@@ -418,4 +431,4 @@ if __name__ == "__main__":
         
         schedule_to_buffer(public_url, caption, scheduled_datetime_iso)
 
-    print("\n🎉 All videos rendered, hosted, and successfully queued across TikTok, Instagram, and YouTube via Buffer with dynamic AI captions!")
+    print("\n🎉 All videos rendered, hosted, and successfully queued across TikTok, Instagram, and YouTube via Buffer with unique background images and AI captions!")
