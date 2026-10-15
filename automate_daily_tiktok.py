@@ -12,6 +12,10 @@ from datetime import datetime, timedelta
 import pytz
 from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip, AudioArrayClip, AudioFileClip, CompositeAudioClip
 from moviepy.audio import fx as afx
+import google.generativeai as genai
+
+# --- 0. GEMINI API SETUP ---
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # --- 1. CONFIGURATION ---
 BUFFER_ACCESS_TOKEN = os.getenv("BUFFER_ACCESS_TOKEN")
@@ -70,6 +74,35 @@ FALLBACK_THOUGHTS = ["Your brain named itself without your explicit consent."]
 FALLBACK_JOKES = ["My grandfather has the heart of a lion... and a lifetime ban from the zoo."]
 FALLBACK_REDDIT = [{"sub": "r/AskReddit", "user": "u/DoomScroller99", "upvotes": "42.5k", "text": "\"I also choose this guy's dead wife.\""}]
 FALLBACK_PROMOS = [f"Tired of boring weather apps & fake news?\nCheck out The Doomscroll Daily 🌤️\n\n{PROMO_LINK}"]
+
+# --- 2.5 DYNAMIC GEMINI CAPTION & HASHTAG GENERATOR ---
+def generate_smart_caption(content_topic):
+    """
+    Dynamically generates a witty joke hook, link-in-bio CTA, and a balanced mix 
+    of niche topic tags and rotated trending tags via Gemini API.
+    """
+    prompt = f"""
+    You are managing the social media captions for 'The Doomscroll Daily', an edgy internet meme dashboard.
+    The current content/topic is about: "{content_topic}"
+
+    Write a high-converting short-form post caption following these EXACT rules:
+    1. JOKE & HOOK: Write a brief, sarcastic, or hilarious 1-2 sentence reaction/joke about the topic.
+    2. CALL TO ACTION (CTA): Include a witty line leading them to click the link in bio to visit the site (e.g., "Full daily dose of chaos linked in bio 🔗", "Don't click the link in my bio unless you like unhinged stuff 💀", "Link in bio for more daily brain rot 👇").
+    3. HASHTAGS: Include 5 to 7 hashtags total. 
+       - 2-3 specific tags relevant to the topic
+       - 2-3 rotated high-traffic/trending tags (#FYP, #DankMemes, #Relatable, #Viral, #ForYouPage)
+       - Do NOT use risky, controversial, or banned words.
+
+    Return ONLY the final caption text ready to paste, with line breaks.
+    """
+
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print(f"⚠️ Gemini Caption Generation Error: {e}. Using fallback caption.")
+        return f"{content_topic}\n\nLink in bio for more 👇\n\n#DankMemes #FYP #Viral #Relatable #DoomscrollDaily"
 
 # --- 3. FILTERED MEME & BACKGROUND FETCH ENGINE ---
 def fetch_random_reddit_image():
@@ -372,15 +405,17 @@ if __name__ == "__main__":
         # Calculates precise Ottawa ISO timestamp for slot (08:00, 11:00, 13:00, 16:00, 19:00, 21:30)
         scheduled_datetime_iso = get_scheduled_at_iso(slot['time'])
         
+        # Extract raw topic text to pass into Gemini generator
         if slot["type"] == "reddit":
-            caption_text = f"{slot['content']['sub']}: {slot['content']['text']}"
+            raw_topic_text = f"Reddit {slot['content']['sub']}: {slot['content']['text']}"
         elif slot["type"] == "promo":
-            caption_text = slot["content"]
+            raw_topic_text = f"Promo: {slot['content']}"
         else:
-            caption_text = slot["content"]
+            raw_topic_text = slot['content']
             
-        caption = f"{caption_text}\n\n#doomscrolldaily #brainrot #darkhumor #reddit #weather #fyp"
+        print(f"🤖 Generating smart dynamic caption via Gemini for slot {idx}...")
+        caption = generate_smart_caption(raw_topic_text)
         
         schedule_to_buffer(public_url, caption, scheduled_datetime_iso)
 
-    print("\n🎉 All videos rendered, hosted, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
+    print("\n🎉 All videos rendered, hosted, and successfully queued across TikTok, Instagram, and YouTube via Buffer with dynamic AI captions!")
