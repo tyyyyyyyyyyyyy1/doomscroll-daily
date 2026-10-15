@@ -2,8 +2,8 @@ name: Daily TikTok Video Automation
 
 on:
   schedule:
-    # Runs at 00:00 UTC daily (8:00 PM Ottawa time)
-    - cron: '0 0 * * *'
+    # Runs at 05:00 UTC daily (1:00 AM Ottawa time during EDT)
+    - cron: '0 5 * * *'
   workflow_dispatch:
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install moviepy requests numpy gtts pytz tzdata
+          pip install moviepy requests numpy gtts pytz tzdata google-generativeai
 
       - name: Run Video Pipeline Script
         env:
@@ -36,5 +36,6 @@ jobs:
           BUFFER_PROFILE_ID: ${{ secrets.BUFFER_PROFILE_ID }}
           BUFFER_INSTAGRAM_PROFILE_ID: ${{ secrets.BUFFER_INSTAGRAM_PROFILE_ID }}
           BUFFER_YOUTUBE_PROFILE_ID: ${{ secrets.BUFFER_YOUTUBE_PROFILE_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python automate_daily_tiktok.py
