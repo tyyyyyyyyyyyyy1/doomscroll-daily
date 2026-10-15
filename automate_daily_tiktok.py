@@ -9,6 +9,7 @@ import numpy as np
 from io import BytesIO
 from PIL import Image
 from datetime import datetime, timedelta
+import pytz
 from moviepy import ImageClip, TextClip, CompositeVideoClip, ColorClip, AudioArrayClip, AudioFileClip, CompositeAudioClip
 from moviepy.audio import fx as afx
 
@@ -25,6 +26,26 @@ OUTPUT_DIR = "daily_output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 AUDIO_LIB_DIR = "audio_library"
 os.makedirs(AUDIO_LIB_DIR, exist_ok=True)
+
+# --- TIMEZONE SCHEDULING HELPER (OTTAWA / AMERICA/TORONTO) ---
+def get_scheduled_at_iso(slot_time_str):
+    """
+    Calculates exact ISO timestamp targeting Ottawa local time (America/Toronto).
+    Prevents cron UTC skew and eliminates 36+ hour queue overflows.
+    """
+    tz = pytz.timezone('America/Toronto')
+    now_est = datetime.now(tz)
+    
+    hour_est, min_est = map(int, slot_time_str.split(':'))
+    
+    # Target specified slot time for today in Ottawa
+    target_local = now_est.replace(hour=hour_est, minute=min_est, second=0, microsecond=0)
+    
+    # If this slot time has already passed today, target tomorrow
+    if now_est >= target_local:
+        target_local += timedelta(days=1)
+        
+    return target_local.isoformat()
 
 # --- 2. SAFE JSON LOADER & CLEANER ---
 def load_json_file(filepath, fallback_data, is_promo=False):
@@ -315,8 +336,9 @@ def schedule_to_buffer(video_url, caption, scheduled_at_iso):
 
 # --- 9. MAIN PIPELINE ---
 if __name__ == "__main__":
-    tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
-    print(f"🚀 Generating daily batch for {tomorrow}...\n")
+    tz_ottawa = pytz.timezone('America/Toronto')
+    current_ottawa_time = datetime.now(tz_ottawa).strftime('%Y-%m-%d %H:%M:%S %Z')
+    print(f"🚀 Starting daily batch execution. Current Ottawa Local Time: {current_ottawa_time}...\n")
 
     slots = generate_daily_batch()
 
@@ -327,7 +349,8 @@ if __name__ == "__main__":
         video_path = render_video(slot, file_name)
         public_url = upload_video(video_path)
         
-        scheduled_datetime = f"{tomorrow}T{slot['time']}:00.000Z"
+        # Calculates precise Ottawa ISO timestamp for slot (08:00, 11:00, 13:00, 16:00, 19:00, 21:30)
+        scheduled_datetime_iso = get_scheduled_at_iso(slot['time'])
         
         if slot["type"] == "reddit":
             caption_text = f"{slot['content']['sub']}: {slot['content']['text']}"
@@ -338,6 +361,6 @@ if __name__ == "__main__":
             
         caption = f"{caption_text}\n\n#doomscrolldaily #brainrot #darkhumor #reddit #weather #fyp"
         
-        schedule_to_buffer(public_url, caption, scheduled_datetime)
+        schedule_to_buffer(public_url, caption, scheduled_datetime_iso)
 
     print("\n🎉 All videos rendered, hosted, and successfully queued across TikTok, Instagram, and YouTube via Buffer!")
