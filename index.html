@@ -1421,84 +1421,81 @@
 
         // --- NEWS ENGINE WITH DYNAMIC LOCATION & ALLORIGINS PROXY ---
         async function fetchNews(feedKey, isAppend = false) {
-            const dynamicLocalRss = `https://news.google.com/rss/search?q=${encodeURIComponent(userDetectedCity)}&hl=en&gl=US&ceid=US:en`;
+    const feeds = {
+        'local-news': `https://news.google.com/rss/search?q=${encodeURIComponent(userDetectedCity)}&hl=en&gl=US&ceid=US:en`,
+        'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
+        'tech-news': 'https://techcrunch.com/feed/'
+    };
 
-            const feeds = {
-                'local-news': dynamicLocalRss,
-                'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
-                'tech-news': 'https://techcrunch.com/feed/'
-            };
+    const grid = document.getElementById('local-news-grid');
+    const loadBtn = document.getElementById('news-load-more-btn');
 
-            const grid = document.getElementById('local-news-grid');
-            const loadBtn = document.getElementById('news-load-more-btn');
+    if (!isAppend) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #00f2fe; padding: 20px;">Loading news for ${feedKey === 'local-news' ? userDetectedCity : 'this feed'}...</div>`;
+        newsVisibleCount = 6;
+        currentNewsFeedKey = feedKey;
+        cachedNewsItems = [];
+    }
 
-            if (!isAppend) {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #00f2fe; padding: 20px;">Loading news for ${feedKey === 'local-news' ? userDetectedCity : 'this feed'}...</div>`;
-                newsVisibleCount = 6;
-                currentNewsFeedKey = feedKey;
-                cachedNewsItems = [];
-            }
-
-            try {
-                if (cachedNewsItems.length === 0) {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feeds[feedKey])}`;
-                    const res = await fetch(proxyUrl);
-                    if (!res.ok) throw new Error("Network response failed");
-                    
-                    const data = await res.json();
-                    const xmlDoc = new DOMParser().parseFromString(data.contents, "text/xml");
-                    const items = xmlDoc.querySelectorAll("item");
-
-                    cachedNewsItems = Array.from(items).map(item => {
-                        const title = item.querySelector("title")?.textContent || "Untitled";
-                        const link = item.querySelector("link")?.textContent || "#";
-                        const description = item.querySelector("description")?.textContent || "";
-                        const pubDate = item.querySelector("pubDate")?.textContent || "";
-                        return { title, link, description, pubDate };
-                    });
-                }
-
-                if (cachedNewsItems.length === 0) {
-                    grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1; text-align:center;">No articles found for ${feedKey === 'local-news' ? userDetectedCity : 'this feed'}.</p>`;
-                    if (loadBtn) loadBtn.style.display = 'none';
-                    return;
-                }
-
-                const slice = cachedNewsItems.slice(0, newsVisibleCount);
-                let html = "";
-
-                slice.forEach(item => {
-                    const cleanDesc = item.description.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...';
-                    const pubDateStr = item.pubDate ? new Date(item.pubDate).toLocaleDateString() : 'Recent';
-
-                    html += `
-                        <div class="card">
-                            <h3>${item.title}</h3>
-                            <p>${cleanDesc}</p>
-                            <a href="${item.link}" target="_blank" class="card-footer-link">
-                                <span>Read Full Story</span>
-                                <span>${pubDateStr}</span>
-                            </a>
-                        </div>
-                    `;
-                });
-
-                grid.innerHTML = html;
-
-                if (loadBtn) {
-                    if (newsVisibleCount >= cachedNewsItems.length) {
-                        loadBtn.style.display = 'none';
-                    } else {
-                        loadBtn.style.display = 'inline-block';
-                        loadBtn.textContent = `➕ View More Results (${cachedNewsItems.length - newsVisibleCount} Remaining)`;
-                    }
-                }
-
-            } catch (e) {
-                console.error("News API error:", e);
-                grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1; text-align:center;">Failed to load news feed.</p>`;
+    try {
+        if (cachedNewsItems.length === 0) {
+            // rss2json natively converts RSS XML to clean JSON and includes CORS headers
+            const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feeds[feedKey])}`;
+            const res = await fetch(apiUrl);
+            if (!res.ok) throw new Error("Network response failed");
+            
+            const data = await res.json();
+            if (data.status === 'ok' && data.items) {
+                cachedNewsItems = data.items.map(item => ({
+                    title: item.title || "Untitled",
+                    link: item.link || "#",
+                    description: item.description || "",
+                    pubDate: item.pubDate || ""
+                }));
             }
         }
+
+        if (cachedNewsItems.length === 0) {
+            grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1; text-align:center;">No articles found for ${feedKey === 'local-news' ? userDetectedCity : 'this feed'}.</p>`;
+            if (loadBtn) loadBtn.style.display = 'none';
+            return;
+        }
+
+        const slice = cachedNewsItems.slice(0, newsVisibleCount);
+        let html = "";
+
+        slice.forEach(item => {
+            const cleanDesc = item.description.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...';
+            const pubDateStr = item.pubDate ? new Date(item.pubDate).toLocaleDateString() : 'Recent';
+
+            html += `
+                <div class="card">
+                    <h3>${item.title}</h3>
+                    <p>${cleanDesc}</p>
+                    <a href="${item.link}" target="_blank" class="card-footer-link">
+                        <span>Read Full Story</span>
+                        <span>${pubDateStr}</span>
+                    </a>
+                </div>
+            `;
+        });
+
+        grid.innerHTML = html;
+
+        if (loadBtn) {
+            if (newsVisibleCount >= cachedNewsItems.length) {
+                loadBtn.style.display = 'none';
+            } else {
+                loadBtn.style.display = 'inline-block';
+                loadBtn.textContent = `➕ View More Results (${cachedNewsItems.length - newsVisibleCount} Remaining)`;
+            }
+        }
+
+    } catch (e) {
+        console.error("News API error:", e);
+        grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1; text-align:center;">Failed to load news feed.</p>`;
+    }
+}
 
         function loadMoreNews() {
             newsVisibleCount += 6;
