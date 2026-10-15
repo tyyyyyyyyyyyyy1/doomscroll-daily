@@ -1408,7 +1408,7 @@
             container.innerHTML = html;
         }
 
-        // --- NEWS ENGINE WITH PAGINATION ---
+                // --- NEWS ENGINE WITH PAGINATION ---
         async function fetchNews(feedKey, isAppend = false) {
             const feeds = {
                 'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
@@ -1427,11 +1427,21 @@
 
             try {
                 if (cachedNewsItems.length === 0) {
-                    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feeds[feedKey])}`);
-                    const data = await res.json();
-                    if (data && data.items) {
-                        cachedNewsItems = data.items;
-                    }
+                    const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(feeds[feedKey])}`;
+                    const res = await fetch(proxiedUrl);
+                    if (!res.ok) throw new Error("Network response failed");
+                    
+                    const xmlText = await res.text();
+                    const xmlDoc = new DOMParser().parseFromString(xmlText, "text/xml");
+                    const items = xmlDoc.querySelectorAll("item");
+
+                    cachedNewsItems = Array.from(items).map(item => {
+                        const title = item.querySelector("title")?.textContent || "Untitled";
+                        const link = item.querySelector("link")?.textContent || "#";
+                        const description = item.querySelector("description")?.textContent || "";
+                        const pubDate = item.querySelector("pubDate")?.textContent || "";
+                        return { title, link, description, pubDate };
+                    });
                 }
 
                 if (cachedNewsItems.length === 0) {
@@ -1444,7 +1454,7 @@
                 let html = "";
 
                 slice.forEach(item => {
-                    const cleanDesc = item.description ? item.description.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...' : 'No preview available.';
+                    const cleanDesc = item.description.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...';
                     const pubDateStr = item.pubDate ? new Date(item.pubDate).toLocaleDateString() : 'Recent';
 
                     html += `
