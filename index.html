@@ -544,6 +544,7 @@
         let rawWeatherData = null;
         let currentLat = 45.4215;
         let currentLon = -75.6972;
+        let userDetectedCity = "Ottawa"; // Dynamic location tracking for local news
 
         let streamPage = 1;
         let loadedEmbedUrls = new Set();
@@ -983,6 +984,9 @@
                 if (data.latitude && data.longitude) {
                     currentLat = data.latitude;
                     currentLon = data.longitude;
+                    if (data.city) {
+                        userDetectedCity = data.city;
+                    }
                     const label = data.city ? `${data.city}, ${data.country_code || ''}` : "Local Network Node";
                     fetchWeatherData(currentLat, currentLon, label);
                 } else {
@@ -1030,6 +1034,10 @@
         }
 
         async function fetchWeatherData(lat, lon, locationLabel) {
+            if (locationLabel && locationLabel !== "Precise GPS Location") {
+                userDetectedCity = locationLabel.split(',')[0].trim();
+            }
+
             const statusTag = document.getElementById('weather-status-tag');
             try {
                 const apiURL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&current_weather=true&forecast_days=14&timezone=auto`;
@@ -1042,6 +1050,11 @@
                 
                 renderWeatherUI();
                 initRadarMap();
+
+                // Automatically update local news with the newly detected city
+                if (currentNewsFeedKey === 'local-news') {
+                    fetchNews('local-news');
+                }
             } catch (err) {
                 console.error("Weather fetch error:", err);
                 if (statusTag) statusTag.textContent = "🔴 Weather feed offline.";
@@ -1091,7 +1104,6 @@
             }
             document.getElementById('hourly-grid-container').innerHTML = hourlyHTML;
 
-            // Reset strict unique phrase memory before each render pass
             usedWeatherPhrases.clear();
             renderExtendedForecast('seven-daily-container', 7);
             
@@ -1213,7 +1225,6 @@
                 if (data) {
                     const postKey = data.url || data.postLink || data.title;
                     if (seenMemes.has(postKey)) {
-                        console.warn("Duplicate item caught, retrying...");
                         return fetchMeme(attempts + 1);
                     }
 
@@ -1408,18 +1419,21 @@
             container.innerHTML = html;
         }
 
-                // --- NEWS ENGINE WITH PAGINATION ---
+        // --- NEWS ENGINE WITH DYNAMIC LOCATION & ALLORIGINS PROXY ---
         async function fetchNews(feedKey, isAppend = false) {
+            const dynamicLocalRss = `https://news.google.com/rss/search?q=${encodeURIComponent(userDetectedCity)}&hl=en&gl=US&ceid=US:en`;
+
             const feeds = {
-                'local-news': 'https://www.cbc.ca/cmlink/rss-canada-ottawa',
+                'local-news': dynamicLocalRss,
                 'world-news': 'https://feeds.bbci.co.uk/news/world/rss.xml',
                 'tech-news': 'https://techcrunch.com/feed/'
             };
+
             const grid = document.getElementById('local-news-grid');
             const loadBtn = document.getElementById('news-load-more-btn');
 
             if (!isAppend) {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #00f2fe; padding: 20px;">Loading news articles...</div>`;
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #00f2fe; padding: 20px;">Loading news for ${feedKey === 'local-news' ? userDetectedCity : 'this feed'}...</div>`;
                 newsVisibleCount = 6;
                 currentNewsFeedKey = feedKey;
                 cachedNewsItems = [];
@@ -1427,12 +1441,12 @@
 
             try {
                 if (cachedNewsItems.length === 0) {
-                    const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(feeds[feedKey])}`;
-                    const res = await fetch(proxiedUrl);
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feeds[feedKey])}`;
+                    const res = await fetch(proxyUrl);
                     if (!res.ok) throw new Error("Network response failed");
                     
-                    const xmlText = await res.text();
-                    const xmlDoc = new DOMParser().parseFromString(xmlText, "text/xml");
+                    const data = await res.json();
+                    const xmlDoc = new DOMParser().parseFromString(data.contents, "text/xml");
                     const items = xmlDoc.querySelectorAll("item");
 
                     cachedNewsItems = Array.from(items).map(item => {
@@ -1445,7 +1459,7 @@
                 }
 
                 if (cachedNewsItems.length === 0) {
-                    grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1; text-align:center;">No articles found for this feed.</p>`;
+                    grid.innerHTML = `<p style="color:#ff334b; grid-column: 1/-1; text-align:center;">No articles found for ${feedKey === 'local-news' ? userDetectedCity : 'this feed'}.</p>`;
                     if (loadBtn) loadBtn.style.display = 'none';
                     return;
                 }
