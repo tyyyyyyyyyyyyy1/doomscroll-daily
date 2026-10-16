@@ -31,19 +31,20 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 AUDIO_LIB_DIR = "audio_library"
 os.makedirs(AUDIO_LIB_DIR, exist_ok=True)
 
-# --- TIMEZONE SCHEDULING HELPER (OTTAWA / AMERICA/TORONTO) ---
+# --- TIMEZONE SCHEDULING HELPER WITH ANTI-SPAM JITTER (OTTAWA / AMERICA/TORONTO) ---
 def get_scheduled_at_iso(slot_time_str):
     """
     Calculates exact ISO timestamp targeting Ottawa local time (America/Toronto).
-    Prevents cron UTC skew and eliminates 36+ hour queue overflows.
+    Adds a random time jitter (-15 to +25 minutes) to avoid exact robot posting schedules.
     """
     tz = pytz.timezone('America/Toronto')
     now_est = datetime.now(tz)
     
     hour_est, min_est = map(int, slot_time_str.split(':'))
     
-    # Target specified slot time for today in Ottawa
-    target_local = now_est.replace(hour=hour_est, minute=min_est, second=0, microsecond=0)
+    # Target specified slot time for today in Ottawa with random anti-bot minute jitter
+    minute_jitter = random.randint(-15, 25)
+    target_local = now_est.replace(hour=hour_est, minute=min_est, second=0, microsecond=0) + timedelta(minutes=minute_jitter)
     
     # If this slot time has already passed today, target tomorrow
     if now_est >= target_local:
@@ -228,7 +229,7 @@ def generate_daily_batch():
         {"type": "promo",   "prefix": "[SITE ALERT]\n\n",    "time": "21:30", "content": selected_promos[1]}
     ]
 
-# --- 6. VIDEO RENDERING ENGINE ---
+# --- 6. VIDEO RENDERING ENGINE (WITH ANTI-FLAGGING VISUAL VARIATIONS) ---
 def render_video(slot_data, filename, duration=7):
     is_promo = slot_data["type"] == "promo"
     is_reddit = slot_data["type"] == "reddit"
@@ -249,15 +250,35 @@ def render_video(slot_data, filename, duration=7):
         prefix = slot_data["prefix"]
         full_text = f"{prefix}\"{content}\"" if not is_promo else f"{prefix}{content}"
 
-    text_bg = ColorClip(size=(1000, 1500), color=(0, 0, 0), duration=duration).with_opacity(0.75).with_position('center')
+    # RANDOMIZED TEXT BOX STYLING TO AVOID TIKTOK TEMPLATE FLAG
+    box_palettes = [
+        (12, 15, 20),   # Dark charcoal
+        (22, 18, 25),   # Deep muted purple-slate
+        (15, 22, 22),   # Dark teal-slate
+        (25, 15, 18),   # Muted dark red-slate
+    ]
+    chosen_box_color = random.choice(box_palettes)
+    box_opacity = random.uniform(0.70, 0.88)  # Slightly randomized opacity
+    
+    # Slight micro-jitter on box width/height dimensions
+    box_width = random.randint(950, 1020)
+    box_height = random.randint(1400, 1550)
+    
+    # Slight coordinate jitter so box isn't dead-center pixel-locked every time
+    pos_jitter_x = random.randint(-10, 10)
+    pos_jitter_y = random.randint(-15, 15)
+
+    text_bg = ColorClip(size=(box_width, box_height), color=chosen_box_color, duration=duration)\
+        .with_opacity(box_opacity)\
+        .with_position(('center', 'center'))
 
     txt_clip = TextClip(
         text=full_text, 
-        font_size=32 if is_reddit else 36, 
+        font_size=random.choice([34, 35, 36, 37]),  # Micro size variations
         color='white', 
         method='caption', 
-        size=(960, 1400)
-    ).with_duration(duration).with_position('center')
+        size=(box_width - 60, box_height - 100)
+    ).with_duration(duration).with_position(('center', 'center'))
     
     video = CompositeVideoClip([bg, text_bg, txt_clip])
     
@@ -415,7 +436,7 @@ if __name__ == "__main__":
         video_path = render_video(slot, file_name)
         public_url = upload_video(video_path)
         
-        # Calculates precise Ottawa ISO timestamp for slot (08:00, 11:00, 13:00, 16:00, 19:00, 21:30)
+        # Calculates precise Ottawa ISO timestamp with randomized minute jitter for slot
         scheduled_datetime_iso = get_scheduled_at_iso(slot['time'])
         
         # Extract raw topic text to pass into Gemini generator
