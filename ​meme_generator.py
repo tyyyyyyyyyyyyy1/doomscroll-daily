@@ -47,37 +47,91 @@ def generate_meme_content():
         except Exception:
             continue
             
-    return "My ex said she'd miss me, but her aim is getting better every single week."
+    fallback_jokes = [
+        "My ex said she'd miss me, but her aim is getting better every single week.",
+        "Give a man a match, and he’ll be warm for a few hours. Set a man on fire, and he will be warm for the rest of his life.",
+        "Even people who are good for nothing have the capacity to bring a smile to your face—like when you push them down the stairs."
+    ]
+    return random.choice(fallback_jokes)
 
-# --- 2. HIGH-ENERGY TRACK AUTO-FETCHER ---
+# --- 2. DARK WITCHHOUSE & INDUSTRIAL METAL AUDIO FETCHER ---
 def fetch_background_music(output_audio_path="temp_music.mp3"):
-    track_urls = [
-        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
-        "https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c4/Beethoven_Moonlight_1st_movement.ogg/Beethoven_Moonlight_1st_movement.ogg.mp3"
+    # Curated heavy bass, phonk, industrial, and dark synth instrumental samples
+    dark_audio_urls = [
+        "https://upload.wikimedia.org/wikipedia/commons/transcoded/1/11/Mozart_Requiem_Dies_irae.ogg/Mozart_Requiem_Dies_irae.ogg.mp3", # Dramatic dark choir/orchestral
+        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", # Heavy driving rhythm bass
+        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"  # Deep aggressive atmospheric synth
     ]
     try:
-        urllib.request.urlretrieve(random.choice(track_urls), output_audio_path)
+        urllib.request.urlretrieve(random.choice(dark_audio_urls), output_audio_path)
     except Exception:
         pass
     return output_audio_path
 
-# --- 3. VIDEO COMPILER ---
+# --- 3. CONTEXT-MATCHED MEME VISUAL SELECTOR ---
+def fetch_contextual_meme_image(joke_text, output_image_path="temp_meme_base.jpg"):
+    text_lower = joke_text.lower()
+    
+    if any(word in text_lower for word in ["ex", "wife", "husband", "marriage", "girlfriend", "boyfriend"]):
+        image_urls = [
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1080&q=80",
+            "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1080&q=80"
+        ]
+    elif any(word in text_lower for word in ["fire", "burn", "warm", "match", "flame"]):
+        image_urls = [
+            "https://images.unsplash.com/photo-1508873696983-2df5c92063c7?w=1080&q=80",
+            "https://images.unsplash.com/photo-1579202673506-ca3ce28943ef?w=1080&q=80"
+        ]
+    elif any(word in text_lower for word in ["stairs", "push", "fall", "down", "stairs"]):
+        image_urls = [
+            "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1080&q=80",
+            "https://images.unsplash.com/photo-1516726817505-f5ed825624d8?w=1080&q=80"
+        ]
+    else:
+        image_urls = [
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1080&q=80",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1080&q=80"
+        ]
+    
+    selected_url = random.choice(image_urls)
+    try:
+        urllib.request.urlretrieve(selected_url, output_image_path)
+        img = Image.open(output_image_path)
+        img.verify()
+    except Exception:
+        fallback = Image.new("RGB", (1080, 1920), color=(10, 10, 10))
+        fallback.save(output_image_path, "JPEG")
+
+# --- 4. VIDEO COMPILER WITH VISUALS & DARK AUDIO ---
 def create_meme_video(text, output_video_path="meme_output.mp4"):
     width, height = 1080, 1920
-    bg_color = (random.randint(2, 12), random.randint(2, 12), random.randint(2, 12))
-    image = Image.new("RGB", (width, height), color=bg_color)
-    draw = ImageDraw.Draw(image)
     
-    for _ in range(60):
-        draw.point((random.randint(0, width), random.randint(0, height)), fill=(random.randint(0, 30),)*3)
+    base_image_path = "temp_base.jpg"
+    fetch_contextual_meme_image(text, base_image_path)
+    
+    try:
+        base_img = Image.open(base_image_path).convert("RGB")
+    except Exception:
+        base_img = Image.new("RGB", (width, height), color=(10, 10, 10))
+        
+    base_img = base_img.resize((width, height), Image.Resampling.LANCZOS)
+    
+    # Heavy cinematic dark gradient overlay
+    overlay = Image.new("RGBA", (width, height), (0, 0, 0, 160))
+    base_img.paste(Image.alpha_composite(base_img.convert("RGBA"), overlay).convert("RGB"))
+
+    draw = ImageDraw.Draw(base_img)
+
+    # Classic high-contrast white meme caption panel
+    panel_box = [60, 200, width - 60, 700]
+    draw.rounded_rectangle(panel_box, radius=24, fill=(255, 255, 255), outline=(0, 0, 0), width=6)
 
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 60)
     except IOError:
         font = ImageFont.load_default()
 
-    margin = 80
+    margin = 100
     max_width = width - (margin * 2)
     lines, current_line = [], ""
     for word in text.split():
@@ -91,20 +145,20 @@ def create_meme_video(text, output_video_path="meme_output.mp4"):
     if current_line:
         lines.append(current_line)
 
-    total_height = len(lines) * 80
-    y = (height - total_height) / 2
+    total_text_height = len(lines) * 80
+    y = 450 - (total_text_height / 2)
     for line in lines:
         bbox = font.getbbox(line)
         x = (width - (bbox[2] - bbox[0])) / 2
-        draw.text((x + 4, y + 4), line, font=font, fill=(0, 0, 0))
-        draw.text((x, y), line, font=font, fill=(255, 255, 255))
+        draw.text((x, y), line, font=font, fill=(0, 0, 0))
         y += 80
 
-    temp_img_path = "temp_meme.png"
-    image.save(temp_img_path, "PNG")
+    final_img_path = "temp_final_meme.png"
+    base_img.save(final_img_path, "PNG")
 
     audio_path = fetch_background_music("temp_audio.mp3")
-    image_clip = ImageClip(temp_img_path).set_duration(7.0)
+    image_clip = ImageClip(final_img_path).set_duration(7.0)
+    
     try:
         audio_clip = AudioFileClip(audio_path).subclip(0, 7.0)
         video_clip = image_clip.set_audio(audio_clip)
@@ -116,13 +170,13 @@ def create_meme_video(text, output_video_path="meme_output.mp4"):
         output_video_path, codec="libx264", audio_codec="aac", preset="ultrafast", logger=None
     )
     
-    for p in [temp_img_path, audio_path]:
+    for p in [base_image_path, final_img_path, audio_path]:
         if os.path.exists(p):
             os.remove(p)
             
     return output_video_path
 
-# --- 4. BUFFER API SENDER ---
+# --- 5. BUFFER API SENDER ---
 def send_to_buffer(video_filename, caption, meme_text):
     token = os.getenv("BUFFER_ACCESS_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
@@ -208,13 +262,13 @@ def send_to_buffer(video_filename, caption, meme_text):
             print(f"Failed to push to Buffer for {platform}: {e}")
 
 if __name__ == "__main__":
-    print(f"Starting multi-AI batch execution at {datetime.now()}")
+    print(f"Starting dark atmospheric multi-AI batch execution at {datetime.now()}")
     for i in range(1, 3):
         meme_text = generate_meme_content()
         video_filename = f"meme_video_{i}.mp4"
         
-        print(f"AI Joke #{i}: {meme_text}")
+        print(f"AI Unique Context-Matched Joke #{i}: {meme_text}")
         create_meme_video(meme_text, video_filename)
         
-        caption = f"{meme_text} 💀 #darkhumor #shorts #reels #trending"
+        caption = f"{meme_text} 💀 #darkhumor #witchhouse #phonk #metal #shorts #reels"
         send_to_buffer(video_filename, caption, meme_text)
