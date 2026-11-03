@@ -151,12 +151,12 @@ def send_to_buffer(video_filename, caption, meme_text):
             
         metadata_dict = {}
         if platform == "Instagram":
-            metadata_dict = {"instagram": {"type": "reel"}}
+            metadata_dict = {"instagram": {"type": "reel", "shouldShareToFeed": True}}
         elif platform == "YouTube":
             metadata_dict = {
                 "youtube": {
                     "title": meme_text[:95],
-                    "categoryId": "23"  # 23 = Comedy category
+                    "categoryId": "23"
                 }
             }
 
