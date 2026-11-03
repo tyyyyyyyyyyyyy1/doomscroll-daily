@@ -9,9 +9,8 @@ import requests
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from moviepy.editor import ImageClip, AudioFileClip
 
-# --- 1. EXPANDED MULTI-SOURCE PUBLIC TEXT ENGINE (ZERO KEYS) ---
+# --- 1. MULTI-SOURCE PUBLIC TEXT ENGINE (ZERO KEYS) ---
 def generate_meme_content(seed_modifier):
-    # Expanded pool of free public text generation endpoints and mirrors
     base_prompts = [
         "Write a single, extremely fucked up, brutally dark humor one-liner meme joke. Shocking, morbid, but funny. Keep under 15 words. No intro.",
         "Write a short, unhinged dark humor joke about human misery for an edgy meme. Keep under 15 words. No intro.",
@@ -20,11 +19,9 @@ def generate_meme_content(seed_modifier):
     
     prompt = random.choice(base_prompts)
     encoded_prompt = urllib.parse.quote(f"{prompt} [ID: {seed_modifier}]")
-    
-    # List of different public text generation routing paths
     ai_endpoints = [
         f"https://text.pollinations.ai/prompt/{encoded_prompt}",
-        f"https://text.pollinations.ai/openai", # Alternative route
+        "https://text.pollinations.ai/openai"
     ]
     
     random.shuffle(ai_endpoints)
@@ -33,7 +30,6 @@ def generate_meme_content(seed_modifier):
         try:
             print(f"Trying text source: {url}")
             if "openai" in url:
-                # OpenAI-compatible zero-key format for Pollinations
                 headers = {"Content-Type": "application/json"}
                 payload = {
                     "model": "openai",
@@ -41,77 +37,65 @@ def generate_meme_content(seed_modifier):
                     "seed": random.randint(1, 10000)
                 }
                 response = requests.post(url, headers=headers, json=payload, timeout=12)
-                print(f"Response status: {response.status_code}")
                 if response.status_code == 200:
                     data = response.json()
                     joke = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip().replace('"', '')
                     if len(joke) > 5:
-                        print(f"Successfully generated joke via OpenAI-format: {joke}")
+                        print(f"Successfully generated joke: {joke}")
                         return joke
             else:
                 response = requests.get(url, timeout=12)
-                print(f"Response status: {response.status_code}")
                 if response.status_code == 200:
                     joke = response.text.strip().replace('"', '')
                     if len(joke) > 5:
-                        print(f"Successfully generated joke via GET: {joke}")
+                        print(f"Successfully generated joke: {joke}")
                         return joke
                 elif response.status_code == 402:
-                    print("Hit rate limit (402). Pausing briefly before trying next source...")
                     time.sleep(5)
-            
         except Exception as e:
-            print(f"Text source failed with exception: {e}")
+            print(f"Text source failed: {e}")
             
-    # Direct public backup mirror text generators
-    backup_urls = [
-        "https://r.jina.ai/https://text.pollinations.ai/prompt/" + encoded_prompt
-    ]
-    for url in backup_urls:
-        try:
-            print(f"Trying backup text source: {url}")
-            response = requests.get(url, timeout=10)
-            if response.status_code == 200:
-                joke = response.text.strip().replace('"', '')
-                if len(joke) > 5:
-                    return joke
-        except Exception as e:
-            print(f"Backup source failed: {e}")
+    # Backup mirror
+    try:
+        backup_url = "https://r.jina.ai/https://text.pollinations.ai/prompt/" + encoded_prompt
+        response = requests.get(backup_url, timeout=10)
+        if response.status_code == 200:
+            joke = response.text.strip().replace('"', '')
+            if len(joke) > 5:
+                return joke
+    except Exception as e:
+        print(f"Backup text source failed: {e}")
             
-    raise Exception("All expanded public AI text generation sources failed or timed out.")
+    raise Exception("All public AI text generation sources failed or timed out.")
 
-# --- 2. CASCADING AI IMAGE GENERATOR ---
+# --- 2. HIGH-UPTIME PUBLIC AI IMAGE GENERATOR (POLLINATIONS API) ---
 def generate_ai_meme_image(joke_text, output_image_path="temp_meme_img.jpg"):
-    image_models = [
-        "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
-        "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
-        "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
-        "https://api-inference.huggingface.co/models/prompthero/openjourney"
+    # Clean up joke text for image prompt injection
+    safe_joke = joke_text.replace('"', '').replace("'", "")
+    image_prompt = f"Dark humor visual meme about {safe_joke}. Cinematic, gritty lighting, highly detailed masterpiece."
+    encoded_image_prompt = urllib.parse.quote(image_prompt)
+    
+    # Pollinations image generation endpoints (zero keys, high reliability)
+    image_endpoints = [
+        f"https://image.pollinations.ai/prompt/{encoded_image_prompt}?width=1024&height=1024&nologo=true&seed={random.randint(1, 100000)}",
+        f"https://text.pollinations.ai/p/{encoded_image_prompt}?width=1024&height=1024&nologo=true"
     ]
     
-    image_prompt = f"Dark humor visual meme about: {joke_text}. Cinematic, gritty lighting, highly detailed."
-    random.shuffle(image_models)
-    headers = {"Content-Type": "application/json"}
+    random.shuffle(image_endpoints)
     
-    for model_url in image_models:
+    for url in image_endpoints:
         try:
-            print(f"Trying Image Model: {model_url}")
-            response = requests.post(model_url, headers=headers, json={"inputs": image_prompt}, timeout=12)
-            print(f"Image Response status: {response.status_code}, length: {len(response.content)}")
-            if response.status_code == 200 and len(response.content) > 2000:
-                with open(output_image_path, "wb") as f:
-                    f.write(response.content)
-                img = Image.open(output_image_path)
-                img.verify()
-                print("AI Image Generated Successfully!")
-                return output_image_path
-            else:
-                print(f"Image model failed or returned error text: {response.text[:200]}")
+            print(f"Trying Image Endpoint: {url}")
+            urllib.request.urlretrieve(url, output_image_path)
+            img = Image.open(output_image_path)
+            img.verify()
+            print("AI Image Generated Successfully!")
+            return output_image_path
         except Exception as e:
-            print(f"Image model exception: {e}")
+            print(f"Image endpoint failed: {e}")
             continue
             
-    raise Exception("All public AI image generation model sources failed or timed out.")
+    raise Exception("All public AI image generation endpoints failed or timed out.")
 
 # --- 3. VOCAL-HEAVY PHONK / WITCHHOUSE / METAL AUDIO FETCHER ---
 def fetch_background_music(output_audio_path="temp_music.mp3"):
@@ -298,7 +282,7 @@ def send_to_buffer(video_filename, video_caption):
 
 if __name__ == "__main__":
     run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    print(f"Starting multi-source text generation meme batch at {run_timestamp}")
+    print(f"Starting fully public AI meme batch execution at {run_timestamp}")
     
     engaging_hooks = [
         "Unfiltered thoughts at 3 AM 💀",
@@ -323,7 +307,6 @@ if __name__ == "__main__":
         
         send_to_buffer(video_filename, caption)
         
-        # Add a short delay between loop iterations to prevent triggering IP-based rate limits
         if i < 2:
             print("Waiting 10 seconds before generating the next meme...")
             time.sleep(10)
