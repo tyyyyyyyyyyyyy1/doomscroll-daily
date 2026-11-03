@@ -149,8 +149,9 @@ def send_to_buffer(video_filename, caption):
             print(f"Skipping {platform}: Profile ID secret not found.")
             continue
             
+        # Updated from PostInput! to CreatePostInput!
         mutation = """
-        mutation CreatePost($input: PostInput!) {
+        mutation CreatePost($input: CreatePostInput!) {
           createPost(input: $input) {
             ... on PostActionSuccess {
               post {
