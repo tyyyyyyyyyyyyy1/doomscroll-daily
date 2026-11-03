@@ -122,7 +122,7 @@ def create_meme_video(text, output_video_path="meme_output.mp4"):
             
     return output_video_path
 
-# --- 4. BUFFER API SENDER (MAPPED TO YOUR EXACT SECRETS) ---
+# --- 4. BUFFER API SENDER ---
 def send_to_buffer(video_filename, caption):
     token = os.getenv("BUFFER_ACCESS_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
@@ -138,7 +138,6 @@ def send_to_buffer(video_filename, caption):
         "Authorization": f"Bearer {token}"
     }
 
-    # Maps directly to your labeled GitHub secrets
     profile_mapping = {
         "TikTok": os.getenv("BUFFER_PROFILE_ID"),
         "Instagram": os.getenv("BUFFER_INSTAGRAM_PROFILE_ID"),
@@ -202,6 +201,4 @@ if __name__ == "__main__":
         create_meme_video(meme_text, video_filename)
         
         caption = f"{meme_text} 💀 #darkhumor #shorts #reels #trending"
-        
-        # Pushes to TikTok, Instagram, and YouTube queues via Buffer using your exact secrets
         send_to_buffer(video_filename, caption)
