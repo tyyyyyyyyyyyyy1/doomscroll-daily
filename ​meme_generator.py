@@ -7,51 +7,58 @@ import requests
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from moviepy.editor import ImageClip, AudioFileClip
 
-# --- 1. UNHINGED DARK HUMOR ENGINE (ZERO KEYS, HIGH-UPTIME PUBLIC ENDPOINTS) ---
+# --- 1. UNHINGED DARK HUMOR ENGINE WITH DETAILED LOGGING ---
 def generate_meme_content(seed_modifier):
-    # Free public AI generation endpoints that don't suffer from HF cold-start timeouts
     ai_endpoints = [
-        "https://text.pollinations.ai/prompt/Write%20a%20single,%20extremely%20fucked%20up,%20brutally%20dark%20humor%20one-liner%20meme%20joke.%20Shocking,%20morbid,%20but%20funny.%20Keep%20under%15%20words.%20No%20intro.",
+        "https://text.pollinations.ai/prompt/Write%20a%20single,%20extremely%20fucked%20up,%20brutally%20dark%20humor%20one-liner%20meme%20joke.%20Shocking,%20morbid,%20but%20funny.%20Keep%20under%2015%20words.%20No%20intro.",
         "https://text.pollinations.ai/prompt/Write%20a%20short,%20unhinged%20dark%20humor%20joke%20about%20human%20misery%20for%20an%20edgy%20meme.%20Keep%20under%2015%20words."
     ]
     
-    headers = {"Content-Type": "application/json"}
     random.shuffle(ai_endpoints)
     
     for url in ai_endpoints:
         try:
+            print(f"Trying text endpoint: {url}")
             response = requests.get(url, timeout=10)
+            print(f"Response status: {response.status_code}")
             if response.status_code == 200:
                 joke = response.text.strip().replace('"', '')
                 if len(joke) > 5:
+                    print(f"Successfully generated joke: {joke}")
                     return joke
-        except Exception:
-            continue
+            else:
+                print(f"Endpoint returned non-200: {response.text}")
+        except Exception as e:
+            print(f"Text endpoint failed with exception: {e}")
             
-    # Fallback to Hugging Face API if Pollinations is busy
+    # Fallback to Hugging Face API with detailed logging
     hf_models = [
         "https://api-inference.huggingface.co/models/google/gemma-2-2b-it",
         "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct",
         "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
     ]
     prompt = "Write a single, extremely fucked up, brutally dark humor one-liner meme joke under 15 words. No intro."
+    headers = {"Content-Type": "application/json"}
     
     for model_url in hf_models:
         try:
+            print(f"Trying HF model: {model_url}")
             payload = {"inputs": prompt, "parameters": {"max_new_tokens": 40, "temperature": 0.95}}
             response = requests.post(model_url, headers=headers, json=payload, timeout=8)
+            print(f"HF Response status: {response.status_code}, content: {response.text}")
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, list) and len(data) > 0:
                     joke = data[0].get("generated_text", "").replace(prompt, "").strip()
                     if len(joke) > 5:
+                        print(f"Successfully generated joke from HF: {joke}")
                         return joke
-        except Exception:
-            continue
+        except Exception as e:
+            print(f"HF model {model_url} failed with exception: {e}")
             
-    raise Exception("All public AI text generation sources failed or timed out.")
+    raise Exception("All public AI text generation sources failed or timed out. Check logs above for specific HTTP error codes.")
 
-# --- 2. CASCADING AI IMAGE GENERATOR (AI SOURCES ONLY) ---
+# --- 2. CASCADING AI IMAGE GENERATOR WITH DETAILED LOGGING ---
 def generate_ai_meme_image(joke_text, output_image_path="temp_meme_img.jpg"):
     image_models = [
         "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
@@ -66,14 +73,20 @@ def generate_ai_meme_image(joke_text, output_image_path="temp_meme_img.jpg"):
     
     for model_url in image_models:
         try:
+            print(f"Trying Image Model: {model_url}")
             response = requests.post(model_url, headers=headers, json={"inputs": image_prompt}, timeout=12)
+            print(f"Image Response status: {response.status_code}, length: {len(response.content)}")
             if response.status_code == 200 and len(response.content) > 2000:
                 with open(output_image_path, "wb") as f:
                     f.write(response.content)
                 img = Image.open(output_image_path)
                 img.verify()
+                print("AI Image Generated Successfully!")
                 return output_image_path
-        except Exception:
+            else:
+                print(f"Image model failed or returned error text: {response.text[:200]}")
+        except Exception as e:
+            print(f"Image model exception: {e}")
             continue
             
     raise Exception("All public AI image generation model sources failed or timed out.")
@@ -87,8 +100,8 @@ def fetch_background_music(output_audio_path="temp_music.mp3"):
     ]
     try:
         urllib.request.urlretrieve(random.choice(dark_vocal_audio_urls), output_audio_path)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Audio fetch warning: {e}")
     return output_audio_path
 
 # --- 4. TRUE MEME FORMAT VIDEO COMPILER ---
@@ -103,8 +116,8 @@ def create_meme_video(text, output_video_path="meme_output.mp4"):
         meme_img = Image.open(img_path).convert("RGB")
         meme_img = meme_img.resize((960, 960), Image.Resampling.LANCZOS)
         canvas.paste(meme_img, (60, 150))
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Image pasting error: {e}")
 
     draw.rectangle([60, 150, 1020, 1110], outline=(255, 255, 255), width=6)
 
@@ -173,7 +186,7 @@ def git_commit_and_push(video_filename):
     except Exception as e:
         print(f"Git commit/push failed: {e}")
 
-# --- 6. BUFFER API SENDER ---
+# --- 6. BUFFER API SENDER WITH DETAILED DIAGNOSTICS ---
 def send_to_buffer(video_filename, video_caption):
     token = os.getenv("BUFFER_ACCESS_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
@@ -183,6 +196,8 @@ def send_to_buffer(video_filename, video_caption):
         return
 
     public_video_url = f"https://raw.githubusercontent.com/{repo}/main/{video_filename}"
+    print(f"Pushing video URL to Buffer: {public_video_url}")
+    
     buffer_url = "https://api.buffer.com"
     headers = {
         "Content-Type": "application/json",
@@ -253,14 +268,15 @@ def send_to_buffer(video_filename, video_caption):
         
         try:
             response = requests.post(buffer_url, json=payload, headers=headers)
+            print(f"Buffer HTTP Status for {platform}: {response.status_code}")
             result = response.json()
-            print(f"Buffer response for {platform}: {result}")
+            print(f"Buffer full response for {platform}: {result}")
         except Exception as e:
             print(f"Failed to push to Buffer for {platform}: {e}")
 
 if __name__ == "__main__":
     run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    print(f"Starting meme batch execution at {run_timestamp}")
+    print(f"Starting detailed diagnostic meme batch execution at {run_timestamp}")
     
     engaging_hooks = [
         "Unfiltered thoughts at 3 AM 💀",
