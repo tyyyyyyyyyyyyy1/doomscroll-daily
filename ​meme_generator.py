@@ -7,7 +7,7 @@ import requests
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from moviepy.editor import ImageClip, AudioFileClip
 
-# --- 1. UNHINGED BRUTAL DARK HUMOR ENGINE (ZERO KEYS) ---
+# --- 1. UNHINGED BRUTAL DARK HUMOR ENGINE (ZERO KEYS, NO LOCAL FALLBACKS) ---
 def generate_meme_content(seed_modifier):
     ai_models = [
         {"url": "https://api-inference.huggingface.co/models/google/gemma-2-2b-it", "format": "gemma"},
@@ -50,15 +50,43 @@ def generate_meme_content(seed_modifier):
         except Exception:
             continue
             
-    fallback_jokes = [
-        "My ex said she'd miss me, but her aim is getting better every single week.",
-        "Give a man a match, and he’ll be warm for a few hours. Set a man on fire, and he will be warm for the rest of his life.",
-        "Even people who are good for nothing have the capacity to bring a smile to your face—like when you push them down the stairs.",
-        "My grandfather has the heart of a lion... and a lifetime ban from the city zoo."
-    ]
-    return random.choice(fallback_jokes)
+    raise Exception("All public AI text generation model sources failed or timed out.")
 
-# --- 2. VOCAL-HEAVY PHONK / WITCHHOUSE / METAL AUDIO FETCHER ---
+# --- 2. EXPANDED CASCADING AI IMAGE GENERATOR (AI SOURCES ONLY) ---
+def generate_ai_meme_image(joke_text, output_image_path="temp_meme_img.jpg"):
+    image_models = [
+        "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+        "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
+        "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
+        "https://api-inference.huggingface.co/models/prompthero/openjourney",
+        "https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4",
+        "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1",
+        "https://api-inference.huggingface.co/models/SG16122/Realistic_Vision_V5.1_noVAE"
+    ]
+    
+    image_prompt = f"Make a dark humor inspired visual image for a meme, this will be what is on screen for the meme: {joke_text}. Dark aesthetic, cinematic lighting, gritty high detail."
+    
+    random.shuffle(image_models)
+    headers = {"Content-Type": "application/json"}
+    
+    for model_url in image_models:
+        try:
+            print(f"Trying AI Image Model source: {model_url.split('/')[-1]}")
+            response = requests.post(model_url, headers=headers, json={"inputs": image_prompt}, timeout=12)
+            if response.status_code == 200 and len(response.content) > 2000:
+                with open(output_image_path, "wb") as f:
+                    f.write(response.content)
+                img = Image.open(output_image_path)
+                img.verify()
+                print("AI Image Generated Successfully!")
+                return output_image_path
+        except Exception as e:
+            print(f"Model source failed, cascading to next AI source... ({e})")
+            continue
+            
+    raise Exception("All public AI image generation model sources failed or timed out.")
+
+# --- 3. VOCAL-HEAVY PHONK / WITCHHOUSE / METAL AUDIO FETCHER ---
 def fetch_background_music(output_audio_path="temp_music.mp3"):
     dark_vocal_audio_urls = [
         "https://upload.wikimedia.org/wikipedia/commons/transcoded/1/11/Mozart_Requiem_Dies_irae.ogg/Mozart_Requiem_Dies_irae.ogg.mp3",
@@ -71,40 +99,6 @@ def fetch_background_music(output_audio_path="temp_music.mp3"):
         pass
     return output_audio_path
 
-# --- 3. RELEVANT MEME IMAGE FETCHER MAPPED TO JOKE THEMES ---
-def fetch_meme_image(joke_text, output_image_path="temp_meme_img.jpg"):
-    text_lower = joke_text.lower()
-    
-    if any(word in text_lower for word in ["ex", "wife", "husband", "marriage", "girlfriend", "boyfriend", "heart"]):
-        image_urls = [
-            "https://upload.wikimedia.org/wikipedia/commons/8/8d/President_Barack_Obama_%28cropped%29.jpg",
-            "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
-        ]
-    elif any(word in text_lower for word in ["fire", "burn", "warm", "match", "flame"]):
-        image_urls = [
-            "https://upload.wikimedia.org/wikipedia/commons/1/12/Fire_breathing_at_Edinburgh_Hogmanay_2009.jpg",
-            "https://upload.wikimedia.org/wikipedia/commons/3/36/Bonfire_at_Yule.jpg"
-        ]
-    elif any(word in text_lower for word in ["stairs", "push", "fall", "down", "zoo", "animal"]):
-        image_urls = [
-            "https://upload.wikimedia.org/wikipedia/commons/f/f8/Dark_stairwell.jpg",
-            "https://upload.wikimedia.org/wikipedia/commons/9/91/Staircase_isometric.png"
-        ]
-    else:
-        image_urls = [
-            "https://upload.wikimedia.org/wikipedia/commons/5/5a/A_small_cup_of_coffee.jpg",
-            "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png"
-        ]
-        
-    selected_url = random.choice(image_urls)
-    try:
-        urllib.request.urlretrieve(selected_url, output_image_path)
-        img = Image.open(output_image_path)
-        img.verify()
-    except Exception:
-        fallback = Image.new("RGB", (1080, 1080), color=(20, 20, 25))
-        fallback.save(output_image_path, "JPEG")
-
 # --- 4. TRUE MEME FORMAT VIDEO COMPILER ---
 def create_meme_video(text, output_video_path="meme_output.mp4"):
     width, height = 1080, 1920
@@ -112,8 +106,7 @@ def create_meme_video(text, output_video_path="meme_output.mp4"):
     canvas = Image.new("RGB", (width, height), color=(10, 10, 15))
     draw = ImageDraw.Draw(canvas)
     
-    img_path = "temp_img.jpg"
-    fetch_meme_image(text, img_path)
+    img_path = generate_ai_meme_image(text, "temp_meme_img.jpg")
     try:
         meme_img = Image.open(img_path).convert("RGB")
         meme_img = meme_img.resize((960, 960), Image.Resampling.LANCZOS)
@@ -121,7 +114,7 @@ def create_meme_video(text, output_video_path="meme_output.mp4"):
     except Exception:
         pass
 
-    draw.rectangle([60, 150, 1020, 1110], outline=(0, 0, 0), width=10)
+    draw.rectangle([60, 150, 1020, 1110], outline=(255, 255, 255), width=6)
 
     panel_box = [60, 1200, 1020, 1750]
     draw.rounded_rectangle(panel_box, radius=25, fill=(255, 255, 255), outline=(0, 0, 0), width=8)
@@ -188,8 +181,8 @@ def git_commit_and_push(video_filename):
     except Exception as e:
         print(f"Git commit/push failed: {e}")
 
-# --- 6. BUFFER API SENDER ---
-def send_to_buffer(video_filename, caption, meme_text):
+# --- 6. BUFFER API SENDER WITH SEPARATE CAPTIONS & 5 TRENDING TAGS ---
+def send_to_buffer(video_filename, video_caption):
     token = os.getenv("BUFFER_ACCESS_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
     
@@ -221,7 +214,7 @@ def send_to_buffer(video_filename, caption, meme_text):
         elif platform == "YouTube":
             metadata_dict = {
                 "youtube": {
-                    "title": meme_text[:95],
+                    "title": video_caption[:90],
                     "categoryId": "23"
                 }
             }
@@ -243,7 +236,7 @@ def send_to_buffer(video_filename, caption, meme_text):
         """
         
         post_input = {
-            "text": caption,
+            "text": video_caption,
             "channelId": channel_id.strip(),
             "schedulingType": "automatic",
             "mode": "addToQueue",
@@ -275,17 +268,27 @@ def send_to_buffer(video_filename, caption, meme_text):
 
 if __name__ == "__main__":
     run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    print(f"Starting unhinged dark meme batch execution at {run_timestamp}")
+    print(f"Starting pure AI-generated meme batch execution at {run_timestamp}")
+    
+    engaging_hooks = [
+        "Unfiltered thoughts at 3 AM 💀",
+        "We're going straight to hell for laughing at this...",
+        "Tell me I'm wrong...",
+        "Peak dark humor right here 🪦",
+        "A little bit of morning trauma for your feed."
+    ]
     
     for i in range(1, 3):
         meme_text = generate_meme_content(f"{run_timestamp}_{i}")
         video_filename = f"meme_{run_timestamp}_{i}.mp4"
         
-        print(f"AI Unique Brutal Joke #{i}: {meme_text}")
+        print(f"AI Unique Joke #{i}: {meme_text}")
         create_meme_video(meme_text, video_filename)
         
-        # Automatically commit and push the video to GitHub so the raw URL exists immediately
         git_commit_and_push(video_filename)
         
-        caption = f"{meme_text} 💀 #darkhumor #witchhouse #phonk #metal #shorts #reels"
-        send_to_buffer(video_filename, caption, meme_text)
+        hook = random.choice(engaging_hooks)
+        tags = "#darkhumor #witchhouse #phonk #metal #trending"
+        caption = f"{hook}\n\n{tags}"
+        
+        send_to_buffer(video_filename, caption)
