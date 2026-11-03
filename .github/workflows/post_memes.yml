@@ -32,8 +32,7 @@ jobs:
 
       - name: Run AI Meme Video Generator
         run: |
-          pwd
-          ls -la
+          sed -i -e 's/\r$//' meme_generator.py
           python meme_generator.py
         env:
           BUFFER_ACCESS_TOKEN: ${{ secrets.BUFFER_ACCESS_TOKEN }}
