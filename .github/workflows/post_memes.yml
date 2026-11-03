@@ -1,4 +1,4 @@
-name: New Meme Video Generator
+name: funny ai memes
 
 on:
   schedule:
@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          path: .
 
       - name: Set up Python
         uses: actions/setup-python@v5
