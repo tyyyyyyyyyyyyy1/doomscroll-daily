@@ -7,84 +7,73 @@ import requests
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from moviepy.editor import ImageClip, AudioFileClip
 
-# --- 1. EXPANDED UNHINGED DARK HUMOR ENGINE (ZERO KEYS, NO LOCAL FALLBACKS) ---
+# --- 1. UNHINGED DARK HUMOR ENGINE (ZERO KEYS, HIGH-UPTIME PUBLIC ENDPOINTS) ---
 def generate_meme_content(seed_modifier):
-    # Expanded pool of zero-key public LLM inference endpoints
-    ai_models = [
-        {"url": "https://api-inference.huggingface.co/models/google/gemma-2-2b-it", "format": "gemma"},
-        {"url": "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct", "format": "llama"},
-        {"url": "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta", "format": "zephyr"},
-        {"url": "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct", "format": "qwen"},
-        {"url": "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3", "format": "mistral"},
-        {"url": "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct", "format": "phi"}
+    # Free public AI generation endpoints that don't suffer from HF cold-start timeouts
+    ai_endpoints = [
+        "https://text.pollinations.ai/prompt/Write%20a%20single,%20extremely%20fucked%20up,%20brutally%20dark%20humor%20one-liner%20meme%20joke.%20Shocking,%20morbid,%20but%20funny.%20Keep%20under%15%20words.%20No%20intro.",
+        "https://text.pollinations.ai/prompt/Write%20a%20short,%20unhinged%20dark%20humor%20joke%20about%20human%20misery%20for%20an%20edgy%20meme.%20Keep%20under%2015%20words."
     ]
     
-    prompts = [
-        "Write a single, extremely fucked up, brutally dark humor one-liner meme joke. Shocking, morbid, but undeniably funny. Keep under 15 words. No intro text.",
-        "Write a short, unhinged dark humor joke about tragedy or human misery suitable for an edgy meme. Keep under 15 words. No intro text.",
-        "Write a morbid, highly inappropriate yet hilarious dark humor one-liner. Keep under 15 words. No intro text."
-    ]
-    
-    prompt = random.choice(prompts)
-    random.shuffle(ai_models)
     headers = {"Content-Type": "application/json"}
+    random.shuffle(ai_endpoints)
     
-    for model in ai_models:
-        url = model["url"]
-        fmt = model["format"]
-        temp = round(random.uniform(0.92, 0.99), 2)
-        
-        if fmt == "gemma":
-            payload = {"inputs": f"<start_of_turn>user\n{prompt} (ID: {seed_modifier})<end_of_turn><start_of_turn>model", "parameters": {"max_new_tokens": 50, "temperature": temp}}
-        elif fmt in ["llama", "qwen", "mistral"]:
-            payload = {"inputs": f"<|user|>\n{prompt} (ID: {seed_modifier})<|assistant|>", "parameters": {"max_new_tokens": 50, "temperature": temp}}
-        else:
-            payload = {"inputs": f"<|user|>\n{prompt} (ID: {seed_modifier})</s><|assistant|>", "parameters": {"max_new_tokens": 50, "temperature": temp}}
-            
+    for url in ai_endpoints:
         try:
-            response = requests.post(url, headers=headers, json=payload, timeout=8)
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                joke = response.text.strip().replace('"', '')
+                if len(joke) > 5:
+                    return joke
+        except Exception:
+            continue
+            
+    # Fallback to Hugging Face API if Pollinations is busy
+    hf_models = [
+        "https://api-inference.huggingface.co/models/google/gemma-2-2b-it",
+        "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct",
+        "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
+    ]
+    prompt = "Write a single, extremely fucked up, brutally dark humor one-liner meme joke under 15 words. No intro."
+    
+    for model_url in hf_models:
+        try:
+            payload = {"inputs": prompt, "parameters": {"max_new_tokens": 40, "temperature": 0.95}}
+            response = requests.post(model_url, headers=headers, json=payload, timeout=8)
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, list) and len(data) > 0:
-                    raw_text = data[0].get("generated_text", "")
-                    joke = raw_text.split("<|assistant|>")[-1].split("<end_of_turn>")[-1].strip()
+                    joke = data[0].get("generated_text", "").replace(prompt, "").strip()
                     if len(joke) > 5:
                         return joke
         except Exception:
             continue
             
-    raise Exception("All public AI text generation model sources failed or timed out.")
+    raise Exception("All public AI text generation sources failed or timed out.")
 
-# --- 2. EXPANDED CASCADING AI IMAGE GENERATOR (AI SOURCES ONLY) ---
+# --- 2. CASCADING AI IMAGE GENERATOR (AI SOURCES ONLY) ---
 def generate_ai_meme_image(joke_text, output_image_path="temp_meme_img.jpg"):
     image_models = [
         "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
         "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
         "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
-        "https://api-inference.huggingface.co/models/prompthero/openjourney",
-        "https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4",
-        "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1",
-        "https://api-inference.huggingface.co/models/SG16122/Realistic_Vision_V5.1_noVAE"
+        "https://api-inference.huggingface.co/models/prompthero/openjourney"
     ]
     
-    image_prompt = f"Make a dark humor inspired visual image for a meme, this will be what is on screen for the meme: {joke_text}. Dark aesthetic, cinematic lighting, gritty high detail."
-    
+    image_prompt = f"Dark humor visual meme about: {joke_text}. Cinematic, gritty lighting, highly detailed."
     random.shuffle(image_models)
     headers = {"Content-Type": "application/json"}
     
     for model_url in image_models:
         try:
-            print(f"Trying AI Image Model source: {model_url.split('/')[-1]}")
             response = requests.post(model_url, headers=headers, json={"inputs": image_prompt}, timeout=12)
             if response.status_code == 200 and len(response.content) > 2000:
                 with open(output_image_path, "wb") as f:
                     f.write(response.content)
                 img = Image.open(output_image_path)
                 img.verify()
-                print("AI Image Generated Successfully!")
                 return output_image_path
-        except Exception as e:
-            print(f"Model source failed, cascading to next AI source... ({e})")
+        except Exception:
             continue
             
     raise Exception("All public AI image generation model sources failed or timed out.")
@@ -184,7 +173,7 @@ def git_commit_and_push(video_filename):
     except Exception as e:
         print(f"Git commit/push failed: {e}")
 
-# --- 6. BUFFER API SENDER WITH SEPARATE CAPTIONS & 5 TRENDING TAGS ---
+# --- 6. BUFFER API SENDER ---
 def send_to_buffer(video_filename, video_caption):
     token = os.getenv("BUFFER_ACCESS_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
@@ -271,7 +260,7 @@ def send_to_buffer(video_filename, video_caption):
 
 if __name__ == "__main__":
     run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    print(f"Starting expanded AI text/image meme batch execution at {run_timestamp}")
+    print(f"Starting meme batch execution at {run_timestamp}")
     
     engaging_hooks = [
         "Unfiltered thoughts at 3 AM 💀",
