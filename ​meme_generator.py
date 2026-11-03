@@ -1,64 +1,55 @@
 import os
 import random
 import subprocess
+import time
 import urllib.request
 from datetime import datetime
 import requests
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from moviepy.editor import ImageClip, AudioFileClip
 
-# --- 1. UNHINGED DARK HUMOR ENGINE WITH DETAILED LOGGING ---
+# --- 1. RATE-LIMIT AWARE DARK HUMOR ENGINE (ZERO KEYS) ---
 def generate_meme_content(seed_modifier):
-    ai_endpoints = [
-        "https://text.pollinations.ai/prompt/Write%20a%20single,%20extremely%20fucked%20up,%20brutally%20dark%20humor%20one-liner%20meme%20joke.%20Shocking,%20morbid,%20but%20funny.%20Keep%20under%2015%20words.%20No%20intro.",
-        "https://text.pollinations.ai/prompt/Write%20a%20short,%20unhinged%20dark%20humor%20joke%20about%20human%20misery%20for%20an%20edgy%20meme.%20Keep%20under%2015%20words."
+    ai_prompts = [
+        "Write a single, extremely fucked up, brutally dark humor one-liner meme joke. Shocking, morbid, but funny. Keep under 15 words. No intro.",
+        "Write a short, unhinged dark humor joke about human misery for an edgy meme. Keep under 15 words. No intro.",
+        "Write an inappropriate, shockingly dark humor one-liner. Keep under 15 words. No intro."
     ]
     
-    random.shuffle(ai_endpoints)
+    random.shuffle(ai_prompts)
     
-    for url in ai_endpoints:
+    for prompt in ai_prompts:
+        encoded_prompt = urllib.parse.quote(f"{prompt} [ID: {seed_modifier}]")
+        url = f"https://text.pollinations.ai/prompt/{encoded_prompt}"
+        
         try:
-            print(f"Trying text endpoint: {url}")
-            response = requests.get(url, timeout=10)
+            print(f"Requesting text from Pollinations: {url}")
+            response = requests.get(url, timeout=15)
             print(f"Response status: {response.status_code}")
+            
             if response.status_code == 200:
                 joke = response.text.strip().replace('"', '')
                 if len(joke) > 5:
                     print(f"Successfully generated joke: {joke}")
                     return joke
+            elif response.status_code == 402:
+                print("Hit Pollinations rate limit (402). Waiting 45 seconds as required by free tier...")
+                time.sleep(46)
+                # Retry once after waiting
+                retry_response = requests.get(url, timeout=15)
+                if retry_response.status_code == 200:
+                    joke = retry_response.text.strip().replace('"', '')
+                    if len(joke) > 5:
+                        print(f"Successfully generated joke on retry: {joke}")
+                        return joke
             else:
                 print(f"Endpoint returned non-200: {response.text}")
         except Exception as e:
             print(f"Text endpoint failed with exception: {e}")
             
-    # Fallback to Hugging Face API with detailed logging
-    hf_models = [
-        "https://api-inference.huggingface.co/models/google/gemma-2-2b-it",
-        "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct",
-        "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
-    ]
-    prompt = "Write a single, extremely fucked up, brutally dark humor one-liner meme joke under 15 words. No intro."
-    headers = {"Content-Type": "application/json"}
-    
-    for model_url in hf_models:
-        try:
-            print(f"Trying HF model: {model_url}")
-            payload = {"inputs": prompt, "parameters": {"max_new_tokens": 40, "temperature": 0.95}}
-            response = requests.post(model_url, headers=headers, json=payload, timeout=8)
-            print(f"HF Response status: {response.status_code}, content: {response.text}")
-            if response.status_code == 200:
-                data = response.json()
-                if isinstance(data, list) and len(data) > 0:
-                    joke = data[0].get("generated_text", "").replace(prompt, "").strip()
-                    if len(joke) > 5:
-                        print(f"Successfully generated joke from HF: {joke}")
-                        return joke
-        except Exception as e:
-            print(f"HF model {model_url} failed with exception: {e}")
-            
-    raise Exception("All public AI text generation sources failed or timed out. Check logs above for specific HTTP error codes.")
+    raise Exception("All public AI text generation sources failed or timed out.")
 
-# --- 2. CASCADING AI IMAGE GENERATOR WITH DETAILED LOGGING ---
+# --- 2. CASCADING AI IMAGE GENERATOR ---
 def generate_ai_meme_image(joke_text, output_image_path="temp_meme_img.jpg"):
     image_models = [
         "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
@@ -186,7 +177,7 @@ def git_commit_and_push(video_filename):
     except Exception as e:
         print(f"Git commit/push failed: {e}")
 
-# --- 6. BUFFER API SENDER WITH DETAILED DIAGNOSTICS ---
+# --- 6. BUFFER API SENDER ---
 def send_to_buffer(video_filename, video_caption):
     token = os.getenv("BUFFER_ACCESS_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
@@ -276,7 +267,7 @@ def send_to_buffer(video_filename, video_caption):
 
 if __name__ == "__main__":
     run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    print(f"Starting detailed diagnostic meme batch execution at {run_timestamp}")
+    print(f"Starting rate-limit managed meme batch execution at {run_timestamp}")
     
     engaging_hooks = [
         "Unfiltered thoughts at 3 AM 💀",
