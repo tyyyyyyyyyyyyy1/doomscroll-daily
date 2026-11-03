@@ -123,7 +123,7 @@ def create_meme_video(text, output_video_path="meme_output.mp4"):
     return output_video_path
 
 # --- 4. BUFFER API SENDER ---
-def send_to_buffer(video_filename, caption):
+def send_to_buffer(video_filename, caption, meme_text):
     token = os.getenv("BUFFER_ACCESS_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
     
@@ -149,7 +149,17 @@ def send_to_buffer(video_filename, caption):
             print(f"Skipping {platform}: Profile ID secret not found.")
             continue
             
-        # Updated from PostInput! to CreatePostInput!
+        metadata_dict = {}
+        if platform == "Instagram":
+            metadata_dict = {"instagram": {"type": "reel"}}
+        elif platform == "YouTube":
+            metadata_dict = {
+                "youtube": {
+                    "title": meme_text[:95],
+                    "categoryId": "23"  # 23 = Comedy category
+                }
+            }
+
         mutation = """
         mutation CreatePost($input: CreatePostInput!) {
           createPost(input: $input) {
@@ -166,22 +176,27 @@ def send_to_buffer(video_filename, caption):
         }
         """
         
+        post_input = {
+            "text": caption,
+            "channelId": channel_id.strip(),
+            "schedulingType": "automatic",
+            "mode": "addToQueue",
+            "assets": [
+                {
+                    "video": {
+                        "url": public_video_url
+                    }
+                }
+            ]
+        }
+        
+        if metadata_dict:
+            post_input["metadata"] = metadata_dict
+
         payload = {
             "query": mutation,
             "variables": {
-                "input": {
-                    "text": caption,
-                    "channelId": channel_id.strip(),
-                    "schedulingType": "automatic",
-                    "mode": "addToQueue",
-                    "assets": [
-                        {
-                            "video": {
-                                "url": public_video_url
-                            }
-                        }
-                    ]
-                }
+                "input": post_input
             }
         }
         
@@ -202,4 +217,4 @@ if __name__ == "__main__":
         create_meme_video(meme_text, video_filename)
         
         caption = f"{meme_text} 💀 #darkhumor #shorts #reels #trending"
-        send_to_buffer(video_filename, caption)
+        send_to_buffer(video_filename, caption, meme_text)
