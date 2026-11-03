@@ -7,13 +7,16 @@ import requests
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from moviepy.editor import ImageClip, AudioFileClip
 
-# --- 1. UNHINGED BRUTAL DARK HUMOR ENGINE (ZERO KEYS, NO LOCAL FALLBACKS) ---
+# --- 1. EXPANDED UNHINGED DARK HUMOR ENGINE (ZERO KEYS, NO LOCAL FALLBACKS) ---
 def generate_meme_content(seed_modifier):
+    # Expanded pool of zero-key public LLM inference endpoints
     ai_models = [
         {"url": "https://api-inference.huggingface.co/models/google/gemma-2-2b-it", "format": "gemma"},
         {"url": "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct", "format": "llama"},
         {"url": "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta", "format": "zephyr"},
-        {"url": "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct", "format": "qwen"}
+        {"url": "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct", "format": "qwen"},
+        {"url": "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3", "format": "mistral"},
+        {"url": "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct", "format": "phi"}
     ]
     
     prompts = [
@@ -33,7 +36,7 @@ def generate_meme_content(seed_modifier):
         
         if fmt == "gemma":
             payload = {"inputs": f"<start_of_turn>user\n{prompt} (ID: {seed_modifier})<end_of_turn><start_of_turn>model", "parameters": {"max_new_tokens": 50, "temperature": temp}}
-        elif fmt == "llama" or fmt == "qwen":
+        elif fmt in ["llama", "qwen", "mistral"]:
             payload = {"inputs": f"<|user|>\n{prompt} (ID: {seed_modifier})<|assistant|>", "parameters": {"max_new_tokens": 50, "temperature": temp}}
         else:
             payload = {"inputs": f"<|user|>\n{prompt} (ID: {seed_modifier})</s><|assistant|>", "parameters": {"max_new_tokens": 50, "temperature": temp}}
@@ -268,7 +271,7 @@ def send_to_buffer(video_filename, video_caption):
 
 if __name__ == "__main__":
     run_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    print(f"Starting pure AI-generated meme batch execution at {run_timestamp}")
+    print(f"Starting expanded AI text/image meme batch execution at {run_timestamp}")
     
     engaging_hooks = [
         "Unfiltered thoughts at 3 AM 💀",
